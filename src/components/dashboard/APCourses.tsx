@@ -3,14 +3,17 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { ChapterBox } from "./ChapterBox";
 import { APExamCard } from "./APExamCard";
-import { BookOpen, TrendingUp, Award, FileText } from "lucide-react";
+import { BookOpen, TrendingUp, Award, FileText, RefreshCw, AlertCircle } from "lucide-react";
+import { useDashboardApSubjects } from "@/hooks/useApCourses";
+import { getDifficultyText, getDifficultyColorClass } from "@/lib/services/ap";
 import type { Subject, APExam } from "../../App";
 
 interface APCoursesProps {
-	subjects: Subject[];
-	apExams: APExam[];
+	subjects?: Subject[]; // Mock 데이터, 향후 제거 예정
+	apExams?: APExam[]; // Mock 데이터, 향후 제거 예정
 	onStartExam: (subject: Subject) => void;
 	onViewResults?: () => void;
 	selectedSubject?: Subject | null;
@@ -27,9 +30,15 @@ export function APCourses({
 	onTabChange,
 	className,
 }: APCoursesProps) {
-	const apSubjects = subjects.filter((s) => s.type === "AP");
+	// 실제 AP 과목 데이터 조회
+	const { subjects: realApSubjects, isLoading, error, isRefreshing, refresh } = useDashboardApSubjects(6);
+	
+	// Mock 데이터를 우선 사용하고, 실제 데이터로 대체 예정
+	const apSubjects = subjects ? subjects.filter((s) => s.type === "AP") : [];
+	
 	const [activeTab, setActiveTab] = useState(
 		apSubjects.filter((subject) => ["ap-chemistry", "ap-biology", "ap-psychology"].includes(subject.id))[0]?.id ||
+			realApSubjects[0]?.id ||
 			"ap-chemistry"
 	);
 
@@ -385,13 +394,63 @@ export function APCourses({
 					borderTopRightRadius: "0.75rem",
 				}}
 			>
-				<CardTitle className="flex items-center space-x-2" style={{ color: "var(--color-text-primary)" }}>
-					<BookOpen className="w-5 h-5" style={{ color: "var(--color-subject-secondary)" }} />
-					<span>AP Courses</span>
+				<CardTitle className="flex items-center justify-between" style={{ color: "var(--color-text-primary)" }}>
+					<div className="flex items-center space-x-2">
+						<BookOpen className="w-5 h-5" style={{ color: "var(--color-subject-secondary)" }} />
+						<span>AP Courses</span>
+						{realApSubjects.length > 0 && (
+							<Badge variant="outline" className="text-xs font-semibold border-primary text-primary">
+								{realApSubjects.length} 과목
+							</Badge>
+						)}
+					</div>
+					
+					{/* 새로고침 버튼 */}
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={refresh}
+						disabled={isRefreshing}
+						className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8 p-0"
+						title="새로고침"
+					>
+						<RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+					</Button>
 				</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+				{/* 로딩 상태 */}
+				{isLoading && (
+					<div className="flex items-center justify-center py-12">
+						<RefreshCw className="w-6 h-6 animate-spin text-primary" />
+						<span className="ml-2 text-sm text-muted-foreground">Loading AP courses...</span>
+					</div>
+				)}
+
+				{/* 에러 상태 */}
+				{error && (
+					<div className="flex flex-col items-center justify-center py-12">
+						<AlertCircle className="w-8 h-8 text-destructive mb-3" />
+						<p className="text-destructive font-medium mb-2">Unable to load AP courses</p>
+						<p className="text-muted-foreground text-sm mb-4">{error}</p>
+						<Button onClick={refresh} size="sm">
+							Try Again
+						</Button>
+					</div>
+				)}
+
+				{/* 과목이 없는 경우 */}
+				{!isLoading && !error && realApSubjects.length === 0 && (
+					<div className="flex flex-col items-center justify-center py-12">
+						<BookOpen className="w-12 h-12 text-muted-foreground mb-3" />
+						<p className="text-muted-foreground font-medium">No AP courses available</p>
+						<p className="text-muted-foreground text-sm mt-1">AP courses will appear here when available</p>
+					</div>
+				)}
+
+				{/* 실제 과목 데이터가 있는 경우 */}
+				{!isLoading && !error && (realApSubjects.length > 0 || apSubjects.length > 0) && (
+					<Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
 					<div className="flex justify-center mb-8">
 						<TabsList
 							className="relative flex items-center p-1.5 rounded-2xl shadow-lg bg-transparent border-0"
@@ -576,7 +635,8 @@ export function APCourses({
 								</TabsContent>
 							);
 						})}
-				</Tabs>
+					</Tabs>
+				)}
 			</CardContent>
 		</Card>
 	);
