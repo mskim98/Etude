@@ -97,23 +97,63 @@ export type Database = {
 			schedule: {
 				Row: {
 					category: string;
+					created_at: string | null;
+					created_by: string | null;
 					d_day: string;
+					deleted_at: string | null;
+					deleted_by: string | null;
 					id: string;
 					title: string;
+					updated_at: string | null;
+					updated_by: string | null;
 				};
 				Insert: {
 					category: string;
+					created_at?: string | null;
+					created_by?: string | null;
 					d_day: string;
+					deleted_at?: string | null;
+					deleted_by?: string | null;
 					id?: string;
 					title: string;
+					updated_at?: string | null;
+					updated_by?: string | null;
 				};
 				Update: {
 					category?: string;
+					created_at?: string | null;
+					created_by?: string | null;
 					d_day?: string;
+					deleted_at?: string | null;
+					deleted_by?: string | null;
 					id?: string;
 					title?: string;
+					updated_at?: string | null;
+					updated_by?: string | null;
 				};
-				Relationships: [];
+				Relationships: [
+					{
+						foreignKeyName: "schedule_created_by_fkey";
+						columns: ["created_by"];
+						isOneToOne: false;
+						referencedRelation: "profile";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "schedule_deleted_by_fkey";
+						columns: ["deleted_by"];
+						isOneToOne: false;
+						referencedRelation: "profile";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "schedule_updated_by_fkey";
+						columns: ["updated_by"];
+						isOneToOne: false;
+						referencedRelation: "profile";
+						referencedColumns: ["id"];
+					}
+				];
 			};
 			service: {
 				Row: {
@@ -194,6 +234,23 @@ export type Database = {
 		Functions: {
 			check_email_duplicate: {
 				Args: { email_to_check: string };
+				Returns: boolean;
+			};
+			create_schedule: {
+				Args: { p_category: string; p_d_day: string; p_title: string };
+				Returns: string;
+			};
+			delete_schedule: {
+				Args: { p_schedule_id: string };
+				Returns: boolean;
+			};
+			update_schedule: {
+				Args: {
+					p_category?: string;
+					p_d_day?: string;
+					p_schedule_id: string;
+					p_title?: string;
+				};
 				Returns: boolean;
 			};
 		};

@@ -461,7 +461,7 @@ export function Dashboard({
 
 							{/* Middle Row - Exam Schedule and Announcements */}
 							<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-shrink-0">
-								<ExamSchedule subjects={subjects} />
+								<ExamSchedule />
 								<Announcements />
 							</div>
 
