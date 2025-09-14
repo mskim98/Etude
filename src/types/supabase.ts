@@ -11,33 +11,39 @@ export type Database = {
 			announcement: {
 				Row: {
 					announced_by: string;
-					category: string;
+					announcer_type: Database["public"]["Enums"]["announcer_type"] | null;
+					category: Database["public"]["Enums"]["exam_category"];
 					created_at: string | null;
 					deleted_at: string | null;
 					id: string;
 					notification: string;
+					title: string;
 					updated_at: string | null;
-					urgency: string;
+					urgency: Database["public"]["Enums"]["urgency_level"];
 				};
 				Insert: {
 					announced_by: string;
-					category: string;
+					announcer_type?: Database["public"]["Enums"]["announcer_type"] | null;
+					category: Database["public"]["Enums"]["exam_category"];
 					created_at?: string | null;
 					deleted_at?: string | null;
 					id?: string;
 					notification: string;
+					title: string;
 					updated_at?: string | null;
-					urgency: string;
+					urgency: Database["public"]["Enums"]["urgency_level"];
 				};
 				Update: {
 					announced_by?: string;
-					category?: string;
+					announcer_type?: Database["public"]["Enums"]["announcer_type"] | null;
+					category?: Database["public"]["Enums"]["exam_category"];
 					created_at?: string | null;
 					deleted_at?: string | null;
 					id?: string;
 					notification?: string;
+					title?: string;
 					updated_at?: string | null;
-					urgency?: string;
+					urgency?: Database["public"]["Enums"]["urgency_level"];
 				};
 				Relationships: [
 					{
@@ -96,7 +102,7 @@ export type Database = {
 			};
 			schedule: {
 				Row: {
-					category: string;
+					category: Database["public"]["Enums"]["exam_category"];
 					created_at: string | null;
 					created_by: string | null;
 					d_day: string;
@@ -108,7 +114,7 @@ export type Database = {
 					updated_by: string | null;
 				};
 				Insert: {
-					category: string;
+					category: Database["public"]["Enums"]["exam_category"];
 					created_at?: string | null;
 					created_by?: string | null;
 					d_day: string;
@@ -120,7 +126,7 @@ export type Database = {
 					updated_by?: string | null;
 				};
 				Update: {
-					category?: string;
+					category?: Database["public"]["Enums"]["exam_category"];
 					created_at?: string | null;
 					created_by?: string | null;
 					d_day?: string;
@@ -236,12 +242,36 @@ export type Database = {
 				Args: { email_to_check: string };
 				Returns: boolean;
 			};
+			create_announcement: {
+				Args: {
+					p_announcer_type?: string;
+					p_category?: string;
+					p_notification: string;
+					p_title: string;
+					p_urgency?: string;
+				};
+				Returns: string;
+			};
 			create_schedule: {
 				Args: { p_category: string; p_d_day: string; p_title: string };
 				Returns: string;
 			};
+			delete_announcement: {
+				Args: { p_announcement_id: string };
+				Returns: boolean;
+			};
 			delete_schedule: {
 				Args: { p_schedule_id: string };
+				Returns: boolean;
+			};
+			update_announcement: {
+				Args: {
+					p_announcement_id: string;
+					p_category?: string;
+					p_notification?: string;
+					p_title?: string;
+					p_urgency?: string;
+				};
 				Returns: boolean;
 			};
 			update_schedule: {
@@ -255,6 +285,9 @@ export type Database = {
 			};
 		};
 		Enums: {
+			announcer_type: "teacher" | "admin" | "system";
+			exam_category: "ap" | "sat";
+			urgency_level: "low" | "medium" | "high";
 			user_role: "student" | "teacher" | "admin";
 			user_state: "pending" | "approve";
 		};
@@ -376,6 +409,9 @@ export type CompositeTypes<
 export const Constants = {
 	public: {
 		Enums: {
+			announcer_type: ["teacher", "admin", "system"],
+			exam_category: ["ap", "sat"],
+			urgency_level: ["low", "medium", "high"],
 			user_role: ["student", "teacher", "admin"],
 			user_state: ["pending", "approve"],
 		},

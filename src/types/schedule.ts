@@ -1,5 +1,8 @@
 import type { Database } from "./supabase";
 
+// 카테고리 타입 (Supabase ENUM과 동일)
+export type ScheduleCategory = Database["public"]["Enums"]["exam_category"];
+
 // Supabase Schedule 테이블 타입
 export type ScheduleRow = Database["public"]["Tables"]["schedule"]["Row"];
 export type ScheduleInsert = Database["public"]["Tables"]["schedule"]["Insert"];
@@ -10,7 +13,7 @@ export interface Schedule {
 	id: string;
 	title: string;
 	dDay: Date; // d_day를 Date 객체로 변환
-	category: "ap" | "sat";
+	category: ScheduleCategory;
 	createdBy?: string;
 	updatedBy?: string;
 	deletedBy?: string;
@@ -23,7 +26,7 @@ export interface Schedule {
 export interface CreateScheduleRequest {
 	title: string;
 	dDay: Date;
-	category: "ap" | "sat";
+	category: ScheduleCategory;
 }
 
 // Schedule 업데이트 요청 인터페이스
@@ -31,7 +34,7 @@ export interface UpdateScheduleRequest {
 	id: string;
 	title?: string;
 	dDay?: Date;
-	category?: "ap" | "sat";
+	category?: ScheduleCategory;
 }
 
 // Schedule 응답 인터페이스 (UI 표시용)
@@ -39,7 +42,7 @@ export interface ScheduleItem {
 	id: string;
 	title: string;
 	date: Date;
-	category: "ap" | "sat";
+	category: ScheduleCategory;
 	daysUntil: number; // D-Day 계산 결과
 	status: "upcoming" | "today" | "past"; // 상태 분류
 	isUrgent?: boolean; // 7일 이내 여부
@@ -62,7 +65,7 @@ export interface ScheduleService {
 	/**
 	 * 카테고리별 일정 조회
 	 */
-	getSchedulesByCategory: (category: "ap" | "sat") => Promise<Schedule[]>;
+	getSchedulesByCategory: (category: ScheduleCategory) => Promise<Schedule[]>;
 
 	/**
 	 * 특정 일정 조회
@@ -130,7 +133,7 @@ export interface CalendarEvent {
 
 // 일정 필터 옵션
 export interface ScheduleFilter {
-	category?: "ap" | "sat" | "all";
+	category?: ScheduleCategory | "all";
 	status?: "upcoming" | "today" | "past" | "all";
 	dateRange?: {
 		start: Date;

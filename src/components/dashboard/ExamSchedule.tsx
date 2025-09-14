@@ -81,14 +81,14 @@ export function ExamSchedule({
 				<CardHeader className="pb-3 rounded-t-lg bg-primary">
 					<CardTitle className="flex items-center space-x-2 text-lg font-semibold text-primary-foreground">
 						<Calendar className="w-5 h-5" />
-						<span>시험 일정</span>
+						<span>Exam Schedule</span>
 						<RefreshCw className="w-4 h-4 animate-spin ml-2" />
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="bg-[rgba(0,0,0,0)]">
 					<div className="text-center py-8">
 						<RefreshCw className="w-8 h-8 mx-auto text-muted-foreground mb-3 animate-spin" />
-						<p className="text-muted-foreground font-medium">일정을 불러오는 중...</p>
+						<p className="text-muted-foreground font-medium">Loading schedule...</p>
 					</div>
 				</CardContent>
 			</Card>
@@ -102,7 +102,7 @@ export function ExamSchedule({
 				<CardHeader className="pb-3 rounded-t-lg bg-primary">
 					<CardTitle className="flex items-center space-x-2 text-lg font-semibold text-primary-foreground">
 						<Calendar className="w-5 h-5" />
-						<span>시험 일정</span>
+						<span>Exam Schedule</span>
 						<Button
 							variant="ghost"
 							size="sm"
@@ -116,10 +116,10 @@ export function ExamSchedule({
 				<CardContent className="bg-[rgba(0,0,0,0)]">
 					<div className="text-center py-8">
 						<AlertCircle className="w-8 h-8 mx-auto text-destructive mb-3" />
-						<p className="text-destructive font-medium mb-2">일정을 불러올 수 없습니다</p>
+						<p className="text-destructive font-medium mb-2">Unable to load schedule</p>
 						<p className="text-muted-foreground text-sm mb-4">{error}</p>
 						<Button onClick={onRefresh} size="sm">
-							다시 시도
+							Retry
 						</Button>
 					</div>
 				</CardContent>
@@ -132,7 +132,7 @@ export function ExamSchedule({
 			<CardHeader className="pb-3 rounded-t-lg bg-primary">
 				<CardTitle className="flex items-center space-x-2 text-lg font-semibold text-primary-foreground">
 					<Calendar className="w-5 h-5" />
-					<span>시험 일정</span>
+					<span>Exam Schedule</span>
 					<Badge
 						variant="outline"
 						className="text-xs font-semibold ml-2 border-primary-foreground text-primary-foreground"
@@ -161,8 +161,8 @@ export function ExamSchedule({
 					{upcomingSchedules.length === 0 ? (
 						<div className="text-center py-8">
 							<Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-							<p className="text-muted-foreground font-medium">예정된 시험이 없습니다</p>
-							<p className="text-muted-foreground text-sm mt-1">새로운 일정이 등록되면 여기에 표시됩니다</p>
+							<p className="text-muted-foreground font-medium">No upcoming exams</p>
+							<p className="text-muted-foreground text-sm mt-1">New schedules will appear here when added</p>
 						</div>
 					) : (
 						upcomingSchedules.map((schedule) => {
