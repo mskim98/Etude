@@ -78,6 +78,7 @@ export const useAuthStore = create<AuthState>()(
 					canAccessLMS: AuthService.canAccessLMS(user?.profile || null), // LMS 접근 가능 여부
 					isPendingApproval: AuthService.isPendingApproval(user?.profile || null), // 승인 대기 여부
 				};
+				console.log("setUser 호출 - computed states 업데이트:", newState);
 				set(newState);
 			},
 			setLoading: (isLoading) => set({ isLoading }), // 로딩 상태 설정
@@ -270,6 +271,14 @@ export const useAuthStore = create<AuthState>()(
 			name: "auth-storage", // localStorage key
 			// Only persist user data, not loading/error states
 			partialize: (state) => ({ user: state.user }),
+			// 데이터 복원 시 computed states도 함께 업데이트
+			onRehydrateStorage: () => (state) => {
+				if (state && state.user) {
+					console.log("persist 데이터 복원 - computed states 재계산:", state.user.email);
+					// setUser를 호출해서 computed states 업데이트
+					state.setUser(state.user);
+				}
+			},
 		}
 	)
 );
@@ -279,6 +288,13 @@ let initialized = false;
 export const initializeAuthStore = () => {
 	if (initialized) return;
 	initialized = true;
+
+	// persist된 user 데이터가 있는지 확인하고 computed states 업데이트
+	const currentState = useAuthStore.getState();
+	if (currentState.user && !currentState.isAuthenticated) {
+		console.log("initializeAuthStore: persist된 user 데이터 발견, computed states 업데이트");
+		currentState.setUser(currentState.user);
+	}
 
 	// Initialize AuthState manager and listen to changes
 	AuthStateManager.initialize();
