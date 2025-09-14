@@ -135,3 +135,6 @@ Thumbs.db
 
 # Turbo
 .turbo
+
+# Documentation (개발 문서는 Git에 포함하지 않음)
+docs/

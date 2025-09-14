@@ -1,3 +1,6 @@
+// Import Supabase types with ENUM support
+import type { Database } from "./supabase";
+
 export type PageType =
 	| "landing"
 	| "login"
@@ -10,10 +13,40 @@ export type PageType =
 	| "sat-section-select"
 	| "sat-detailed-results";
 
-export interface User {
+// Re-export Supabase Database type for convenience
+export type { Database } from "./supabase";
+
+// Convenience types from Supabase Database
+export type Profile = Database["public"]["Tables"]["profile"]["Row"];
+export type ProfileInsert = Database["public"]["Tables"]["profile"]["Insert"];
+export type ProfileUpdate = Database["public"]["Tables"]["profile"]["Update"];
+
+export type Service = Database["public"]["Tables"]["service"]["Row"];
+export type ServiceInsert = Database["public"]["Tables"]["service"]["Insert"];
+export type ServiceUpdate = Database["public"]["Tables"]["service"]["Update"];
+
+export type UserService = Database["public"]["Tables"]["user_service"]["Row"];
+export type UserServiceInsert = Database["public"]["Tables"]["user_service"]["Insert"];
+export type UserServiceUpdate = Database["public"]["Tables"]["user_service"]["Update"];
+
+export type Announcement = Database["public"]["Tables"]["announcement"]["Row"];
+export type AnnouncementInsert = Database["public"]["Tables"]["announcement"]["Insert"];
+export type AnnouncementUpdate = Database["public"]["Tables"]["announcement"]["Update"];
+
+export type Schedule = Database["public"]["Tables"]["schedule"]["Row"];
+export type ScheduleInsert = Database["public"]["Tables"]["schedule"]["Insert"];
+export type ScheduleUpdate = Database["public"]["Tables"]["schedule"]["Update"];
+
+// Export ENUM types for type safety
+export type UserRole = Database["public"]["Enums"]["user_role"];
+export type UserState = Database["public"]["Enums"]["user_state"];
+
+// Auth Context Types
+export interface AuthUser {
 	id: string;
 	email: string;
-	name: string;
+	profile?: Profile;
+	services?: UserService[];
 }
 
 export interface Subject {
@@ -149,7 +182,8 @@ export interface MockQuestion {
 	timeLimit?: number; // in seconds
 }
 
-export interface Announcement {
+// UI-specific types (different from database schema)
+export interface UIAnnouncement {
 	id: string;
 	title: string;
 	content: string;
@@ -158,7 +192,7 @@ export interface Announcement {
 	type: "General" | "Exam" | "System";
 }
 
-export interface ExamSchedule {
+export interface UIExamSchedule {
 	id: string;
 	title: string;
 	date: Date;
