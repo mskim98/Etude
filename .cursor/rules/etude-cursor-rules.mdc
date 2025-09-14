@@ -1,0 +1,43 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+# 📌 Project Rules - Etude LMS
+
+## Tech Stack
+
+- Frontend: Next.js (App Router), React, TypeScript
+- Styling: Tailwind CSS, Shadcn UI, Lucide React, Framer Motion
+- State Management: Zustand, TanStack Query, React Hook Form + Zod
+- Backend: Supabase (DB, Auth, RLS)
+
+## Core Features
+
+- **Authentication & Roles**: Supabase Auth + RLS, roles = student/teacher/admin, approval state management
+- **Dashboard**: user info, announcements, exam schedules, learning progress
+- **AP Exams**: subjects, chapters, MCQ & FRQ, timer, answer saving
+- **SAT Exams**: Reading/Writing/Math, MCQ & SPR, timer, answer saving
+- **Results & Analysis**: score summary, wrong answers tracking (`user_ap_wrong_answer`, `user_sat_wrong_answer`), performance charts
+- **Announcements & Schedule**: `schedule`, `announcement` management
+
+## Database ERD Summary
+
+- **Users & Roles**: `users`, `profile`, `service`, `user_service`
+- **AP**: `ap`, `chapter`, `ap_exam`, `ap_exam_question`, `ap_exam_choice`, `user_ap_result`, `user_ap_wrong_answer`
+- **SAT**: `sat`, `sat_test_question`, `sat_test_mcq`, `sat_test_spr`, `user_sat_result`, `user_sat_wrong_answer`
+- **Common**: `schedule`, `announcement`
+- **Learning Materials**: `mcq`, `frq`, `ap_chapter_video`, `ap_exam_video`
+
+## Page Flow
+
+1. `exams` → load exam list, check permission
+2. `section_result` → create/load exam result entry
+3. `exam` → load questions, attempt, save results, track wrong answers
+4. `result` → display score and wrong answers
+
+## Design System
+
+- **Colors**: Primary Blue (#0091B3), Background Beige (#faf9f7), Card White (#ffffff), dark mode supported
+- **Principles**: Border Radius 12px, hover shadows, Shadcn UI components, Tailwind utilities, ARIA accessibility
