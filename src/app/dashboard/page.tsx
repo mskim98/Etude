@@ -26,14 +26,22 @@ export default function DashboardPage() {
 
 	// Handle authentication and access control
 	useEffect(() => {
+		// 로딩 중이거나 이미 리다이렉트 중이면 아무것도 하지 않음
 		if (loading || isRedirecting) return;
 
 		console.log("Dashboard 페이지: 인증 상태 체크", {
 			isAuthenticated,
 			user: user?.email,
+			hasProfile: !!user?.profile,
 			loading,
 			isRedirecting,
 		});
+
+		// 사용자가 있지만 프로필이 없으면 잠시 대기 (AuthStateManager가 로딩 중일 수 있음)
+		if (user && !user.profile) {
+			console.log("Dashboard 페이지: 프로필 로딩 대기 중...");
+			return;
+		}
 
 		// Redirect to login if not authenticated
 		if (!isAuthenticated) {
@@ -64,11 +72,12 @@ export default function DashboardPage() {
 		console.log("Dashboard 페이지: approved 사용자 → 대시보드 표시");
 
 		if (!canAccessLMS) {
+			console.log("Dashboard 페이지: LMS 접근 권한 없음 → login으로 이동");
 			setIsRedirecting(true);
 			router.push("/login");
 			return;
 		}
-	}, [isAuthenticated, loading, canAccessLMS, isRedirecting]); // Removed router and getUserAccessStatus to reduce re-renders
+	}, [isAuthenticated, loading, canAccessLMS, isRedirecting, user]); // user 추가해서 프로필 로딩 상태 감지
 
 	// Show loading while checking authentication or redirecting
 	if (loading || isRedirecting || !isAuthenticated || !canAccessLMS) {

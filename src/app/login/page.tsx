@@ -23,13 +23,25 @@ export default function Login() {
 
 	// 이미 로그인된 사용자 자동 리다이렉트 처리
 	useEffect(() => {
+		// 로딩 중이거나 이미 리다이렉트 중이면 아무것도 하지 않음
 		if (loading || isRedirecting) return;
 
 		if (user) {
-			console.log("Login 페이지: 이미 로그인된 사용자 감지", { user: user.email });
+			console.log("Login 페이지: 이미 로그인된 사용자 감지", {
+				user: user.email,
+				hasProfile: !!user.profile,
+			});
+
+			// 프로필이 없으면 잠시 대기 (AuthStateManager가 로딩 중일 수 있음)
+			if (!user.profile) {
+				console.log("Login 페이지: 프로필 로딩 대기 중...");
+				return;
+			}
+
 			const accessStatus = getUserAccessStatus();
 			console.log("Login 페이지: 접근 상태", accessStatus);
 
+			// 리다이렉트 상태 설정 (중복 실행 방지)
 			setIsRedirecting(true);
 
 			// 사용자 상태에 따른 페이지 이동
