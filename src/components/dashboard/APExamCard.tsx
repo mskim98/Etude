@@ -24,6 +24,7 @@ export interface APExamCardProps {
 	onStartExam: () => void;
 	onWatchVideo?: () => void;
 	className?: string;
+	isActive?: boolean;
 }
 
 export function APExamCard({
@@ -46,6 +47,7 @@ export function APExamCard({
 	onStartExam,
 	onWatchVideo,
 	className,
+	isActive = true,
 }: APExamCardProps) {
 	const getDifficultyStyles = (diff: string) => {
 		const baseClasses = "text-xs flex-shrink-0 border font-medium";
@@ -91,16 +93,19 @@ export function APExamCard({
 	};
 
 	const formatAPScore = (score?: number) => {
-		if (!score) return "N/A";
+		if (!score && score !== 0) return "---";
 		return `${score}/5`;
 	};
 
 	const getAPScoreColor = (score?: number) => {
-		if (!score) return "var(--color-text-tertiary)";
+		if (!score && score !== 0) return "var(--color-text-tertiary)";
 		if (score >= 4) return "var(--color-status-success)";
 		if (score >= 3) return "var(--color-status-warning)";
 		return "var(--color-status-error)";
 	};
+
+	// Ensure subject label doesn't duplicate 'AP'
+	const subjectLabel = (subject as unknown as string).replace(/^AP\s+/i, "");
 
 	return (
 		<Card
@@ -111,9 +116,22 @@ export function APExamCard({
 				height: "400px",
 			}}
 		>
-			<CardContent className="p-0 h-full">
+			<CardContent className="p-0 h-full relative">
+				{/* Inactive overlay */}
+				{!isActive && (
+					<div
+						className="absolute inset-0 z-10 flex items-center justify-center rounded"
+						style={{ backgroundColor: "rgba(0,0,0,0.45)", backdropFilter: "blur(2px)", color: "#fff" }}
+					>
+						<div className="text-center">
+							<div className="text-sm font-semibold">Unavailable</div>
+							<div className="text-xs opacity-90">This exam cannot be used</div>
+						</div>
+					</div>
+				)}
+
 				{/* Modern Card Design */}
-				<div className="h-full flex flex-col">
+				<div className={`h-full flex flex-col ${!isActive ? "pointer-events-none select-none opacity-60" : ""}`}>
 					{/* Header with Status Bar */}
 					<div className="px-6 py-4 border-b" style={{ borderColor: "var(--color-border)" }}>
 						<div className="flex items-start justify-between mb-3">
@@ -122,8 +140,8 @@ export function APExamCard({
 									{title}
 								</h3>
 								<div className="flex items-center gap-2">
-									<Badge className="text-xs font-medium px-2 py-1" style={getSubjectStyles(subject)}>
-										AP {subject}
+									<Badge className="text-xs font-medium px-2 py-1" style={getSubjectStyles(subjectLabel)}>
+										AP {subjectLabel}
 									</Badge>
 									<Badge variant="outline" className={`text-xs px-2 py-1 ${getDifficultyStyles(difficulty)}`}>
 										{difficulty}
@@ -168,11 +186,11 @@ export function APExamCard({
 									borderWidth: "1px",
 								}}
 							>
-								<div className="text-xs mb-1" style={{ color: "var(--color-text-tertiary)" }}>
+								<div className="text-xs mb-1 font-medium" style={{ color: "var(--color-text-secondary)" }}>
 									Duration
 								</div>
 								<div className="font-semibold" style={{ color: "var(--color-text-primary)" }}>
-									{duration}m
+									{duration ? `${duration}m` : "---"}
 								</div>
 							</div>
 							<div
@@ -183,11 +201,11 @@ export function APExamCard({
 									borderWidth: "1px",
 								}}
 							>
-								<div className="text-xs mb-1" style={{ color: "var(--color-text-tertiary)" }}>
+								<div className="text-xs mb-1 font-medium" style={{ color: "var(--color-text-secondary)" }}>
 									Questions
 								</div>
 								<div className="font-semibold" style={{ color: "var(--color-text-primary)" }}>
-									{questionCount}
+									{questionCount ? questionCount : "---"}
 								</div>
 							</div>
 							<div
@@ -198,8 +216,8 @@ export function APExamCard({
 									borderWidth: "1px",
 								}}
 							>
-								<div className="text-xs mb-1" style={{ color: "var(--color-text-tertiary)" }}>
-									Best Score
+								<div className="text-xs mb-1 font-medium" style={{ color: "var(--color-text-secondary)" }}>
+									Score
 								</div>
 								<div className="font-semibold" style={{ color: getAPScoreColor(score) }}>
 									{formatAPScore(score)}
@@ -265,13 +283,14 @@ export function APExamCard({
 									color: "var(--color-primary-foreground)",
 									boxShadow: "0 2px 8px rgba(0, 145, 179, 0.2)",
 								}}
+								disabled={!isActive}
 							>
 								{completed ? "Retake Practice" : "Start Practice"}
 							</Button>
 							<Button
 								variant="outline"
 								onClick={onWatchVideo}
-								disabled={!completed}
+								disabled={!completed || !isActive}
 								className={`h-11 font-semibold rounded-lg transition-all duration-200 hover:scale-105 disabled:hover:scale-100 hover:!bg-primary hover:!text-white hover:!border-primary disabled:hover:!bg-transparent ${
 									completed ? "text-primary border-primary" : "text-gray-400 border-gray-300"
 								}`}
