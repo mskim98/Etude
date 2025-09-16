@@ -1,4 +1,3 @@
-"use client";
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -6,7 +5,7 @@ import { Button } from "../ui/button";
 import { ChapterBox } from "./ChapterBox";
 import { APExamCard } from "./APExamCard";
 import { BookOpen, TrendingUp, Award, FileText, ChevronRight, Clock, Target } from "lucide-react";
-import type { Subject, APExam } from "../../types";
+import type { Subject, APExam } from "../../App";
 
 interface APCoursesProps {
 	subjects: Subject[];
@@ -393,14 +392,7 @@ export function APCourses({ subjects, apExams, onStartExam, selectedSubject, onT
 			</CardHeader>
 			<CardContent>
 				{/* Subject Cards Grid */}
-				<div
-					className="ap-courses-scroll-area grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 overflow-y-auto scrollbar-custom px-2 py-2"
-					style={{
-						maxHeight: selectedCard ? "240px" : "calc(45vh - 60px)",
-						minHeight: selectedCard ? "240px" : "320px",
-						scrollbarGutter: "stable",
-					}}
-				>
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
 					{availableSubjects.map((subject) => {
 						const stats = getSubjectStats(subject.id);
 						const daysUntilExam = getDaysUntilExam(subject.examDate);
@@ -409,8 +401,8 @@ export function APCourses({ subjects, apExams, onStartExam, selectedSubject, onT
 						return (
 							<Card
 								key={subject.id}
-								className={`cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-[1.02] hover:shadow-lg border-2 ${
-									isSelected ? "ring-2 shadow-lg scale-[1.02]" : "hover:shadow-md"
+								className={`cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg border ${
+									isSelected ? "ring-2 shadow-lg scale-105" : "hover:shadow-md"
 								}`}
 								style={{
 									backgroundColor: "var(--color-card-default-bg)",
@@ -420,29 +412,19 @@ export function APCourses({ subjects, apExams, onStartExam, selectedSubject, onT
 										: "var(--color-card-hover-shadow)",
 									ringColor: isSelected ? "var(--color-primary)" : "transparent",
 								}}
-								onMouseEnter={(e) => {
-									if (!isSelected) {
-										e.currentTarget.style.borderColor = "rgba(0, 145, 179, 0.3)";
-									}
-								}}
-								onMouseLeave={(e) => {
-									if (!isSelected) {
-										e.currentTarget.style.borderColor = "var(--color-card-border)";
-									}
-								}}
 								onClick={() => handleCardSelect(subject.id)}
 							>
-								<CardHeader className="px-4 pt-4">
+								<CardHeader className="pb-3">
 									<div className="flex items-center justify-between">
-										<div className="flex items-center gap-2.5">
+										<div className="flex items-center gap-3">
 											<div
-												className="w-9 h-9 rounded-lg flex items-center justify-center"
+												className="w-10 h-10 rounded-lg flex items-center justify-center"
 												style={{
 													backgroundColor: isSelected ? "var(--color-primary)" : "var(--color-subject-light)",
 													color: isSelected ? "white" : "var(--color-text-primary)",
 												}}
 											>
-												<span style={{ fontSize: "16px" }}>{subject.icon}</span>
+												<span style={{ fontSize: "18px" }}>{subject.icon}</span>
 											</div>
 											<div>
 												<h3
@@ -464,7 +446,7 @@ export function APCourses({ subjects, apExams, onStartExam, selectedSubject, onT
 									</div>
 								</CardHeader>
 
-								<CardContent className="px-4 pb-3">
+								<CardContent className="pt-0">
 									{/* Progress Bar */}
 									<div className="mb-4">
 										<div className="flex justify-between items-center mb-2">
@@ -494,23 +476,19 @@ export function APCourses({ subjects, apExams, onStartExam, selectedSubject, onT
 									</div>
 
 									{/* Stats Grid */}
-									<div className="grid grid-cols-3 gap-1">
+									<div className="grid grid-cols-3 gap-3">
 										<div className="text-center">
 											<div className="font-semibold" style={{ color: "var(--color-text-primary)", fontSize: "14px" }}>
 												{stats.completed}/{stats.total}
 											</div>
-											<div style={{ color: "var(--color-text-secondary)", fontSize: "10px", fontWeight: "500" }}>
-												Chapters
-											</div>
+											<div style={{ color: "var(--color-text-tertiary)", fontSize: "10px" }}>Chapters</div>
 										</div>
 
 										<div className="text-center">
 											<div className="font-semibold" style={{ color: "var(--color-text-primary)", fontSize: "14px" }}>
 												{stats.avgScore || 0}%
 											</div>
-											<div style={{ color: "var(--color-text-secondary)", fontSize: "10px", fontWeight: "500" }}>
-												Avg Score
-											</div>
+											<div style={{ color: "var(--color-text-tertiary)", fontSize: "10px" }}>Avg Score</div>
 										</div>
 
 										<div className="text-center">
@@ -523,11 +501,26 @@ export function APCourses({ subjects, apExams, onStartExam, selectedSubject, onT
 											>
 												{daysUntilExam}d
 											</div>
-											<div style={{ color: "var(--color-text-secondary)", fontSize: "10px", fontWeight: "500" }}>
-												Until Exam
-											</div>
+											<div style={{ color: "var(--color-text-tertiary)", fontSize: "10px" }}>Until Exam</div>
 										</div>
 									</div>
+
+									{/* Last Score Badge */}
+									{subject.lastScore && (
+										<div className="mt-3 flex justify-center">
+											<Badge
+												className="px-2 py-1"
+												style={{
+													backgroundColor:
+														subject.lastScore >= 4 ? "var(--color-status-success)" : "var(--color-status-warning)",
+													color: "white",
+													fontSize: "11px",
+												}}
+											>
+												Last Score: {subject.lastScore}/5
+											</Badge>
+										</div>
+									)}
 								</CardContent>
 							</Card>
 						);
@@ -535,27 +528,27 @@ export function APCourses({ subjects, apExams, onStartExam, selectedSubject, onT
 
 					{/* Future Expansion Card */}
 					<Card
-						className="cursor-pointer border-2 border-dashed"
+						className="cursor-pointer transition-all duration-300 ease-in-out hover:scale-105 border-2 border-dashed"
 						style={{
 							backgroundColor: "var(--color-card-default-bg)",
-							borderColor: "rgba(51, 51, 51, 0.3)",
+							borderColor: "var(--color-card-border)",
 							opacity: 0.6,
 						}}
 					>
-						<div className="flex items-center justify-center h-full min-h-[200px]">
-							<div className="text-center">
-								<div
-									className="w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2"
-									style={{ backgroundColor: "var(--color-muted)" }}
-								>
-									<span style={{ fontSize: "18px" }}>➕</span>
+						<CardHeader className="pb-3">
+							<div className="flex items-center justify-center h-16">
+								<div className="text-center">
+									<div
+										className="w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2"
+										style={{ backgroundColor: "var(--color-muted)" }}
+									>
+										<span style={{ fontSize: "18px" }}>➕</span>
+									</div>
+									<h3 style={{ color: "var(--color-text-secondary)", fontSize: "14px" }}>More Courses</h3>
+									<p style={{ color: "var(--color-text-tertiary)", fontSize: "11px" }}>Coming Soon</p>
 								</div>
-								<h3 style={{ color: "var(--color-text-primary)", fontSize: "14px", fontWeight: "500" }}>
-									More Courses
-								</h3>
-								<p style={{ color: "var(--color-text-secondary)", fontSize: "11px" }}>Coming Soon</p>
 							</div>
-						</div>
+						</CardHeader>
 					</Card>
 				</div>
 
@@ -637,13 +630,22 @@ export function APCourses({ subjects, apExams, onStartExam, selectedSubject, onT
 										<BookOpen className="w-4 h-4 mr-2" style={{ color: "var(--color-subject-secondary)" }} />
 										Study Chapters
 									</h4>
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={() => onStartExam(selectedSubjectData)}
+										style={{
+											borderColor: "var(--color-primary)",
+											color: "var(--color-primary)",
+										}}
+									>
+										<Target className="w-4 h-4 mr-1" />
+										Start Study
+									</Button>
 								</div>
 								<div
 									className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto scrollbar-custom px-2 py-2"
-									style={{
-										maxHeight: "440px",
-										scrollbarGutter: "stable",
-									}}
+									style={{ maxHeight: "calc(55vh - 100px)" }}
 								>
 									{getChaptersForSubject(selectedSubjectData.id).map((chapter) => (
 										<ChapterBox
@@ -680,10 +682,7 @@ export function APCourses({ subjects, apExams, onStartExam, selectedSubject, onT
 											</div>
 											<div
 												className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto scrollbar-custom pr-2 pb-6"
-												style={{
-													height: "430px",
-													scrollbarGutter: "stable",
-												}}
+												style={{ height: "700px" }}
 											>
 												{exams.map((exam) => (
 													<APExamCard
@@ -708,32 +707,6 @@ export function APCourses({ subjects, apExams, onStartExam, selectedSubject, onT
 														onWatchVideo={() => console.log(`Watch video for ${exam.examId}`)}
 													/>
 												))}
-
-												{/* Future Practice Exams Expansion Card */}
-												<Card
-													className="cursor-pointer border-2 border-dashed"
-													style={{
-														backgroundColor: "var(--color-card-default-bg)",
-														borderColor: "rgba(51, 51, 51, 0.3)",
-														opacity: 0.6,
-														height: "400px",
-													}}
-												>
-													<div className="flex items-center justify-center h-full">
-														<div className="text-center">
-															<div
-																className="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3"
-																style={{ backgroundColor: "var(--color-muted)" }}
-															>
-																<span style={{ fontSize: "20px" }}>📝</span>
-															</div>
-															<h3 style={{ color: "var(--color-text-primary)", fontSize: "14px", fontWeight: "500" }}>
-																More Practice Exams
-															</h3>
-															<p style={{ color: "var(--color-text-secondary)", fontSize: "11px" }}>Coming Soon</p>
-														</div>
-													</div>
-												</Card>
 											</div>
 										</div>
 									)

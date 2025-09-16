@@ -41,6 +41,92 @@ export type ScheduleUpdate = Database["public"]["Tables"]["schedule"]["Update"];
 export type UserRole = Database["public"]["Enums"]["user_role"];
 export type UserState = Database["public"]["Enums"]["user_state"];
 
+// AP 관련 타입들 re-export
+export type {
+	// 기본 ENUM 타입들
+	DifficultyLevel,
+	ChoiceType,
+
+	// Supabase 테이블 타입들
+	ApRow,
+	ApInsert,
+	ApUpdate,
+	ChapterRow,
+	ChapterInsert,
+	ChapterUpdate,
+	ApExamRow,
+	ApExamInsert,
+	ApExamUpdate,
+	ApExamQuestionRow,
+	ApExamQuestionInsert,
+	ApExamQuestionUpdate,
+	ApExamChoiceRow,
+	ApExamChoiceInsert,
+	ApExamChoiceUpdate,
+	UserApResultRow,
+	UserApResultInsert,
+	UserApResultUpdate,
+	UserApWrongAnswerRow,
+	UserApWrongAnswerInsert,
+	UserApWrongAnswerUpdate,
+
+	// UI용 확장 타입들
+	ApSubject,
+	Chapter as ApChapter,
+	ApExam as ApExamDetailed,
+	ApExamQuestion,
+	ApExamChoice,
+	UserApResult,
+	WrongAnswer,
+
+	// 요청 타입들
+	CreateApSubjectRequest,
+	CreateChapterRequest,
+	CreateApExamRequest,
+	SubmitExamAnswersRequest,
+
+	// 필터 및 정렬 타입들
+	ApSubjectFilter,
+	ApExamFilter,
+	SortOption,
+
+	// 서비스 인터페이스
+	ApService,
+} from "./ap";
+
+// Learning Materials 관련 타입들 re-export
+export type {
+	// AP MCQ/FRQ 관련 타입들
+	ApMcqRow,
+	ApMcqInsert,
+	ApMcqUpdate,
+	ApFrqRow,
+	ApFrqInsert,
+	ApFrqUpdate,
+	ApChapterVideoRow,
+	ApChapterVideoInsert,
+	ApChapterVideoUpdate,
+
+	// UI용 확장 타입들
+	ApMcqQuestion,
+	ApFrqQuestion,
+	ApChapterVideo,
+
+	// 요청 타입들
+	CreateApMcqRequest,
+	CreateApFrqRequest,
+	CreateApChapterVideoRequest,
+
+	// 필터 및 정렬 타입들
+	LearningMaterialsFilter,
+	LearningMaterialsSort,
+	DifficultyColorClass,
+	DifficultyBgClass,
+
+	// 서비스 인터페이스
+	LearningMaterialsService,
+} from "./learning-materials";
+
 // Auth Context Types
 export interface AuthUser {
 	id: string;
