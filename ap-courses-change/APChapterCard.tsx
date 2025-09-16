@@ -16,7 +16,6 @@ export interface ChapterBoxProps {
 	difficulty: "Easy" | "Medium" | "Hard";
 	reviewCompleted?: boolean;
 	className?: string;
-	onClick?: () => void;
 }
 
 export function ChapterBox({
@@ -31,7 +30,6 @@ export function ChapterBox({
 	difficulty,
 	reviewCompleted = false,
 	className,
-	onClick,
 }: ChapterBoxProps) {
 	const getDifficultyColor = (diff: string) => {
 		switch (diff) {
@@ -54,12 +52,11 @@ export function ChapterBox({
 
 	return (
 		<Card
-			className={`transition-all shadow-sm cursor-pointer hover:shadow-md ${className}`}
+			className={`transition-all shadow-sm ${className}`}
 			style={{
 				backgroundColor: completed ? "var(--color-card-completed-bg)" : "var(--color-card-default-bg)",
 				border: "1px solid var(--color-card-border)",
 			}}
-			onClick={onClick}
 		>
 			<CardContent className="p-4">
 				<div className="flex items-start justify-between mb-3">

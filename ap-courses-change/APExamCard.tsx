@@ -272,7 +272,7 @@ export function APExamCard({
 								variant="outline"
 								onClick={onWatchVideo}
 								disabled={!completed}
-								className={`h-11 font-semibold rounded-lg transition-all duration-200 hover:scale-105 disabled:hover:scale-100 hover:!bg-primary hover:!text-white hover:!border-primary disabled:hover:!bg-transparent ${
+								className={`h-11 font-semibold rounded-lg transition-all duration-200 hover:scale-105 disabled:hover:scale-100 hover:!bg-primary hover:!text-white hover:!border-primary disabled:hover:!bg-transparent disabled:hover:!scale-100 ${
 									completed ? "text-primary border-primary" : "text-gray-400 border-gray-300"
 								}`}
 								style={{
