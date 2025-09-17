@@ -1,30 +1,22 @@
-import { useState, useEffect, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { apService } from "@/lib/services/ap";
 import type { ApExamDetailed } from "@/types";
 
 export function useApExams(subjectId?: string) {
-	const [exams, setExams] = useState<ApExamDetailed[]>([]);
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const query = useQuery({
+		queryKey: ["ap-exams", subjectId],
+		queryFn: () => apService.getExams(subjectId ? { subjectId } : undefined),
+		enabled: !!subjectId,
+		staleTime: 5 * 60 * 1000, // 5분 - 시험 정보는 자주 변경되지 않음
+		gcTime: 10 * 60 * 1000, // 10분
+		retry: 2,
+		refetchOnWindowFocus: false,
+	});
 
-	const fetchExams = useCallback(async () => {
-		try {
-			setIsLoading(true);
-			setError(null);
-			const filter = subjectId ? { subjectId } : undefined;
-			const data = await apService.getExams(filter);
-			setExams(data);
-		} catch (err) {
-			const errorMessage = err instanceof Error ? err.message : "AP 시험을 불러오는데 실패했습니다.";
-			setError(errorMessage);
-		} finally {
-			setIsLoading(false);
-		}
-	}, [subjectId]);
-
-	useEffect(() => {
-		fetchExams();
-	}, [fetchExams]);
-
-	return { exams, isLoading, error, refresh: fetchExams };
+	return {
+		exams: query.data || [],
+		isLoading: query.isLoading,
+		error: query.error?.message || null,
+		refresh: query.refetch,
+	};
 }

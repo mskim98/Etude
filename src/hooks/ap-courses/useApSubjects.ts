@@ -1,70 +1,49 @@
 import { useState, useEffect, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { apService } from "@/lib/services/ap";
 import type { ApSubject, ApSubjectFilter } from "@/types";
 
 export function useApSubjects(filter?: ApSubjectFilter) {
-	const [subjects, setSubjects] = useState<ApSubject[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-	const [isRefreshing, setIsRefreshing] = useState(false);
+	const query = useQuery({
+		queryKey: ["ap-subjects", filter],
+		queryFn: () => apService.getSubjects(filter),
+		staleTime: 5 * 60 * 1000, // 5분 - 과목 정보는 자주 변경되지 않음
+		gcTime: 10 * 60 * 1000, // 10분
+		retry: 2,
+		refetchOnWindowFocus: false,
+	});
 
-	const fetchSubjects = useCallback(async () => {
-		try {
-			setError(null);
-			const data = await apService.getSubjects(filter);
-			setSubjects(data);
-		} catch (err) {
-			const errorMessage = err instanceof Error ? err.message : "AP 과목을 불러오는데 실패했습니다.";
-			setError(errorMessage);
-		} finally {
-			setIsLoading(false);
-			setIsRefreshing(false);
-		}
-	}, [filter]);
-
-	const refresh = useCallback(async () => {
-		setIsRefreshing(true);
-		await fetchSubjects();
-	}, [fetchSubjects]);
-
-	useEffect(() => {
-		fetchSubjects();
-	}, [fetchSubjects]);
-
-	return { subjects, isLoading, error, isRefreshing, refresh };
+	return {
+		subjects: query.data || [],
+		isLoading: query.isLoading,
+		error: query.error?.message || null,
+		isRefreshing: query.isFetching && !query.isLoading,
+		refresh: query.refetch,
+	};
 }
 
 export function useDashboardApSubjects(limit: number = 6) {
-	const [subjects, setSubjects] = useState<ApSubject[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-	const [isRefreshing, setIsRefreshing] = useState(false);
-
-	const fetchDashboardSubjects = useCallback(async () => {
-		try {
-			setError(null);
+	const query = useQuery({
+		queryKey: ["dashboard-ap-subjects", limit],
+		queryFn: async () => {
 			const allSubjects = await apService.getSubjects({ isActive: true });
-			const limitedSubjects = allSubjects.sort((a, b) => b.progress - a.progress).slice(0, limit);
-			setSubjects(limitedSubjects);
-		} catch (err) {
-			const errorMessage = err instanceof Error ? err.message : "AP 과목을 불러오는데 실패했습니다.";
-			setError(errorMessage);
-		} finally {
-			setIsLoading(false);
-			setIsRefreshing(false);
-		}
-	}, [limit]);
+			return allSubjects.sort((a, b) => b.progress - a.progress).slice(0, limit);
+		},
+		staleTime: 5 * 60 * 1000, // 5분 - 대시보드 정보는 자주 변경되지 않음
+		gcTime: 10 * 60 * 1000, // 10분
+		retry: 2,
+		refetchOnWindowFocus: false,
+		// 대시보드는 중요한 정보이므로 백그라운드에서 주기적 업데이트
+		refetchInterval: 10 * 60 * 1000, // 10분마다 백그라운드 업데이트
+	});
 
-	const refresh = useCallback(async () => {
-		setIsRefreshing(true);
-		await fetchDashboardSubjects();
-	}, [fetchDashboardSubjects]);
-
-	useEffect(() => {
-		fetchDashboardSubjects();
-	}, [fetchDashboardSubjects]);
-
-	return { subjects, isLoading, error, isRefreshing, refresh };
+	return {
+		subjects: query.data || [],
+		isLoading: query.isLoading,
+		error: query.error?.message || null,
+		isRefreshing: query.isFetching && !query.isLoading,
+		refresh: query.refetch,
+	};
 }
 
 export function useApSubjectStats(subjects: ApSubject[]) {

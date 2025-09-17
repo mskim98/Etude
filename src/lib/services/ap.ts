@@ -38,8 +38,8 @@ export class ApServiceImpl implements ApService {
 		try {
 			console.log("📚 AP 과목 목록 조회 시작:", filter);
 
-			// 기본 쿼리 구성 - 먼저 간단한 쿼리로 테스트
-			let query = supabase.from("ap").select("*").eq("is_active", true).is("deleted_at", null);
+			// 성능 최적화된 VIEW 사용
+			let query = supabase.from("ap_subject_detail_view").select("*").eq("is_active", true);
 
 			// 필터 적용
 			if (filter?.teacherId) {
@@ -63,24 +63,20 @@ export class ApServiceImpl implements ApService {
 				return [];
 			}
 
-			// 데이터 변환
+			// 데이터 변환 - VIEW에서 미리 계산된 데이터 사용
 			const subjects: ApSubject[] = data.map((item: any) => {
-				// 조인된 데이터가 없으므로 기본값 사용
-				const totalChapters = 0; // TODO: 실제 챕터 수 계산
-				const progress = 0; // TODO: 실제 진행도 계산
-
 				return {
 					id: item.id,
 					title: item.title,
 					description: item.description,
 					teacher: {
 						id: item.teacher_id,
-						name: "Unknown Teacher", // TODO: 실제 교사 이름 조회
+						name: item.teacher_name,
 					},
 					isActive: item.is_active,
-					totalChapters,
+					totalChapters: item.total_chapters,
 					completedChapters: 0, // TODO: 실제 사용자 진행도 계산
-					progress,
+					progress: item.chapter_completion_rate,
 					examDate: item.exam_date ? new Date(item.exam_date) : new Date("2024-05-15"),
 					createdAt: new Date(item.created_at),
 				};
@@ -268,20 +264,8 @@ export class ApServiceImpl implements ApService {
 		try {
 			console.log("🎯 AP 시험 목록 조회 시작:", filter);
 
-			// 기본 쿼리 구성
-			let query = supabase
-				.from("ap_exam")
-				.select(
-					`
-					*,
-					subject:subject_id!inner (
-						id,
-						title
-					)
-				`
-				)
-				// .eq("is_active", true) // include inactive exams as well
-				.is("deleted_at", null);
+			// 성능 최적화된 VIEW 사용
+			let query = supabase.from("ap_exam_detail_view").select("*");
 
 			// 필터 적용
 			if (filter?.subjectId) {
@@ -303,16 +287,16 @@ export class ApServiceImpl implements ApService {
 				return [];
 			}
 
-			// 데이터 변환
+			// 데이터 변환 - VIEW에서 미리 계산된 데이터 사용
 			const exams: ApExamDetailed[] = data.map((item: any) => ({
 				id: item.id,
 				title: item.title,
 				description: item.description,
 				difficulty: item.difficulty,
 				duration: item.duration,
-				questionCount: item.quantity,
+				questionCount: item.actual_question_count || item.declared_question_count,
 				isActive: item.is_active,
-				canTake: true,
+				canTake: item.system_available,
 				bestScore: undefined,
 				attemptCount: 0,
 			}));
