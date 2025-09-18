@@ -34,29 +34,30 @@ export default function APCoursesPage() {
 		}
 	}, [searchParams, router]);
 
-	// Convert ApSubject to Subject for compatibility
-	const handleApStartExam = (apSubject: any) => {
-		const subject: Subject = {
-			id: apSubject.id,
-			name: apSubject.title,
-			type: "AP",
-			progress: apSubject.progress,
-			totalChapters: apSubject.totalChapters,
-			completedChapters: apSubject.completedChapters,
-			icon: "📚",
-			examDate: apSubject.examDate,
-		};
+	// Handle AP exam start - navigate to instruction page
+	const handleApStartExam = (apSubject: unknown, examId?: string) => {
+		console.log("Starting exam for subject:", apSubject);
 
-		console.log("Starting exam for subject:", subject);
-		// Navigate to exam page with subject info
-		router.push(`/exam?subject=${subject.id}`);
+		// Type guard to ensure apSubject has id property
+		if (typeof apSubject === "object" && apSubject !== null && "id" in apSubject) {
+			const subject = apSubject as { id: string };
+
+			// If examId is provided, navigate to instruction page for specific exam
+			if (examId) {
+				router.push(`/dashboard/ap-courses/ap-exam-instruction?examId=${examId}&subjectId=${subject.id}`);
+			} else {
+				// For general subject exam, use default exam
+				// TODO: Implement logic to select default exam or show exam selection
+				router.push(`/dashboard/ap-courses/ap-exam-instruction?examId=default&subjectId=${subject.id}`);
+			}
+		}
 	};
 
 	return (
 		<div>
 			<APCourses
 				onStartExam={handleApStartExam}
-				selectedSubject={selectedSubject as any}
+				selectedSubject={selectedSubject as Subject | null}
 				onTabChange={() => setSelectedSubject(null)}
 			/>
 		</div>
