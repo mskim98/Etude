@@ -78,14 +78,14 @@ function ToolModal({
 
 	const calculate = () => {
 		if (!calcValue.trim()) return;
-		
+
 		try {
 			// Configure mathjs for the current mode
 			const config = {
 				number: "BigNumber",
-				precision: 14
+				precision: 14,
 			};
-			
+
 			// Convert degrees to radians if needed for trig functions
 			let expression = calcValue;
 			if (!isRadianMode) {
@@ -97,11 +97,11 @@ function ToolModal({
 
 			const result = evaluate(expression, config);
 			const resultStr = result.toString();
-			
+
 			// Add to history
 			const historyEntry = `${calcValue} = ${resultStr}`;
-			setCalcHistory(prev => [...prev.slice(-9), historyEntry]); // Keep last 10 entries
-			
+			setCalcHistory((prev) => [...prev.slice(-9), historyEntry]); // Keep last 10 entries
+
 			setCalcValue(resultStr);
 			setCalcDisplay(resultStr);
 		} catch (error) {
@@ -190,9 +190,7 @@ function ToolModal({
 									<div className="flex items-center gap-2">
 										<Button
 											onClick={() => setIsRadianMode(!isRadianMode)}
-											className={`text-xs px-2 py-1 ${
-												isRadianMode ? "bg-blue-500 text-white" : "bg-gray-200"
-											}`}
+											className={`text-xs px-2 py-1 ${isRadianMode ? "bg-blue-500 text-white" : "bg-gray-200"}`}
 										>
 											{isRadianMode ? "RAD" : "DEG"}
 										</Button>
@@ -201,7 +199,7 @@ function ToolModal({
 										</Button>
 									</div>
 								</div>
-								
+
 								{/* Calculator History */}
 								{calcHistory.length > 0 && (
 									<div className="mb-3 p-2 bg-gray-50 rounded text-xs max-h-20 overflow-y-auto">
@@ -212,7 +210,7 @@ function ToolModal({
 										))}
 									</div>
 								)}
-								
+
 								<div className="grid grid-cols-4 gap-2 text-sm">
 									<input
 										type="text"
@@ -297,30 +295,114 @@ function ToolModal({
 								<div className="mt-4 space-y-3">
 									<div className="text-xs font-semibold text-gray-700 mb-2">과학 함수</div>
 									<div className="grid grid-cols-4 gap-1">
-										<Button onClick={() => insertFunction("sqrt(")} className="p-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs">√</Button>
-										<Button onClick={() => insertFunction("^")} className="p-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs">x^y</Button>
-										<Button onClick={() => insertFunction("log(")} className="p-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs">ln</Button>
-										<Button onClick={() => insertFunction("log10(")} className="p-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs">log</Button>
-										<Button onClick={() => insertFunction("sin(")} className="p-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs">sin</Button>
-										<Button onClick={() => insertFunction("cos(")} className="p-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs">cos</Button>
-										<Button onClick={() => insertFunction("tan(")} className="p-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs">tan</Button>
-										<Button onClick={() => insertFunction("abs(")} className="p-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs">|x|</Button>
+										<Button
+											onClick={() => insertFunction("sqrt(")}
+											className="p-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs"
+										>
+											√
+										</Button>
+										<Button
+											onClick={() => insertFunction("^")}
+											className="p-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs"
+										>
+											x^y
+										</Button>
+										<Button
+											onClick={() => insertFunction("log(")}
+											className="p-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs"
+										>
+											ln
+										</Button>
+										<Button
+											onClick={() => insertFunction("log10(")}
+											className="p-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs"
+										>
+											log
+										</Button>
+										<Button
+											onClick={() => insertFunction("sin(")}
+											className="p-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+										>
+											sin
+										</Button>
+										<Button
+											onClick={() => insertFunction("cos(")}
+											className="p-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+										>
+											cos
+										</Button>
+										<Button
+											onClick={() => insertFunction("tan(")}
+											className="p-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+										>
+											tan
+										</Button>
+										<Button
+											onClick={() => insertFunction("abs(")}
+											className="p-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+										>
+											|x|
+										</Button>
 									</div>
-									
+
 									<div className="text-xs font-semibold text-gray-700 mb-2">상수 & 기타</div>
 									<div className="grid grid-cols-4 gap-1">
-										<Button onClick={() => insertConstant("pi")} className="p-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 text-xs">π</Button>
-										<Button onClick={() => insertConstant("e")} className="p-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 text-xs">e</Button>
-										<Button onClick={() => appendToCalc("(")} className="p-1 bg-gray-400 text-white rounded hover:bg-gray-500 text-xs">(</Button>
-										<Button onClick={() => appendToCalc(")")} className="p-1 bg-gray-400 text-white rounded hover:bg-gray-500 text-xs">)</Button>
+										<Button
+											onClick={() => insertConstant("pi")}
+											className="p-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 text-xs"
+										>
+											π
+										</Button>
+										<Button
+											onClick={() => insertConstant("e")}
+											className="p-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 text-xs"
+										>
+											e
+										</Button>
+										<Button
+											onClick={() => appendToCalc("(")}
+											className="p-1 bg-gray-400 text-white rounded hover:bg-gray-500 text-xs"
+										>
+											(
+										</Button>
+										<Button
+											onClick={() => appendToCalc(")")}
+											className="p-1 bg-gray-400 text-white rounded hover:bg-gray-500 text-xs"
+										>
+											)
+										</Button>
 									</div>
-									
+
 									<div className="text-xs font-semibold text-gray-700 mb-2">화학 상수</div>
 									<div className="grid grid-cols-2 gap-1">
-										<Button onClick={() => insertConstant("8.314")} className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs" title="기체 상수 R">R</Button>
-										<Button onClick={() => insertConstant("6.022e23")} className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs" title="아보가드로 수">NA</Button>
-										<Button onClick={() => insertConstant("1.602e-19")} className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs" title="전자 전하">e-</Button>
-										<Button onClick={() => insertConstant("273.15")} className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs" title="절대온도">K</Button>
+										<Button
+											onClick={() => insertConstant("8.314")}
+											className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs"
+											title="기체 상수 R"
+										>
+											R
+										</Button>
+										<Button
+											onClick={() => insertConstant("6.022e23")}
+											className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs"
+											title="아보가드로 수"
+										>
+											NA
+										</Button>
+										<Button
+											onClick={() => insertConstant("1.602e-19")}
+											className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs"
+											title="전자 전하"
+										>
+											e-
+										</Button>
+										<Button
+											onClick={() => insertConstant("273.15")}
+											className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs"
+											title="절대온도"
+										>
+											K
+										</Button>
 									</div>
 								</div>
 							</div>
@@ -649,7 +731,7 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 						</span>
 					</div>
 
-					{/* Right section */}
+					{/* Right section - Tools reordered: Calculator, Graphing, Formulas, Notes */}
 					<div className="flex items-center space-x-2">
 						<Button
 							variant="ghost"
@@ -665,6 +747,21 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 							title="계산기"
 						>
 							<Calculator className="w-4 h-4" />
+						</Button>
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => setActiveToolModal("graphing")}
+							style={{ color: "var(--color-text-secondary)" }}
+							onMouseEnter={(e) => {
+								e.currentTarget.style.color = "var(--color-text-primary)";
+							}}
+							onMouseLeave={(e) => {
+								e.currentTarget.style.color = "var(--color-text-secondary)";
+							}}
+							title="그래프 계산기"
+						>
+							<TrendingUp className="w-4 h-4" />
 						</Button>
 						<Button
 							variant="ghost"
@@ -695,21 +792,6 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 							title="메모장"
 						>
 							<StickyNote className="w-4 h-4" />
-						</Button>
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => setActiveToolModal("graphing")}
-							style={{ color: "var(--color-text-secondary)" }}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.color = "var(--color-text-primary)";
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.color = "var(--color-text-secondary)";
-							}}
-							title="그래프 계산기"
-						>
-							<TrendingUp className="w-4 h-4" />
 						</Button>
 						<Button
 							variant="outline"
