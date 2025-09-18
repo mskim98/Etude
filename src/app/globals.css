@@ -52,6 +52,41 @@
 	/* Ring and Focus Colors */
 	--ring: #0091b3; /* Updated blue for focus rings */
 
+	/* Card System Colors */
+	--color-card-default-bg: #ffffff;
+	--color-card-completed-bg: #f0f9f0; /* Light green tint for completed items */
+	--color-card-hover-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+	--color-card-border: rgba(51, 51, 51, 0.1);
+
+	/* Status Colors */
+	--color-status-default: #6b7280; /* Gray */
+	--color-status-completed: #0091b3; /* Updated blue */
+	--color-status-progress: #0091b3; /* Updated blue */
+	--color-status-success: #16a34a; /* Green */
+	--color-status-warning: #ca8a04; /* Amber */
+	--color-status-error: #dc2626; /* Red */
+
+	/* Subject Colors */
+	--color-subject-primary: #0091b3; /* Updated blue */
+	--color-subject-secondary: #6b7280; /* Gray */
+	--color-subject-accent: #4b5563; /* Darker gray */
+	--color-subject-light: #f9fafb; /* Very light gray background */
+	--color-subject-badge-bg: #f5f5f5; /* Light gray for badges */
+
+	/* Text Colors */
+	--color-text-primary: #333333; /* Dark gray for primary text */
+	--color-text-secondary: #6b7280; /* Medium gray for secondary text */
+	--color-text-tertiary: #9ca3af; /* Light gray for tertiary text */
+
+	/* Video Section Colors */
+	--color-video-bg: #ffffff; /* White background */
+	--color-video-border: rgba(0, 145, 179, 0.2); /* Updated blue with opacity */
+	--color-video-accent: #0091b3; /* Updated blue */
+
+	/* Border Colors */
+	--color-border: rgba(51, 51, 51, 0.1);
+	--color-card-border: rgba(51, 51, 51, 0.15);
+
 	/* Chart Colors - Monochrome with updated blue accent */
 	--chart-1: #0091b3; /* Updated primary blue */
 	--chart-2: #333333; /* Dark gray */
@@ -432,10 +467,10 @@ html {
 		display: none;
 	}
 
-	/* Custom scrollbar for dashboard components - Monochrome with updated blue */
+	/* Custom scrollbar for dashboard components - Monochrome with updated blue
 	.scrollbar-custom::-webkit-scrollbar {
 		width: 6px;
-	}
+	} */
 
 	.scrollbar-custom::-webkit-scrollbar-track {
 		background: var(--muted);
@@ -495,5 +530,49 @@ html {
 
 	[data-state-style="active"][data-state="active"] span:first-child {
 		transform: scale(1.1) !important;
+	}
+
+	/* AP Courses Grid Scroll Effects */
+	.ap-courses-scroll-area {
+		position: relative;
+	}
+
+	.ap-courses-scroll-area::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 12px;
+		background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 100%);
+		z-index: 10;
+		pointer-events: none;
+	}
+
+	.ap-courses-scroll-area::after {
+		content: "";
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 12px;
+		background: linear-gradient(0deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 100%);
+		z-index: 10;
+		pointer-events: none;
+	}
+
+	/* 모바일에서 스크롤 영역 조정 */
+	@media (max-width: 768px) {
+		.ap-courses-scroll-area {
+			max-height: calc(50vh - 40px) !important;
+			min-height: 280px !important;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.ap-courses-scroll-area {
+			max-height: calc(55vh - 40px) !important;
+			min-height: 260px !important;
+		}
 	}
 }

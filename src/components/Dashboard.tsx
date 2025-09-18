@@ -7,15 +7,13 @@ import { DateSection } from "@/components/dashboard/DateSection";
 import { ExamSchedule } from "@/components/dashboard/ExamSchedule";
 import { Announcements } from "@/components/dashboard/Announcements";
 import { SubjectProgress } from "@/components/dashboard/SubjectProgress";
-import { APCourses } from "@/components/dashboard/APCourses";
+import { APCourses } from "@/components/dashboard/ap-courses/APCourses";
 import { SATMockExams } from "@/components/dashboard/SATMockExams";
 import { BookOpen, LogOut, GraduationCap, Calendar, FileText, User } from "lucide-react";
-import type { User as UserType, Subject, APExam } from "@/types";
+import type { Subject, APExam } from "@/types";
 
 interface DashboardProps {
-	user: UserType | null;
-	subjects: Subject[];
-	apExams: APExam[];
+	user: any | null;
 	onStartExam: (subject: Subject) => void;
 	onViewResults?: () => void;
 	onNavigate?: (page: string) => void;
@@ -26,8 +24,6 @@ interface DashboardProps {
 
 export function Dashboard({
 	user,
-	subjects,
-	apExams,
 	onStartExam,
 	onViewResults,
 	onNavigate,
@@ -50,17 +46,12 @@ export function Dashboard({
 			}
 		} else if (activeSection === "chemistry" || activeSection === "biology" || activeSection === "psychology") {
 			setActiveTab("ap-courses");
-			// Find the corresponding AP subject and set it as selected
-			const apSubject = subjects.find((s) => s.id === `ap-${activeSection}`);
-			if (apSubject) {
-				setSelectedSubject(apSubject);
-			}
 			// Clear the activeSection after setting the tab
 			if (onSectionChange) {
 				onSectionChange(null);
 			}
 		}
-	}, [activeSection, onSectionChange, subjects]);
+	}, [activeSection, onSectionChange]);
 
 	const handleStartExam = (examId: string) => {
 		// SAT 시험 시작 시 SAT Section Select 페이지로 이동
@@ -68,6 +59,21 @@ export function Dashboard({
 		if (onNavigate) {
 			onNavigate("sat-section-select");
 		}
+	};
+
+	// Convert ApSubject to Subject for compatibility
+	const handleApStartExam = (apSubject: any) => {
+		const subject: Subject = {
+			id: apSubject.id,
+			name: apSubject.title,
+			type: "AP",
+			progress: apSubject.progress,
+			totalChapters: apSubject.totalChapters,
+			completedChapters: apSubject.completedChapters,
+			icon: "📚",
+			examDate: apSubject.examDate,
+		};
+		onStartExam(subject);
 	};
 
 	return (
@@ -475,7 +481,6 @@ export function Dashboard({
 								}}
 							>
 								<SubjectProgress
-									subjects={subjects}
 									onStartExam={onStartExam}
 									onNavigateToSubject={(subject) => {
 										setSelectedSubject(subject);
@@ -493,11 +498,8 @@ export function Dashboard({
 					{/* AP Courses Tab */}
 					{activeTab === "ap-courses" && (
 						<APCourses
-							subjects={subjects}
-							apExams={apExams}
-							onStartExam={onStartExam}
-							onViewResults={onViewResults}
-							selectedSubject={selectedSubject}
+							onStartExam={handleApStartExam}
+							selectedSubject={selectedSubject as any}
 							onTabChange={() => setSelectedSubject(null)}
 						/>
 					)}
@@ -505,7 +507,6 @@ export function Dashboard({
 					{/* SAT Exams Tab */}
 					{activeTab === "sat-exams" && (
 						<SATMockExams
-							subjects={subjects}
 							onStartExam={handleStartExam}
 							selectedSubject={selectedSubject}
 							onTabChange={() => setSelectedSubject(null)}

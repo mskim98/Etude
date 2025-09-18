@@ -227,8 +227,7 @@ export class AuthService {
 					*,
 					service:service_id (
 						id,
-						service_name,
-						category
+						service_name
 					)
 				`
 				)

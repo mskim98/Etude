@@ -9,14 +9,13 @@ import { Target, BookOpen, Edit3, Calculator, Play, CheckCircle2, TrendingUp, Cl
 import type { Subject } from "../../App";
 
 interface SATMockExamsProps {
-	subjects: Subject[];
 	onStartExam: (examId: string) => void;
 	selectedSubject?: Subject | null;
 	onTabChange?: () => void;
 	className?: string;
 }
 
-export function SATMockExams({ subjects, onStartExam, selectedSubject, onTabChange, className }: SATMockExamsProps) {
+export function SATMockExams({ onStartExam, selectedSubject, onTabChange, className }: SATMockExamsProps) {
 	// Mock SAT practice tests with diverse scenarios and realistic data
 	const satPracticeTests = [
 		// High Performers - Excellent scores
