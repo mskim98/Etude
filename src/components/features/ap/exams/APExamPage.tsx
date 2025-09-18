@@ -1,8 +1,10 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { evaluate } from "mathjs";
+import functionPlot from "function-plot";
 import {
 	Clock,
 	Flag,
@@ -15,6 +17,7 @@ import {
 	FileText,
 	Sigma,
 	StickyNote,
+	TrendingUp,
 } from "lucide-react";
 import type { ApExam, ApExamQuestion } from "@/types/ap";
 
@@ -28,13 +31,19 @@ function ToolModal({
 }: {
 	isOpen: boolean;
 	onClose: () => void;
-	type: "calculator" | "formulas" | "notes";
+	type: "calculator" | "formulas" | "notes" | "graphing";
 	notes: string;
 	setNotes: (notes: string) => void;
 }) {
+	const plotRef = useRef<HTMLDivElement>(null);
+
 	// Calculator state
 	const [calcDisplay, setCalcDisplay] = useState("0");
 	const [calcValue, setCalcValue] = useState("");
+
+	// Graphing state
+	const [graphFunction, setGraphFunction] = useState("x^2");
+	const [graphError, setGraphError] = useState("");
 
 	const appendToCalc = (value: string) => {
 		if (calcValue === "0" && value !== ".") {
@@ -58,32 +67,71 @@ function ToolModal({
 
 	const calculate = () => {
 		try {
-			// Safe evaluation for basic math operations
-			const sanitized = calcValue
-				.replace(/[^0-9+\-*/.()√πe]/g, "")
-				.replace(/√/g, "Math.sqrt")
-				.replace(/π/g, "Math.PI")
-				.replace(/e/g, "Math.E");
-
-			const result = Function(`"use strict"; return (${sanitized})`)();
-			setCalcValue(result.toString());
-			setCalcDisplay(result.toString());
+			// Use mathjs for powerful and safe evaluation
+			const result = evaluate(calcValue);
+			const resultStr = result.toString();
+			
+			setCalcValue(resultStr);
+			setCalcDisplay(resultStr);
 		} catch {
 			setCalcDisplay("Error");
 			setCalcValue("");
 		}
 	};
 
+	// Graph plotting function
+	const plotGraph = useCallback(() => {
+		if (!plotRef.current) return;
+		
+		try {
+			setGraphError("");
+			
+			// Clear previous plot
+			plotRef.current.innerHTML = "";
+			
+			functionPlot({
+				target: plotRef.current,
+				width: 400,
+				height: 300,
+				grid: true,
+				xAxis: {
+					label: 'x',
+					domain: [-10, 10]
+				},
+				yAxis: {
+					label: 'y',
+					domain: [-10, 10]
+				},
+				data: [{
+					fn: graphFunction,
+					color: '#0091B3',
+					graphType: 'polyline'
+				}]
+			});
+		} catch (error) {
+			setGraphError(`그래프 오류: ${error}`);
+		}
+	}, [graphFunction]);
+
+	useEffect(() => {
+		if (type === "graphing" && isOpen && plotRef.current) {
+			plotGraph();
+		}
+	}, [type, isOpen, graphFunction, plotGraph]);
+
 	if (!isOpen) return null;
 
 	return (
 		<div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-			<div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+			<div className={`bg-white rounded-lg shadow-xl w-full max-h-[80vh] overflow-y-auto ${
+				type === "graphing" ? "max-w-2xl" : "max-w-md"
+			}`}>
 				<div className="flex items-center justify-between p-4 border-b">
 					<h3 className="font-semibold">
 						{type === "calculator" && "계산기"}
 						{type === "formulas" && "공식 참조"}
 						{type === "notes" && "메모장"}
+						{type === "graphing" && "그래프 계산기"}
 					</h3>
 					<Button variant="ghost" size="sm" onClick={onClose}>
 						<X className="h-4 w-4" />
@@ -176,36 +224,21 @@ function ToolModal({
 									</Button>
 								</div>
 								<div className="mt-4 space-y-2">
-									<Button
-										onClick={() => appendToCalc("Math.sqrt(")}
-										className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600"
-									>
-										√ Square Root
-									</Button>
-									<Button
-										onClick={() => appendToCalc("Math.pow(")}
-										className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600"
-									>
-										^ Power
-									</Button>
-									<Button
-										onClick={() => appendToCalc("Math.log(")}
-										className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600"
-									>
-										ln Natural Log
-									</Button>
-									<Button
-										onClick={() => appendToCalc("Math.PI")}
-										className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600"
-									>
-										π (Pi)
-									</Button>
-									<Button
-										onClick={() => appendToCalc("Math.E")}
-										className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600"
-									>
-										e (Euler)
-									</Button>
+									<div className="grid grid-cols-2 gap-2">
+										<Button onClick={() => appendToCalc("sqrt(")} className="p-2 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs">√ sqrt</Button>
+										<Button onClick={() => appendToCalc("^")} className="p-2 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs">x^y</Button>
+										<Button onClick={() => appendToCalc("log(")} className="p-2 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs">ln</Button>
+										<Button onClick={() => appendToCalc("log10(")} className="p-2 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs">log</Button>
+										<Button onClick={() => appendToCalc("sin(")} className="p-2 bg-green-500 text-white rounded hover:bg-green-600 text-xs">sin</Button>
+										<Button onClick={() => appendToCalc("cos(")} className="p-2 bg-green-500 text-white rounded hover:bg-green-600 text-xs">cos</Button>
+										<Button onClick={() => appendToCalc("tan(")} className="p-2 bg-green-500 text-white rounded hover:bg-green-600 text-xs">tan</Button>
+										<Button onClick={() => appendToCalc("abs(")} className="p-2 bg-green-500 text-white rounded hover:bg-green-600 text-xs">|x|</Button>
+									</div>
+									<div className="grid grid-cols-3 gap-2 mt-2">
+										<Button onClick={() => appendToCalc("pi")} className="p-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 text-xs">π</Button>
+										<Button onClick={() => appendToCalc("e")} className="p-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 text-xs">e</Button>
+										<Button onClick={() => appendToCalc("(")} className="p-2 bg-gray-400 text-white rounded hover:bg-gray-500 text-xs">(</Button>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -255,6 +288,50 @@ function ToolModal({
 							<p className="text-xs text-gray-500 mt-2">메모는 자동으로 저장됩니다.</p>
 						</div>
 					)}
+
+					{type === "graphing" && (
+						<div className="w-full">
+							<div className="mb-4">
+								<label className="block text-sm font-medium mb-2">함수 입력:</label>
+								<div className="flex gap-2">
+									<input
+										type="text"
+										value={graphFunction}
+										onChange={(e) => setGraphFunction(e.target.value)}
+										placeholder="예: x^2, sin(x), log(x)"
+										className="flex-1 p-2 border rounded"
+									/>
+									<Button onClick={plotGraph} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+										그래프
+									</Button>
+								</div>
+								{graphError && (
+									<p className="text-red-500 text-xs mt-1">{graphError}</p>
+								)}
+							</div>
+							
+							<div className="mb-4">
+								<div className="grid grid-cols-3 gap-2 text-xs">
+									<Button onClick={() => setGraphFunction("x^2")} className="p-1 bg-gray-200 rounded hover:bg-gray-300">x²</Button>
+									<Button onClick={() => setGraphFunction("sin(x)")} className="p-1 bg-gray-200 rounded hover:bg-gray-300">sin(x)</Button>
+									<Button onClick={() => setGraphFunction("cos(x)")} className="p-1 bg-gray-200 rounded hover:bg-gray-300">cos(x)</Button>
+									<Button onClick={() => setGraphFunction("log(x)")} className="p-1 bg-gray-200 rounded hover:bg-gray-300">ln(x)</Button>
+									<Button onClick={() => setGraphFunction("exp(x)")} className="p-1 bg-gray-200 rounded hover:bg-gray-300">e^x</Button>
+									<Button onClick={() => setGraphFunction("1/x")} className="p-1 bg-gray-200 rounded hover:bg-gray-300">1/x</Button>
+								</div>
+							</div>
+							
+							<div 
+								ref={plotRef} 
+								className="w-full border rounded bg-gray-50"
+								style={{ minHeight: "300px" }}
+							/>
+							
+							<p className="text-xs text-gray-500 mt-2">
+								함수 예시: x^2, sin(x), cos(x), log(x), exp(x), sqrt(x), abs(x)
+							</p>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
@@ -275,7 +352,7 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 	const [flaggedQuestions, setFlaggedQuestions] = useState<Set<number>>(new Set());
 	const [showSubmitDialog, setShowSubmitDialog] = useState(false);
 	const [showQuestionNavigator, setShowQuestionNavigator] = useState(false);
-	const [activeToolModal, setActiveToolModal] = useState<"calculator" | "notes" | "formulas" | null>(null);
+	const [activeToolModal, setActiveToolModal] = useState<"calculator" | "notes" | "formulas" | "graphing" | null>(null);
 	const [notes, setNotes] = useState("");
 	const [highlights, setHighlights] = useState<Map<number, string[]>>(new Map()); // questionIndex -> highlighted text array
 
@@ -517,6 +594,21 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 							title="메모장"
 						>
 							<StickyNote className="w-4 h-4" />
+						</Button>
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => setActiveToolModal("graphing")}
+							style={{ color: "var(--color-text-secondary)" }}
+							onMouseEnter={(e) => {
+								e.currentTarget.style.color = "var(--color-text-primary)";
+							}}
+							onMouseLeave={(e) => {
+								e.currentTarget.style.color = "var(--color-text-secondary)";
+							}}
+							title="그래프 계산기"
+						>
+							<TrendingUp className="w-4 h-4" />
 						</Button>
 						<Button
 							variant="outline"
