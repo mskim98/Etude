@@ -32,7 +32,6 @@ function ToolModal({
 	notes: string;
 	setNotes: (notes: string) => void;
 }) {
-
 	// Calculator state
 	const [calcDisplay, setCalcDisplay] = useState("0");
 	const [calcValue, setCalcValue] = useState("");
@@ -65,7 +64,7 @@ function ToolModal({
 				.replace(/√/g, "Math.sqrt")
 				.replace(/π/g, "Math.PI")
 				.replace(/e/g, "Math.E");
-			
+
 			const result = Function(`"use strict"; return (${sanitized})`)();
 			setCalcValue(result.toString());
 			setCalcDisplay(result.toString());
@@ -97,37 +96,116 @@ function ToolModal({
 							<div className="bg-white rounded-lg p-4">
 								<h3 className="text-lg font-semibold mb-4 text-center">AP Chemistry Calculator</h3>
 								<div className="grid grid-cols-4 gap-2 text-sm">
-									<input 
-										type="text" 
+									<input
+										type="text"
 										value={calcDisplay}
-										readOnly 
+										readOnly
 										className="col-span-4 p-3 border rounded text-right text-lg font-mono bg-gray-50"
 									/>
-									<Button onClick={clearCalc} className="p-2 bg-red-500 text-white rounded hover:bg-red-600">C</Button>
-									<Button onClick={() => appendToCalc("/")} className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">÷</Button>
-									<Button onClick={() => appendToCalc("*")} className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">×</Button>
-									<Button onClick={deleteLast} className="p-2 bg-orange-500 text-white rounded hover:bg-orange-600">⌫</Button>
-									<Button onClick={() => appendToCalc("7")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">7</Button>
-									<Button onClick={() => appendToCalc("8")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">8</Button>
-									<Button onClick={() => appendToCalc("9")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">9</Button>
-									<Button onClick={() => appendToCalc("-")} className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">-</Button>
-									<Button onClick={() => appendToCalc("4")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">4</Button>
-									<Button onClick={() => appendToCalc("5")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">5</Button>
-									<Button onClick={() => appendToCalc("6")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">6</Button>
-									<Button onClick={() => appendToCalc("+")} className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">+</Button>
-									<Button onClick={() => appendToCalc("1")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">1</Button>
-									<Button onClick={() => appendToCalc("2")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">2</Button>
-									<Button onClick={() => appendToCalc("3")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">3</Button>
-									<Button onClick={calculate} className="p-2 bg-green-500 text-white rounded hover:bg-green-600 row-span-2">=</Button>
-									<Button onClick={() => appendToCalc("0")} className="p-2 bg-gray-200 rounded hover:bg-gray-300 col-span-2">0</Button>
-									<Button onClick={() => appendToCalc(".")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">.</Button>
+									<Button onClick={clearCalc} className="p-2 bg-red-500 text-white rounded hover:bg-red-600">
+										C
+									</Button>
+									<Button
+										onClick={() => appendToCalc("/")}
+										className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+									>
+										÷
+									</Button>
+									<Button
+										onClick={() => appendToCalc("*")}
+										className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+									>
+										×
+									</Button>
+									<Button onClick={deleteLast} className="p-2 bg-orange-500 text-white rounded hover:bg-orange-600">
+										⌫
+									</Button>
+									<Button onClick={() => appendToCalc("7")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
+										7
+									</Button>
+									<Button onClick={() => appendToCalc("8")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
+										8
+									</Button>
+									<Button onClick={() => appendToCalc("9")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
+										9
+									</Button>
+									<Button
+										onClick={() => appendToCalc("-")}
+										className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+									>
+										-
+									</Button>
+									<Button onClick={() => appendToCalc("4")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
+										4
+									</Button>
+									<Button onClick={() => appendToCalc("5")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
+										5
+									</Button>
+									<Button onClick={() => appendToCalc("6")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
+										6
+									</Button>
+									<Button
+										onClick={() => appendToCalc("+")}
+										className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+									>
+										+
+									</Button>
+									<Button onClick={() => appendToCalc("1")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
+										1
+									</Button>
+									<Button onClick={() => appendToCalc("2")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
+										2
+									</Button>
+									<Button onClick={() => appendToCalc("3")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
+										3
+									</Button>
+									<Button
+										onClick={calculate}
+										className="p-2 bg-green-500 text-white rounded hover:bg-green-600 row-span-2"
+									>
+										=
+									</Button>
+									<Button
+										onClick={() => appendToCalc("0")}
+										className="p-2 bg-gray-200 rounded hover:bg-gray-300 col-span-2"
+									>
+										0
+									</Button>
+									<Button onClick={() => appendToCalc(".")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
+										.
+									</Button>
 								</div>
 								<div className="mt-4 space-y-2">
-									<Button onClick={() => appendToCalc("Math.sqrt(")} className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600">√ Square Root</Button>
-									<Button onClick={() => appendToCalc("Math.pow(")} className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600">^ Power</Button>
-									<Button onClick={() => appendToCalc("Math.log(")} className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600">ln Natural Log</Button>
-									<Button onClick={() => appendToCalc("Math.PI")} className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600">π (Pi)</Button>
-									<Button onClick={() => appendToCalc("Math.E")} className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600">e (Euler)</Button>
+									<Button
+										onClick={() => appendToCalc("Math.sqrt(")}
+										className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+									>
+										√ Square Root
+									</Button>
+									<Button
+										onClick={() => appendToCalc("Math.pow(")}
+										className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+									>
+										^ Power
+									</Button>
+									<Button
+										onClick={() => appendToCalc("Math.log(")}
+										className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+									>
+										ln Natural Log
+									</Button>
+									<Button
+										onClick={() => appendToCalc("Math.PI")}
+										className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+									>
+										π (Pi)
+									</Button>
+									<Button
+										onClick={() => appendToCalc("Math.E")}
+										className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+									>
+										e (Euler)
+									</Button>
 								</div>
 							</div>
 						</div>
@@ -174,9 +252,7 @@ function ToolModal({
 								placeholder="시험 중 메모를 작성하세요..."
 								className="w-full h-64 resize-none"
 							/>
-							<p className="text-xs text-gray-500 mt-2">
-								메모는 자동으로 저장됩니다.
-							</p>
+							<p className="text-xs text-gray-500 mt-2">메모는 자동으로 저장됩니다.</p>
 						</div>
 					)}
 				</div>
@@ -539,7 +615,6 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 						</div>
 					</div>
 				)}
-
 
 				{/* Question Content - Split Layout */}
 				<div className="flex-1 flex">
