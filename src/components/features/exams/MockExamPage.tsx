@@ -270,15 +270,16 @@ interface MockExamPageProps {
 	onExamComplete: (result: ExamResult) => void;
 	onNavigate: (page: "dashboard" | "subject") => void;
 	onNavigateToSection?: (section: string) => void;
+	startImmediately?: boolean; // 바로 시험 시작 여부
 }
 
-export function MockExamPage({ subject, onExamComplete, onNavigate, onNavigateToSection }: MockExamPageProps) {
+export function MockExamPage({ subject, onExamComplete, onNavigate, onNavigateToSection, startImmediately = false }: MockExamPageProps) {
 	const [currentQuestion, setCurrentQuestion] = useState(0);
 	const [timeLeft, setTimeLeft] = useState(180 * 60); // 3 hours in seconds
 	const [answers, setAnswers] = useState<(number | null)[]>([]);
 	const [flaggedQuestions, setFlaggedQuestions] = useState<Set<number>>(new Set());
 	const [showSubmitDialog, setShowSubmitDialog] = useState(false);
-	const [examStarted, setExamStarted] = useState(false);
+	const [examStarted, setExamStarted] = useState(startImmediately);
 	const [showTools, setShowTools] = useState(false);
 	const [isToolsExpanded, setIsToolsExpanded] = useState(false);
 	const [showQuestionNavigator, setShowQuestionNavigator] = useState(false);

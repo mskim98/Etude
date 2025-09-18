@@ -31,7 +31,7 @@ export function APExamInstructionPage({ examData, onStartExam, onGoBack }: APExa
 		const hours = Math.floor(minutes / 60);
 		const mins = minutes % 60;
 		if (hours > 0) {
-			return `${hours}:${mins.toString().padStart(2, '0')}:00`;
+			return `${hours}:${mins.toString().padStart(2, "0")}:00`;
 		}
 		return `${mins}:00`;
 	};
@@ -69,9 +69,9 @@ export function APExamInstructionPage({ examData, onStartExam, onGoBack }: APExa
 						</div>
 						<h1 className="text-2xl font-semibold text-foreground mb-4">{examData.title}</h1>
 						<p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-							This is a full-length practice exam designed to simulate the real AP exam experience.
-							You'll have {formatDuration(examData.duration)} to complete {examData.questionCount} questions in a BlueBook-style interface with access
-							to tools and formulas.
+							This is a full-length practice exam designed to simulate the real AP exam experience. You'll have{" "}
+							{formatDuration(examData.duration)} to complete {examData.questionCount} questions in a BlueBook-style
+							interface with access to tools and formulas.
 						</p>
 
 						<div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -113,18 +113,16 @@ export function APExamInstructionPage({ examData, onStartExam, onGoBack }: APExa
 								<Play className="w-5 h-5 mr-2" />
 								{examData.completed ? "Retake Exam" : "Begin Exam"}
 							</Button>
-							
+
 							{examData.completed && examData.bestScore && (
-								<div className="text-sm text-muted-foreground">
-									Previous Best Score: {examData.bestScore}/5
-								</div>
+								<div className="text-sm text-muted-foreground">Previous Best Score: {examData.bestScore}/5</div>
 							)}
 						</div>
 
 						<div className="mt-8 pt-6 border-t border-border">
 							<p className="text-xs text-muted-foreground">
-								This practice exam is designed to help you prepare for the official AP exam.
-								Results are for practice purposes only.
+								This practice exam is designed to help you prepare for the official AP exam. Results are for practice
+								purposes only.
 							</p>
 						</div>
 					</CardContent>

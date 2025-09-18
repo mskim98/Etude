@@ -91,6 +91,7 @@ export default function APExamPage() {
 				// Next.js 라우팅으로 페이지 이동
 				router.push(`/${page}`);
 			}}
+			startImmediately={true} // instruction 페이지에서 온 경우 바로 시험 시작
 		/>
 	);
 }
