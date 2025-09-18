@@ -14,7 +14,7 @@ import { useApSubjectAccess, useServiceStatus } from "@/hooks/ap-courses/useApSu
 import type { ApSubject } from "../../../types";
 import { CourseCardSkeleton, GridSkeleton } from "./Skeletons";
 import { getDaysUntilExam as calcDaysUntilExam } from "@/lib/ap-courses/utils";
-// import { useAuthStore } from "@/store/auth";
+// import { useAuth } from "@/features/auth";
 import {
 	AlertDialog,
 	AlertDialogContent,

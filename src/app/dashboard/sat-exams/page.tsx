@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { SATMockExams } from "@/components/dashboard/SATMockExams";
+import { SATMockExams } from "@/components/dashboard/sat-exams/SATMockExams";
 import type { Subject } from "@/types";
 
 export default function SATExamsPage() {

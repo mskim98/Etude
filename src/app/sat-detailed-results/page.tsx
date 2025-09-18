@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { SATDetailedResultsPage } from "@/components/SATDetailedResultsPage";
+import { SATDetailedResultsPage } from "@/components/features/results/SATDetailedResultsPage";
 import type { Subject } from "@/types";
 
 export default function SATDetailedResults() {
