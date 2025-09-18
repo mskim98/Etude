@@ -1,21 +1,16 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import {
 	Clock,
 	Flag,
-	ArrowLeft,
 	AlertTriangle,
 	Calculator,
-	Maximize2,
-	Minimize2,
 	X,
 	ChevronLeft,
 	ChevronRight,
-	BookOpen,
 	Grid3X3,
 	FileText,
 	Sigma,
@@ -23,223 +18,168 @@ import {
 } from "lucide-react";
 import type { ApExam, ApExamQuestion } from "@/types/ap";
 
-// Enhanced Tools Panel Component for AP Exams
-function APToolsPanel({
-	isExpanded,
-	onToggleExpanded,
-	activeTab,
-	setActiveTab,
+// Simple tool modals for header buttons
+function ToolModal({
+	isOpen,
+	onClose,
+	type,
 	notes,
 	setNotes,
 }: {
-	isExpanded: boolean;
-	onToggleExpanded: () => void;
-	activeTab: "calculator" | "notes" | "formulas";
-	setActiveTab: (tab: "calculator" | "notes" | "formulas") => void;
+	isOpen: boolean;
+	onClose: () => void;
+	type: "calculator" | "formulas" | "notes";
 	notes: string;
 	setNotes: (notes: string) => void;
 }) {
-	const calculatorRef = useRef<HTMLDivElement>(null);
 
-	useEffect(() => {
-		if (activeTab === "calculator" && calculatorRef.current) {
-			// Load Desmos API if not already loaded
-			const globalWindow = window as any;
+	// Calculator state
+	const [calcDisplay, setCalcDisplay] = useState("0");
+	const [calcValue, setCalcValue] = useState("");
+
+	const appendToCalc = (value: string) => {
+		if (calcValue === "0" && value !== ".") {
+			setCalcValue(value);
+		} else {
+			setCalcValue(calcValue + value);
+		}
+		setCalcDisplay(calcValue + value);
+	};
+
+	const clearCalc = () => {
+		setCalcValue("");
+		setCalcDisplay("0");
+	};
+
+	const deleteLast = () => {
+		const newValue = calcValue.slice(0, -1);
+		setCalcValue(newValue);
+		setCalcDisplay(newValue || "0");
+	};
+
+	const calculate = () => {
+		try {
+			// Safe evaluation for basic math operations
+			const sanitized = calcValue
+				.replace(/[^0-9+\-*/.()√πe]/g, "")
+				.replace(/√/g, "Math.sqrt")
+				.replace(/π/g, "Math.PI")
+				.replace(/e/g, "Math.E");
 			
-			if (!globalWindow.Desmos) {
-				const script = document.createElement("script");
-				script.src = "https://www.desmos.com/api/v1.9/calculator.js";
-				script.async = true;
-				script.onload = () => {
-					console.log("Desmos script loaded successfully");
-					initializeCalculator();
-				};
-				script.onerror = (error) => {
-					console.error("Failed to load Desmos calculator script:", error);
-					if (calculatorRef.current) {
-						calculatorRef.current.innerHTML = `
-              <div class="flex items-center justify-center h-full text-center p-4">
-                <div>
-                  <div class="text-lg mb-2" style="color: var(--color-text-primary)">Calculator Loading Failed</div>
-                  <div class="text-sm" style="color: var(--color-text-secondary)">Check your internet connection</div>
-                  <button onclick="window.location.reload()" class="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-sm">Retry</button>
-                </div>
-              </div>
-            `;
-					}
-				};
-				document.head.appendChild(script);
-			} else {
-				initializeCalculator();
-			}
+			const result = Function(`"use strict"; return (${sanitized})`)();
+			setCalcValue(result.toString());
+			setCalcDisplay(result.toString());
+		} catch {
+			setCalcDisplay("Error");
+			setCalcValue("");
 		}
+	};
 
-		function initializeCalculator() {
-			const globalWindow = window as any;
-			if (calculatorRef.current && globalWindow.Desmos) {
-				// Clear any existing content
-				calculatorRef.current.innerHTML = "";
-
-				try {
-					console.log("Initializing Desmos calculator...");
-					const calculator = globalWindow.Desmos.GraphingCalculator(calculatorRef.current, {
-						keypad: true,
-						settingsMenu: true,
-						expressionsTopbar: true,
-						pointsOfInterest: true,
-						trace: true,
-						border: false,
-						lockViewport: false,
-						expressionsCollapsed: false,
-						graphpaper: true,
-						showGrid: true,
-						showXAxis: true,
-						showYAxis: true,
-						xAxisNumbers: true,
-						yAxisNumbers: true,
-					});
-
-					// Set welcome expressions for AP Chemistry
-					calculator.setExpressions([
-						{ 
-							id: "welcome", 
-							latex: "y = x^2", 
-							color: "#0091B3",
-							lineStyle: globalWindow.Desmos.Styles.SOLID,
-							lineWidth: 2
-						},
-						{ 
-							id: "help", 
-							latex: "\\text{AP Chemistry Calculator - Ready}", 
-							color: "#666666" 
-						}
-					]);
-					
-					console.log("Desmos calculator initialized successfully");
-				} catch (error) {
-					console.error("Failed to initialize Desmos calculator:", error);
-					if (calculatorRef.current) {
-						calculatorRef.current.innerHTML = `
-              <div class="flex items-center justify-center h-full text-center p-4">
-                <div>
-                  <div class="text-lg mb-2" style="color: var(--color-text-primary)">Calculator Error</div>
-                  <div class="text-sm" style="color: var(--color-text-secondary)">Error: ${error}</div>
-                  <button onclick="window.location.reload()" class="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-sm">Reload Page</button>
-                </div>
-              </div>
-            `;
-					}
-				}
-			}
-		}
-	}, [activeTab]);
-
-	if (!isExpanded) {
-		return (
-			<div className="fixed right-4 top-1/2 transform -translate-y-1/2 z-40">
-				<Button
-					onClick={onToggleExpanded}
-					variant="default"
-					size="sm"
-					className="h-12 w-12 rounded-full shadow-lg bg-primary hover:bg-primary/90"
-				>
-					<Calculator className="h-5 w-5" />
-				</Button>
-			</div>
-		);
-	}
+	if (!isOpen) return null;
 
 	return (
-		<div className="fixed right-0 top-0 h-full w-80 bg-card border-l shadow-xl z-50 flex flex-col">
-			<div className="flex items-center justify-between p-4 border-b">
-				<h3 className="font-semibold text-foreground">AP Exam Tools</h3>
-				<Button variant="ghost" size="sm" onClick={onToggleExpanded}>
-					<X className="h-4 w-4" />
-				</Button>
-			</div>
+		<div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+			<div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+				<div className="flex items-center justify-between p-4 border-b">
+					<h3 className="font-semibold">
+						{type === "calculator" && "계산기"}
+						{type === "formulas" && "공식 참조"}
+						{type === "notes" && "메모장"}
+					</h3>
+					<Button variant="ghost" size="sm" onClick={onClose}>
+						<X className="h-4 w-4" />
+					</Button>
+				</div>
 
-			<div className="flex border-b">
-				<button
-					onClick={() => setActiveTab("calculator")}
-					className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
-						activeTab === "calculator"
-							? "bg-primary text-primary-foreground"
-							: "text-muted-foreground hover:text-foreground hover:bg-muted"
-					}`}
-				>
-					<Calculator className="h-4 w-4 mx-auto mb-1" />
-					Calculator
-				</button>
-				<button
-					onClick={() => setActiveTab("formulas")}
-					className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
-						activeTab === "formulas"
-							? "bg-primary text-primary-foreground"
-							: "text-muted-foreground hover:text-foreground hover:bg-muted"
-					}`}
-				>
-					<Sigma className="h-4 w-4 mx-auto mb-1" />
-					Formulas
-				</button>
-				<button
-					onClick={() => setActiveTab("notes")}
-					className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
-						activeTab === "notes"
-							? "bg-primary text-primary-foreground"
-							: "text-muted-foreground hover:text-foreground hover:bg-muted"
-					}`}
-				>
-					<StickyNote className="h-4 w-4 mx-auto mb-1" />
-					Notes
-				</button>
-			</div>
-
-			<div className="flex-1 overflow-hidden">
-				{activeTab === "calculator" && (
-					<div className="h-full">
-						<div ref={calculatorRef} className="w-full h-full" />
-					</div>
-				)}
-
-				{activeTab === "formulas" && (
-					<div className="p-4 h-full overflow-y-auto">
-						<h4 className="font-medium mb-3 text-foreground">AP Chemistry Formulas</h4>
-						<div className="space-y-4 text-sm">
-							<div className="bg-muted p-3 rounded">
-								<div className="font-medium text-foreground mb-1">Ideal Gas Law</div>
-								<div className="font-mono text-muted-foreground">PV = nRT</div>
-							</div>
-							<div className="bg-muted p-3 rounded">
-								<div className="font-medium text-foreground mb-1">Molarity</div>
-								<div className="font-mono text-muted-foreground">M = mol/L</div>
-							</div>
-							<div className="bg-muted p-3 rounded">
-								<div className="font-medium text-foreground mb-1">pH</div>
-								<div className="font-mono text-muted-foreground">pH = -log[H⁺]</div>
-							</div>
-							<div className="bg-muted p-3 rounded">
-								<div className="font-medium text-foreground mb-1">Kinetic Energy</div>
-								<div className="font-mono text-muted-foreground">KE = ½mv²</div>
-							</div>
-							<div className="bg-muted p-3 rounded">
-								<div className="font-medium text-foreground mb-1">Enthalpy</div>
-								<div className="font-mono text-muted-foreground">ΔH = H(products) - H(reactants)</div>
+				<div className="p-4">
+					{type === "calculator" && (
+						<div className="w-full">
+							<div className="bg-white rounded-lg p-4">
+								<h3 className="text-lg font-semibold mb-4 text-center">AP Chemistry Calculator</h3>
+								<div className="grid grid-cols-4 gap-2 text-sm">
+									<input 
+										type="text" 
+										value={calcDisplay}
+										readOnly 
+										className="col-span-4 p-3 border rounded text-right text-lg font-mono bg-gray-50"
+									/>
+									<Button onClick={clearCalc} className="p-2 bg-red-500 text-white rounded hover:bg-red-600">C</Button>
+									<Button onClick={() => appendToCalc("/")} className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">÷</Button>
+									<Button onClick={() => appendToCalc("*")} className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">×</Button>
+									<Button onClick={deleteLast} className="p-2 bg-orange-500 text-white rounded hover:bg-orange-600">⌫</Button>
+									<Button onClick={() => appendToCalc("7")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">7</Button>
+									<Button onClick={() => appendToCalc("8")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">8</Button>
+									<Button onClick={() => appendToCalc("9")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">9</Button>
+									<Button onClick={() => appendToCalc("-")} className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">-</Button>
+									<Button onClick={() => appendToCalc("4")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">4</Button>
+									<Button onClick={() => appendToCalc("5")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">5</Button>
+									<Button onClick={() => appendToCalc("6")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">6</Button>
+									<Button onClick={() => appendToCalc("+")} className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">+</Button>
+									<Button onClick={() => appendToCalc("1")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">1</Button>
+									<Button onClick={() => appendToCalc("2")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">2</Button>
+									<Button onClick={() => appendToCalc("3")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">3</Button>
+									<Button onClick={calculate} className="p-2 bg-green-500 text-white rounded hover:bg-green-600 row-span-2">=</Button>
+									<Button onClick={() => appendToCalc("0")} className="p-2 bg-gray-200 rounded hover:bg-gray-300 col-span-2">0</Button>
+									<Button onClick={() => appendToCalc(".")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">.</Button>
+								</div>
+								<div className="mt-4 space-y-2">
+									<Button onClick={() => appendToCalc("Math.sqrt(")} className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600">√ Square Root</Button>
+									<Button onClick={() => appendToCalc("Math.pow(")} className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600">^ Power</Button>
+									<Button onClick={() => appendToCalc("Math.log(")} className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600">ln Natural Log</Button>
+									<Button onClick={() => appendToCalc("Math.PI")} className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600">π (Pi)</Button>
+									<Button onClick={() => appendToCalc("Math.E")} className="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600">e (Euler)</Button>
+								</div>
 							</div>
 						</div>
-					</div>
-				)}
+					)}
 
-				{activeTab === "notes" && (
-					<div className="p-4 h-full flex flex-col">
-						<h4 className="font-medium mb-3 text-foreground">Scratch Notes</h4>
-						<Textarea
-							value={notes}
-							onChange={(e) => setNotes(e.target.value)}
-							placeholder="Write your notes here..."
-							className="flex-1 resize-none text-sm"
-						/>
-					</div>
-				)}
+					{type === "formulas" && (
+						<div className="space-y-4 text-sm">
+							<div className="bg-gray-50 p-3 rounded">
+								<div className="font-medium mb-1">Ideal Gas Law</div>
+								<div className="font-mono text-gray-600">PV = nRT</div>
+							</div>
+							<div className="bg-gray-50 p-3 rounded">
+								<div className="font-medium mb-1">Molarity</div>
+								<div className="font-mono text-gray-600">M = mol/L</div>
+							</div>
+							<div className="bg-gray-50 p-3 rounded">
+								<div className="font-medium mb-1">pH</div>
+								<div className="font-mono text-gray-600">pH = -log[H⁺]</div>
+							</div>
+							<div className="bg-gray-50 p-3 rounded">
+								<div className="font-medium mb-1">Kinetic Energy</div>
+								<div className="font-mono text-gray-600">KE = ½mv²</div>
+							</div>
+							<div className="bg-gray-50 p-3 rounded">
+								<div className="font-medium mb-1">Enthalpy</div>
+								<div className="font-mono text-gray-600">ΔH = H(products) - H(reactants)</div>
+							</div>
+							<div className="bg-gray-50 p-3 rounded">
+								<div className="font-medium mb-1">Molality</div>
+								<div className="font-mono text-gray-600">m = mol solute / kg solvent</div>
+							</div>
+							<div className="bg-gray-50 p-3 rounded">
+								<div className="font-medium mb-1">Beer's Law</div>
+								<div className="font-mono text-gray-600">A = εbc</div>
+							</div>
+						</div>
+					)}
+
+					{type === "notes" && (
+						<div>
+							<Textarea
+								value={notes}
+								onChange={(e) => setNotes(e.target.value)}
+								placeholder="시험 중 메모를 작성하세요..."
+								className="w-full h-64 resize-none"
+							/>
+							<p className="text-xs text-gray-500 mt-2">
+								메모는 자동으로 저장됩니다.
+							</p>
+						</div>
+					)}
+				</div>
 			</div>
 		</div>
 	);
@@ -258,12 +198,23 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 	const [answers, setAnswers] = useState<(string | null)[]>(new Array(questions.length).fill(null));
 	const [flaggedQuestions, setFlaggedQuestions] = useState<Set<number>>(new Set());
 	const [showSubmitDialog, setShowSubmitDialog] = useState(false);
-	const [showTools, setShowTools] = useState(false);
-	const [isToolsExpanded, setIsToolsExpanded] = useState(false);
 	const [showQuestionNavigator, setShowQuestionNavigator] = useState(false);
-	const [activeToolTab, setActiveToolTab] = useState<"calculator" | "notes" | "formulas">("calculator");
+	const [activeToolModal, setActiveToolModal] = useState<"calculator" | "notes" | "formulas" | null>(null);
 	const [notes, setNotes] = useState("");
 	const [highlights, setHighlights] = useState<Map<number, string[]>>(new Map()); // questionIndex -> highlighted text array
+
+	// Define handleSubmitExam before useEffect
+	const handleSubmitExam = useCallback(() => {
+		const result = {
+			examId: examData.id,
+			answers,
+			timeSpent: examData.duration * 60 - timeLeft,
+			flaggedQuestions: Array.from(flaggedQuestions),
+			highlights: Array.from(highlights.entries()),
+			notes,
+		};
+		onExamComplete(result);
+	}, [examData.id, answers, timeLeft, flaggedQuestions, highlights, notes, onExamComplete, examData.duration]);
 
 	// Timer effect
 	useEffect(() => {
@@ -278,7 +229,7 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 		}, 1000);
 
 		return () => clearInterval(timer);
-	}, []);
+	}, [handleSubmitExam]);
 
 	// Auto-save answers, flags, and highlights
 	useEffect(() => {
@@ -289,7 +240,7 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 			localStorage.setItem(`ap-exam-${examData.id}-highlights`, JSON.stringify(Array.from(highlights.entries())));
 			localStorage.setItem(`ap-exam-${examData.id}-notes`, notes);
 		};
-		
+
 		const debounceTimer = setTimeout(saveData, 1000);
 		return () => clearTimeout(debounceTimer);
 	}, [answers, flaggedQuestions, highlights, notes, examData.id]);
@@ -317,18 +268,6 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 		setFlaggedQuestions(newFlagged);
 	};
 
-	const handleSubmitExam = () => {
-		const result = {
-			examId: examData.id,
-			answers,
-			timeSpent: examData.duration * 60 - timeLeft,
-			flaggedQuestions: Array.from(flaggedQuestions),
-			highlights: Array.from(highlights.entries()),
-			notes,
-		};
-		onExamComplete(result);
-	};
-
 	const getAnsweredCount = () => {
 		return answers.filter((answer) => answer !== null).length;
 	};
@@ -339,13 +278,13 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 		if (selection && selection.toString().trim()) {
 			const selectedText = selection.toString().trim();
 			const currentHighlights = highlights.get(currentQuestion) || [];
-			
+
 			if (!currentHighlights.includes(selectedText)) {
 				const newHighlights = new Map(highlights);
 				newHighlights.set(currentQuestion, [...currentHighlights, selectedText]);
 				setHighlights(newHighlights);
 			}
-			
+
 			// Clear selection
 			selection.removeAllRanges();
 		}
@@ -354,7 +293,10 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 	const removeHighlight = (questionIndex: number, textToRemove: string) => {
 		const currentHighlights = highlights.get(questionIndex) || [];
 		const newHighlights = new Map(highlights);
-		newHighlights.set(questionIndex, currentHighlights.filter(text => text !== textToRemove));
+		newHighlights.set(
+			questionIndex,
+			currentHighlights.filter((text) => text !== textToRemove)
+		);
 		setHighlights(newHighlights);
 	};
 
@@ -364,7 +306,7 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 
 		let highlightedText = text;
 		questionHighlights.forEach((highlight) => {
-			const regex = new RegExp(`(${highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+			const regex = new RegExp(`(${highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
 			highlightedText = highlightedText.replace(
 				regex,
 				`<mark style="background-color: #fef08a; padding: 2px 4px; border-radius: 3px;" title="하이라이트된 텍스트">$1</mark>`
@@ -458,11 +400,7 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 						<Button
 							variant="ghost"
 							size="sm"
-							onClick={() => {
-								setActiveToolTab("calculator");
-								setIsToolsExpanded(true);
-								setShowTools(true);
-							}}
+							onClick={() => setActiveToolModal("calculator")}
 							style={{ color: "var(--color-text-secondary)" }}
 							onMouseEnter={(e) => {
 								e.currentTarget.style.color = "var(--color-text-primary)";
@@ -470,17 +408,14 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 							onMouseLeave={(e) => {
 								e.currentTarget.style.color = "var(--color-text-secondary)";
 							}}
+							title="계산기"
 						>
 							<Calculator className="w-4 h-4" />
 						</Button>
 						<Button
 							variant="ghost"
 							size="sm"
-							onClick={() => {
-								setActiveToolTab("formulas");
-								setIsToolsExpanded(true);
-								setShowTools(true);
-							}}
+							onClick={() => setActiveToolModal("formulas")}
 							style={{ color: "var(--color-text-secondary)" }}
 							onMouseEnter={(e) => {
 								e.currentTarget.style.color = "var(--color-text-primary)";
@@ -488,17 +423,14 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 							onMouseLeave={(e) => {
 								e.currentTarget.style.color = "var(--color-text-secondary)";
 							}}
+							title="공식 참조"
 						>
 							<Sigma className="w-4 h-4" />
 						</Button>
 						<Button
 							variant="ghost"
 							size="sm"
-							onClick={() => {
-								setActiveToolTab("notes");
-								setIsToolsExpanded(true);
-								setShowTools(true);
-							}}
+							onClick={() => setActiveToolModal("notes")}
 							style={{ color: "var(--color-text-secondary)" }}
 							onMouseEnter={(e) => {
 								e.currentTarget.style.color = "var(--color-text-primary)";
@@ -506,6 +438,7 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 							onMouseLeave={(e) => {
 								e.currentTarget.style.color = "var(--color-text-secondary)";
 							}}
+							title="메모장"
 						>
 							<StickyNote className="w-4 h-4" />
 						</Button>
@@ -607,19 +540,6 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 					</div>
 				)}
 
-				{/* Tools Overlay */}
-				{showTools && (
-					<div className="absolute top-4 right-4 z-30">
-						<APToolsPanel
-							isExpanded={isToolsExpanded}
-							onToggleExpanded={() => setIsToolsExpanded(!isToolsExpanded)}
-							activeTab={activeToolTab}
-							setActiveTab={setActiveToolTab}
-							notes={notes}
-							setNotes={setNotes}
-						/>
-					</div>
-				)}
 
 				{/* Question Content - Split Layout */}
 				<div className="flex-1 flex">
@@ -666,11 +586,11 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 												className="whitespace-pre-wrap text-base leading-relaxed select-text"
 												style={{ color: "var(--color-text-primary)" }}
 												dangerouslySetInnerHTML={{
-													__html: renderHighlightedText(passageText, currentQuestion)
+													__html: renderHighlightedText(passageText, currentQuestion),
 												}}
 											/>
 										</div>
-										
+
 										{/* Highlight Management */}
 										{highlights.get(currentQuestion)?.length ? (
 											<div className="mt-4">
@@ -683,9 +603,7 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 															key={index}
 															className="flex items-center justify-between p-2 bg-yellow-50 rounded border border-yellow-200"
 														>
-															<span className="text-sm text-yellow-800 flex-1 truncate">
-																{highlight}
-															</span>
+															<span className="text-sm text-yellow-800 flex-1 truncate">{highlight}</span>
 															<button
 																onClick={() => removeHighlight(currentQuestion, highlight)}
 																className="ml-2 text-red-500 hover:text-red-700 text-sm"
@@ -894,6 +812,15 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 					</div>
 				</div>
 			</div>
+
+			{/* Tool Modals */}
+			<ToolModal
+				isOpen={activeToolModal !== null}
+				onClose={() => setActiveToolModal(null)}
+				type={activeToolModal || "calculator"}
+				notes={notes}
+				setNotes={setNotes}
+			/>
 		</div>
 	);
 }
