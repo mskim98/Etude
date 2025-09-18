@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { APResultsPage } from "@/components/features/results/APResultsPage";
+import { APResultsPage } from "@/components/features/ap/results/APResultsPage";
 
 export default function APResults() {
 	const router = useRouter();

@@ -3,11 +3,11 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen, RotateCcw, Target, Edit3 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScoreSummaryCard } from "@/components/features/results/components/ScoreSummaryCard";
-import { SectionScoreCard } from "@/components/features/results/components/SectionScoreCard";
-import { TypeAnalysisChart } from "@/components/features/results/components/TypeAnalysisChart";
-import { WrongQuestionList } from "@/components/features/results/components/WrongQuestionList";
-import { ConversionReferenceCard } from "@/components/features/results/components/ConversionReferenceCard";
+import { ScoreSummaryCard } from "./components/ScoreSummaryCard";
+import { SectionScoreCard } from "./components/SectionScoreCard";
+import { TypeAnalysisChart } from "./components/TypeAnalysisChart";
+import { WrongQuestionList } from "./components/WrongQuestionList";
+import { ConversionReferenceCard } from "./components/ConversionReferenceCard";
 import type { ExamResult, Subject, PageType } from "@/types";
 
 interface SATResultsPageProps {

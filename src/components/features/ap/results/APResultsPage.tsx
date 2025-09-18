@@ -2,9 +2,9 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen, RotateCcw, Target, Beaker, Brain, Dna } from "lucide-react";
-import { ScoreSummaryCard } from "@/components/features/results/components/ScoreSummaryCard";
-import { TypeAnalysisChart } from "@/components/features/results/components/TypeAnalysisChart";
-import { WrongQuestionList } from "@/components/features/results/components/WrongQuestionList";
+import { ScoreSummaryCard } from "@/components/features/sat/results/components/ScoreSummaryCard";
+import { TypeAnalysisChart } from "@/components/features/sat/results/components/TypeAnalysisChart";
+import { WrongQuestionList } from "@/components/features/sat/results/components/WrongQuestionList";
 import type { ExamResult, Subject, PageType } from "@/types";
 
 interface APResultsPageProps {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { SATResultsPage } from "@/components/features/results/SATResultsPage";
+import { SATResultsPage } from "@/components/features/sat/results/SATResultsPage";
 
 export default function SATResults() {
 	const router = useRouter();

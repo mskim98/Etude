@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { APExamPage } from "@/components/features/exams/APExamPage";
+import { APExamPage } from "@/components/features/ap/exams/APExamPage";
 import type { ApExam, ApExamQuestion } from "@/types/ap";
 
 export default function APExamPageRoute() {
