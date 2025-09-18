@@ -3,6 +3,7 @@ import React, { useMemo } from "react";
 import { FileText } from "lucide-react";
 import { APExamCard } from "./APExamCard";
 import { Card } from "../../ui/card";
+import { useExamStats } from "@/hooks/ap-courses/useExamStats";
 
 /**
  * 선택된 과목의 모의고사 목록을 카드 그리드로 표시합니다.
@@ -41,30 +42,37 @@ export function PracticeExamsGrid({ exams, subjectTitle, onStartExam }: Practice
 				className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto scrollbar-custom px-4 pb-6"
 				style={{ height: "430px", scrollbarGutter: "stable" }}
 			>
-				{sortedExams.map((exam: any) => (
-					<APExamCard
-						key={exam.id}
-						examId={exam.id}
-						title={exam.title}
-						description={exam.description}
-						duration={exam.duration}
-						questionCount={exam.quantity}
-						difficulty={exam.difficulty}
-						hasExplanatoryVideo={false}
-						videoLength={0}
-						completed={false}
-						score={0}
-						attempts={0}
-						averageScore={0}
-						completionRate={0}
-						lastAttempt={null}
-						examDate={new Date("2025-05-15")}
-						subject={subjectTitle}
-						onStartExam={onStartExam}
-						onWatchVideo={() => {}}
-						isActive={Boolean((exam as any).isActive ?? (exam as any).is_active ?? true)}
-					/>
-				))}
+				{sortedExams.map((exam: any) => {
+					const stats = useExamStats(exam);
+
+					return (
+						<APExamCard
+							key={exam.id}
+							examId={exam.id}
+							title={exam.title}
+							description={exam.description}
+							duration={exam.duration}
+							questionCount={exam.questionCount}
+							difficulty={exam.difficulty}
+							hasExplanatoryVideo={false}
+							videoLength={0}
+							completed={stats.isCompleted}
+							score={0}
+							attempts={stats.attempts}
+							averageScore={0}
+							completionRate={0}
+							lastAttempt={null}
+							examDate={new Date("2025-05-15")}
+							subject={subjectTitle}
+							onStartExam={onStartExam}
+							onWatchVideo={() => {}}
+							isActive={Boolean(exam.isActive ?? exam.is_active ?? true)}
+							correctAnswers={stats.correctAnswers}
+							totalQuestions={stats.totalQuestions}
+							accuracyRate={stats.accuracyRate}
+						/>
+					);
+				})}
 
 				<Card
 					className="cursor-pointer border-2 border-dashed"

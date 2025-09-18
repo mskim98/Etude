@@ -75,9 +75,9 @@ export class ApServiceImpl implements ApService {
 					},
 					isActive: item.is_active,
 					totalChapters: item.total_chapters,
-					completedChapters: 0, // TODO: 실제 사용자 진행도 계산
+					completedChapters: item.completed_chapters || 0,
 					totalExams: item.total_exams,
-					completedExams: 0, // TODO: 실제 사용자 진행도 계산
+					completedExams: item.completed_exams || 0,
 					progress: item.chapter_completion_rate,
 					examDate: item.exam_date ? new Date(item.exam_date) : new Date("2025-05-15"),
 					createdAt: new Date(item.created_at),
@@ -194,10 +194,18 @@ export class ApServiceImpl implements ApService {
 
 			const { data, error } = await supabase
 				.from("ap_chapter")
-				.select("*")
+				.select(
+					`
+					*,
+					user_progress:user_ap_chapter(
+						chapter_done,
+						mcq_done,
+						frq_done,
+						video_done
+					)
+				`
+				)
 				.eq("subject_id", subjectId)
-				// include inactive chapters as well
-				/* .eq("is_active", true) */
 				.is("deleted_at", null)
 				.order("chapter_number", { ascending: true });
 
@@ -212,16 +220,30 @@ export class ApServiceImpl implements ApService {
 			}
 
 			// 데이터 변환
-			const chapters: ApChapter[] = data.map((item: ChapterRow) => ({
-				id: item.id,
-				chapterNumber: item.chapter_number,
-				title: item.title,
-				description: item.description,
-				difficulty: item.difficulty,
-				isActive: item.is_active,
-				isCompleted: false, // TODO: 실제 사용자 진행도 계산
-				progress: 0, // TODO: 실제 사용자 진행도 계산
-			}));
+			const chapters: ApChapter[] = data.map((item: any) => {
+				const userProgress = item.user_progress?.[0] || null;
+				const isCompleted = userProgress?.chapter_done || false;
+
+				// Calculate progress based on completed components
+				let progress = 0;
+				if (userProgress) {
+					const completedComponents = [userProgress.mcq_done, userProgress.frq_done, userProgress.video_done].filter(
+						Boolean
+					).length;
+					progress = Math.round((completedComponents / 3) * 100);
+				}
+
+				return {
+					id: item.id,
+					chapterNumber: item.chapter_number,
+					title: item.title,
+					description: item.description,
+					difficulty: item.difficulty,
+					isActive: item.is_active,
+					isCompleted,
+					progress,
+				};
+			});
 
 			console.log("📖 챕터 조회 성공:", chapters.length, "개");
 			return chapters;
@@ -266,8 +288,21 @@ export class ApServiceImpl implements ApService {
 		try {
 			console.log("🎯 AP 시험 목록 조회 시작:", filter);
 
-			// 성능 최적화된 VIEW 사용
-			let query = supabase.from("ap_exam_detail_view").select("*");
+			// 직접 테이블 조인으로 quantity 필드 포함
+			let query = supabase
+				.from("ap_exam")
+				.select(
+					`
+					*,
+					subject:ap(title),
+					user_results:user_ap_result(
+						completed_at,
+						tested_at,
+						correct_amount
+					)
+				`
+				)
+				.is("deleted_at", null);
 
 			// 필터 적용
 			if (filter?.subjectId) {
@@ -290,18 +325,30 @@ export class ApServiceImpl implements ApService {
 			}
 
 			// 데이터 변환 - VIEW에서 미리 계산된 데이터 사용
-			const exams: ApExamDetailed[] = data.map((item: any) => ({
-				id: item.id,
-				title: item.title,
-				description: item.description,
-				difficulty: item.difficulty,
-				duration: item.duration,
-				questionCount: item.actual_question_count || item.declared_question_count,
-				isActive: item.is_active,
-				canTake: item.system_available,
-				bestScore: undefined,
-				attemptCount: 0,
-			}));
+			const exams: ApExamDetailed[] = data.map((item: any) => {
+				const userResults = item.user_results || [];
+				const completedResults = userResults.filter((result: any) => result.completed_at !== null);
+				const isCompleted = completedResults.length > 0;
+				const bestScore =
+					completedResults.length > 0
+						? Math.max(...completedResults.map((r: any) => r.correct_amount || 0))
+						: undefined;
+				const attemptCount = userResults.length;
+
+				return {
+					id: item.id,
+					title: item.title,
+					description: item.description,
+					difficulty: item.difficulty,
+					duration: item.duration,
+					questionCount: item.quantity || 60, // Use quantity from ap_exam table
+					isActive: item.is_active,
+					canTake: true, // Simplified for now
+					completed: isCompleted,
+					bestScore,
+					attemptCount,
+				};
+			});
 
 			console.log("🎯 AP 시험 조회 성공:", exams.length, "개");
 			return exams;

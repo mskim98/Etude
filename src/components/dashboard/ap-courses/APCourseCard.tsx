@@ -98,19 +98,19 @@ export const APCourseCard = memo(function APCourseCard({
 						<div className="font-semibold" style={{ color: "var(--color-text-primary)", fontSize: "14px" }}>
 							{progress}%
 						</div>
-						<div style={{ color: "var(--color-text-secondary)", fontSize: "10px", fontWeight: 500 }}>progress</div>
+						<div style={{ color: "var(--color-text-secondary)", fontSize: "10px", fontWeight: 500 }}>Progress</div>
 					</div>
 					<div className="text-center">
 						<div className="font-semibold" style={{ color: "var(--color-text-primary)", fontSize: "14px" }}>
 							{completedChapters}/{totalChapters}
 						</div>
-						<div style={{ color: "var(--color-text-secondary)", fontSize: "10px", fontWeight: 500 }}>chapters</div>
+						<div style={{ color: "var(--color-text-secondary)", fontSize: "10px", fontWeight: 500 }}>Chapters</div>
 					</div>
 					<div className="text-center">
 						<div className="font-semibold" style={{ color: "var(--color-text-primary)", fontSize: "14px" }}>
 							{completedExams}/{totalExams}
 						</div>
-						<div style={{ color: "var(--color-text-secondary)", fontSize: "10px", fontWeight: 500 }}>exams</div>
+						<div style={{ color: "var(--color-text-secondary)", fontSize: "10px", fontWeight: 500 }}>Exams</div>
 					</div>
 				</div>
 			</CardContent>

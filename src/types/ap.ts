@@ -110,6 +110,8 @@ export interface ApExam {
 	isActive: boolean;
 	/** 응시 가능 여부 */
 	canTake: boolean;
+	/** 완료 여부 */
+	completed?: boolean;
 	/** 이전 최고 점수 */
 	bestScore?: number;
 	/** 응시 횟수 */
