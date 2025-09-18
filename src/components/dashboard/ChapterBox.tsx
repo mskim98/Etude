@@ -72,7 +72,7 @@ export function ChapterBox({
 				{/* Inactive chapter overlay */}
 				{!isActive && (
 					<div
-						className="absolute inset-0 z-10 flex items-center justify-center rounded"
+						className="absolute inset-0 z-10 flex items-center justify-center rounded-lg"
 						style={{ backgroundColor: "rgba(0,0,0,0.45)", backdropFilter: "blur(2px)", color: "#fff" }}
 					>
 						<div className="text-center">

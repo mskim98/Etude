@@ -205,7 +205,15 @@ export const useAuthStore = create<AuthState>()(
 				if (!user?.services) return false;
 
 				try {
-					return user.services.some((service) => service.service?.category === serviceCategory && service.is_confirm);
+					const target = String(serviceCategory).toLowerCase();
+					return user.services.some((service) => {
+						// 새로운 구조: user_service.is_active 체크
+						const serviceIsActive = !!service.is_active;
+						// service.service.category와 비교 (service 테이블과 조인된 데이터)
+						const category = String(service.service?.category || "").toLowerCase();
+						const matchesCategory = category === target;
+						return matchesCategory && serviceIsActive;
+					});
 				} catch (err) {
 					console.error("Error checking service access:", err);
 					return false;

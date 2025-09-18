@@ -6,7 +6,7 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { TrendingUp, Award, Target, ChevronRight, BookOpen, FileText, CheckCircle2 } from "lucide-react";
 import type { Subject } from "../../App";
-import { useDashboardApSubjects } from "@/hooks/useApCourses";
+import { useDashboardApSubjects } from "@/hooks/ap-courses/useApSubjects";
 
 interface SubjectProgressProps {
 	onStartExam: (subject: Subject) => void;

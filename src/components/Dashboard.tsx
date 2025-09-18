@@ -7,7 +7,7 @@ import { DateSection } from "@/components/dashboard/DateSection";
 import { ExamSchedule } from "@/components/dashboard/ExamSchedule";
 import { Announcements } from "@/components/dashboard/Announcements";
 import { SubjectProgress } from "@/components/dashboard/SubjectProgress";
-import { APCoursesSupabase } from "@/components/dashboard/APCoursesSupabase";
+import { APCourses } from "@/components/dashboard/ap-courses/APCourses";
 import { SATMockExams } from "@/components/dashboard/SATMockExams";
 import { BookOpen, LogOut, GraduationCap, Calendar, FileText, User } from "lucide-react";
 import type { Subject, APExam } from "@/types";
@@ -497,9 +497,9 @@ export function Dashboard({
 
 					{/* AP Courses Tab */}
 					{activeTab === "ap-courses" && (
-						<APCoursesSupabase
+						<APCourses
 							onStartExam={handleApStartExam}
-							selectedSubject={selectedSubject}
+							selectedSubject={selectedSubject as any}
 							onTabChange={() => setSelectedSubject(null)}
 						/>
 					)}
