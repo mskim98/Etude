@@ -303,38 +303,51 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 	};
 
 	const currentQuestionData = questions[currentQuestion];
+	const questionParts = currentQuestionData.question.split("\n\n");
+	const questionText = questionParts[0];
+	const passageText = currentQuestionData.passage || questionParts.slice(1).join("\n\n");
+
+	const handleQuestionJump = (index: number) => {
+		setCurrentQuestion(index);
+		setShowQuestionNavigator(false);
+	};
 
 	if (showSubmitDialog) {
 		const unansweredCount = questions.length - getAnsweredCount();
-		
+
 		return (
-			<div className="min-h-screen bg-background flex items-center justify-center p-4">
-				<Card className="max-w-md w-full">
-					<CardContent className="p-6">
-						<h2 className="text-xl font-semibold mb-4 text-foreground">Submit AP Exam</h2>
-						<div className="space-y-4">
-							<div className="text-sm text-muted-foreground">
-								<p>You have answered {getAnsweredCount()} out of {questions.length} questions.</p>
-								{unansweredCount > 0 && (
-									<p className="text-destructive mt-2">
-										{unansweredCount} question{unansweredCount > 1 ? "s" : ""} remain unanswered.
-									</p>
-								)}
-							</div>
-							<Alert>
-								<AlertTriangle className="h-4 w-4" />
-								<AlertDescription>
-									Once you submit, you cannot return to the exam. Are you sure you want to submit?
-								</AlertDescription>
-							</Alert>
-							<div className="flex gap-3">
-								<Button variant="outline" onClick={() => setShowSubmitDialog(false)} className="flex-1">
-									Continue Exam
-								</Button>
-								<Button onClick={handleSubmitExam} className="flex-1">
-									Submit Exam
-								</Button>
-							</div>
+			<div className="min-h-screen flex items-center justify-center bg-background">
+				<Card className="w-full max-w-md" style={{ borderColor: "var(--color-primary)" }}>
+					<CardContent className="p-8 text-center">
+						<AlertTriangle className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--color-warning)" }} />
+						<h2 className="text-xl font-semibold mb-4" style={{ color: "var(--color-text-primary)" }}>
+							Submit Exam?
+						</h2>
+						<p className="mb-4" style={{ color: "var(--color-text-secondary)" }}>
+							You have answered {getAnsweredCount()} out of {questions.length} questions.
+						</p>
+						{unansweredCount > 0 && (
+							<p className="mb-6" style={{ color: "var(--color-warning)" }}>
+								{unansweredCount} question{unansweredCount > 1 ? "s" : ""} remain unanswered.
+							</p>
+						)}
+						<div className="flex space-x-3">
+							<Button variant="outline" onClick={() => setShowSubmitDialog(false)}>
+								Continue Exam
+							</Button>
+							<Button
+								onClick={handleSubmitExam}
+								className="text-white transition-all duration-200"
+								style={{ backgroundColor: "var(--color-primary)" }}
+								onMouseEnter={(e) => {
+									e.currentTarget.style.backgroundColor = "var(--color-primary-hover)";
+								}}
+								onMouseLeave={(e) => {
+									e.currentTarget.style.backgroundColor = "var(--color-primary)";
+								}}
+							>
+								Submit Exam
+							</Button>
 						</div>
 					</CardContent>
 				</Card>
@@ -343,194 +356,393 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 	}
 
 	return (
-		<div className="min-h-screen bg-background">
-			{/* Header */}
-			<header className="border-b bg-card shadow-sm sticky top-0 z-30">
-				<div className="max-w-7xl mx-auto px-6 py-4">
-					<div className="flex items-center justify-between">
-						<div className="flex items-center space-x-4">
-							<Button variant="ghost" onClick={onGoBack} className="text-muted-foreground hover:text-foreground">
-								<ArrowLeft className="w-4 h-4 mr-2" />
-								Exit Exam
-							</Button>
-							<div className="text-sm text-muted-foreground">
-								{examData.title}
-							</div>
+		<div className="min-h-screen flex flex-col bg-background">
+			{/* BlueBook Style Header */}
+			<header className="bg-white px-6 py-3 flex-shrink-0" style={{ borderBottom: "2px solid var(--color-primary)" }}>
+				<div className="max-w-full flex items-center justify-between">
+					{/* Left section */}
+					<div className="flex items-center space-x-6">
+						<div className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+							Section 1, Module 1: {examData.title}
 						</div>
+					</div>
 
-						<div className="flex items-center space-x-6">
-							<div className="text-sm font-medium text-foreground">
-								Question {currentQuestion + 1} of {questions.length}
-							</div>
-							<div className="text-sm font-medium text-foreground">
-								<Clock className="w-4 h-4 inline mr-1" />
-								{formatTime(timeLeft)}
-							</div>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => setShowTools(!showTools)}
-								className="hidden md:flex"
-							>
-								<Calculator className="w-4 h-4 mr-2" />
-								Tools
-							</Button>
-							<Button variant="outline" size="sm" onClick={() => setShowSubmitDialog(true)}>
-								Submit Exam
-							</Button>
-						</div>
+					{/* Center - Timer */}
+					<div
+						className="absolute left-1/2 transform -translate-x-1/2 flex items-center space-x-2 px-4 py-2 rounded-lg"
+						style={{
+							backgroundColor: "var(--color-primary-light)",
+							border: "1px solid var(--color-primary)",
+						}}
+					>
+						<Clock className="w-4 h-4" style={{ color: "var(--color-text-secondary)" }} />
+						<span className="font-mono text-lg font-semibold" style={{ color: "var(--color-text-primary)" }}>
+							{formatTime(timeLeft)}
+						</span>
+					</div>
+
+					{/* Right section */}
+					<div className="flex items-center space-x-4">
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => setShowTools(!showTools)}
+							style={{ color: "var(--color-text-secondary)" }}
+							onMouseEnter={(e) => {
+								e.currentTarget.style.color = "var(--color-text-primary)";
+							}}
+							onMouseLeave={(e) => {
+								e.currentTarget.style.color = "var(--color-text-secondary)";
+							}}
+						>
+							<Calculator className="w-4 h-4 mr-1" />
+							Tools
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setShowSubmitDialog(true)}
+							style={{ borderColor: "var(--color-primary)", color: "var(--color-text-primary)" }}
+						>
+							Submit
+						</Button>
 					</div>
 				</div>
 			</header>
 
-			{/* Main Content */}
-			<div className={`max-w-6xl mx-auto p-6 transition-all duration-300 ${isToolsExpanded ? "mr-80" : ""}`}>
-				<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-					{/* Question Content */}
-					<div className="lg:col-span-3">
-						<Card>
-							<CardContent className="p-8">
-								{/* Question Header */}
-								<div className="flex items-center justify-between mb-6">
-									<div className="flex items-center space-x-3">
-										<span className="text-sm font-medium text-muted-foreground">
-											Question {currentQuestion + 1}
-										</span>
-										{flaggedQuestions.has(currentQuestion) && (
-											<Flag className="w-4 h-4 text-yellow-500" />
-										)}
-									</div>
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={handleFlagQuestion}
-										className={flaggedQuestions.has(currentQuestion) ? "bg-yellow-50" : ""}
-									>
-										<Flag className="w-4 h-4 mr-2" />
-										{flaggedQuestions.has(currentQuestion) ? "Unflag" : "Flag"}
-									</Button>
-								</div>
+			{/* Main Content Area */}
+			<div className="flex-1 flex relative">
+				{/* Question Navigator Overlay */}
+				{showQuestionNavigator && (
+					<div className="absolute inset-0 backdrop-blur-md bg-white/10 z-20 flex items-center justify-center">
+						<div
+							className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto"
+							style={{ border: "2px solid var(--color-primary)" }}
+						>
+							<div className="flex items-center justify-between mb-6">
+								<h3 className="text-lg font-semibold" style={{ color: "var(--color-text-primary)" }}>
+									Question Navigator
+								</h3>
+								<Button variant="ghost" size="sm" onClick={() => setShowQuestionNavigator(false)}>
+									<X className="w-4 h-4" />
+								</Button>
+							</div>
 
-								{/* Question Text */}
-								<div className="mb-8">
-									{currentQuestionData.passage && (
-										<div className="bg-muted p-6 rounded-lg mb-6">
-											<h3 className="font-semibold mb-3 text-foreground">Passage</h3>
-											<div className="text-sm text-muted-foreground whitespace-pre-wrap">
-												{currentQuestionData.passage}
-											</div>
-										</div>
-									)}
-									<div className="text-lg text-foreground leading-relaxed">
-										{currentQuestionData.question}
-									</div>
-								</div>
+							<div className="grid grid-cols-6 gap-3 mb-6">
+								{questions.map((_, index) => {
+									const isAnswered = answers[index] !== null;
+									const isFlagged = flaggedQuestions.has(index);
+									const isCurrent = index === currentQuestion;
 
-								{/* Answer Choices */}
-								<div className="space-y-3">
-									{currentQuestionData.choices.map((choice, index) => (
-										<button
-											key={choice.id}
-											onClick={() => handleAnswerSelect(choice.id)}
-											className={`w-full text-left p-4 rounded-lg border transition-colors ${
-												answers[currentQuestion] === choice.id
-													? "border-primary bg-primary/5 text-foreground"
-													: "border-border hover:border-primary/50 hover:bg-muted/50 text-muted-foreground"
-											}`}
-										>
-											<div className="flex items-start space-x-3">
-												<span className="font-medium text-sm mt-0.5">
-													{String.fromCharCode(65 + index)}.
-												</span>
-												<span className="flex-1">{choice.text}</span>
-											</div>
-										</button>
-									))}
-								</div>
-							</CardContent>
-						</Card>
-					</div>
-
-					{/* Question Navigator */}
-					<div className="lg:col-span-1">
-						<Card className="sticky top-24">
-							<CardContent className="p-4">
-								<h3 className="font-semibold mb-4 text-foreground">Question Navigator</h3>
-								<div className="grid grid-cols-5 gap-2 mb-4">
-									{questions.map((_, index) => (
-										<button
+									return (
+										<Button
 											key={index}
-											onClick={() => setCurrentQuestion(index)}
-											className={`aspect-square text-xs font-medium rounded transition-colors ${
-												index === currentQuestion
-													? "bg-primary text-primary-foreground"
-													: answers[index] !== null
-													? "bg-green-100 text-green-800 hover:bg-green-200"
-													: flaggedQuestions.has(index)
-													? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-													: "bg-muted text-muted-foreground hover:bg-muted/80"
-											}`}
+											variant={isCurrent ? "default" : "outline"}
+											size="sm"
+											className={`h-12 relative ${isCurrent ? "text-white" : ""}`}
+											style={{
+												backgroundColor: isCurrent
+													? "var(--color-primary)"
+													: isAnswered
+													? "var(--primary-light)"
+													: "transparent",
+												borderColor: isCurrent ? "var(--color-primary)" : "var(--color-primary)",
+												color: isCurrent ? "white" : isAnswered ? "var(--color-primary)" : "var(--color-text-primary)",
+											}}
+											onMouseEnter={(e) => {
+												if (!isCurrent && !isAnswered) {
+													e.currentTarget.style.backgroundColor = "var(--primary-light)";
+												}
+											}}
+											onMouseLeave={(e) => {
+												if (!isCurrent && !isAnswered) {
+													e.currentTarget.style.backgroundColor = "transparent";
+												}
+											}}
+											onClick={() => handleQuestionJump(index)}
 										>
 											{index + 1}
-										</button>
-									))}
+											{isFlagged && <Flag className="w-3 h-3 absolute -top-1 -right-1 text-red-500 fill-current" />}
+										</Button>
+									);
+								})}
+							</div>
+
+							<div
+								className="flex items-center justify-between text-sm"
+								style={{ color: "var(--color-text-secondary)" }}
+							>
+								<div className="flex items-center space-x-4">
+									<div className="flex items-center space-x-2">
+										<div
+											className="w-3 h-3 rounded"
+											style={{
+												backgroundColor: "var(--color-primary-light)",
+												border: "1px solid var(--color-primary)",
+											}}
+										></div>
+										<span>Answered</span>
+									</div>
+									<div className="flex items-center space-x-2">
+										<Flag className="w-3 h-3" style={{ color: "var(--color-destructive)" }} />
+										<span>Flagged</span>
+									</div>
 								</div>
-								<div className="text-xs text-muted-foreground space-y-1">
-									<div className="flex items-center">
-										<div className="w-3 h-3 bg-green-100 rounded mr-2"></div>
-										Answered ({getAnsweredCount()})
+								<span>
+									{getAnsweredCount()}/{questions.length} answered
+								</span>
+							</div>
+						</div>
+					</div>
+				)}
+
+				{/* Tools Overlay */}
+				{showTools && (
+					<div className="absolute top-4 right-4 z-30">
+						<APToolsPanel
+							isExpanded={isToolsExpanded}
+							onToggleExpanded={() => setIsToolsExpanded(!isToolsExpanded)}
+							activeTab={activeToolTab}
+							setActiveTab={setActiveToolTab}
+							notes={notes}
+							setNotes={setNotes}
+						/>
+					</div>
+				)}
+
+				{/* Question Content - Split Layout */}
+				<div className="flex-1 flex">
+					{/* Left Panel - Passage/Context */}
+					<div
+						className="w-1/2 bg-white overflow-hidden flex flex-col"
+						style={{ borderRight: "2px solid var(--color-primary)" }}
+					>
+						<div
+							className="px-6 py-3"
+							style={{
+								backgroundColor: "var(--color-primary-light)",
+								borderBottom: "1px solid var(--color-primary)",
+							}}
+						>
+							<h3 className="font-medium flex items-center" style={{ color: "var(--color-text-primary)" }}>
+								<FileText className="w-4 h-4 mr-2" />
+								지문 및 자료
+							</h3>
+						</div>
+						<div className="flex-1 p-6 overflow-y-auto">
+							<div className="prose prose-gray max-w-none">
+								{passageText ? (
+									<div className="space-y-4">
+										<div
+											className="p-4 rounded-lg"
+											style={{
+												backgroundColor: "var(--color-primary-light)",
+												borderLeft: "4px solid var(--color-primary)",
+											}}
+										>
+											<div
+												className="whitespace-pre-wrap text-base leading-relaxed"
+												style={{ color: "var(--color-text-primary)" }}
+											>
+												{passageText}
+											</div>
+										</div>
 									</div>
-									<div className="flex items-center">
-										<div className="w-3 h-3 bg-yellow-100 rounded mr-2"></div>
-										Flagged ({flaggedQuestions.size})
+								) : (
+									<div className="text-center py-12" style={{ color: "var(--color-text-secondary)" }}>
+										<FileText
+											className="w-12 h-12 mx-auto mb-4 opacity-50"
+											style={{ color: "var(--color-text-tertiary)" }}
+										/>
+										<p>이 문제에는 별도의 지문이 없습니다.</p>
 									</div>
-									<div className="flex items-center">
-										<div className="w-3 h-3 bg-muted rounded mr-2"></div>
-										Unanswered ({questions.length - getAnsweredCount()})
-									</div>
+								)}
+							</div>
+						</div>
+					</div>
+
+					{/* Right Panel - Question and Answer Choices */}
+					<div className="w-1/2 bg-white flex flex-col">
+						{/* Question Header */}
+						<div
+							className="border-b px-6 py-4"
+							style={{ backgroundColor: "var(--color-primary-light)", borderColor: "var(--color-primary)" }}
+						>
+							<div className="flex items-center justify-between">
+								<div className="flex items-center space-x-4">
+									<h3 className="font-medium" style={{ color: "var(--color-text-primary)" }}>
+										Question {currentQuestion + 1} of {questions.length}
+									</h3>
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={handleFlagQuestion}
+										className="transition-all duration-200 hover:bg-white/50"
+										style={{
+											color: flaggedQuestions.has(currentQuestion)
+												? "var(--color-primary)"
+												: "var(--color-text-secondary)",
+											backgroundColor: flaggedQuestions.has(currentQuestion) ? "rgba(0, 145, 179, 0.1)" : "transparent",
+										}}
+									>
+										<Flag
+											className="w-4 h-4 mr-1"
+											style={{
+												fill: flaggedQuestions.has(currentQuestion) ? "var(--color-primary)" : "none",
+											}}
+										/>
+										Mark for Review
+									</Button>
 								</div>
-							</CardContent>
-						</Card>
+							</div>
+						</div>
+
+						{/* Question Text */}
+						<div
+							className="p-6 border-b"
+							style={{ borderColor: "var(--color-primary)", backgroundColor: "var(--color-primary-light)" }}
+						>
+							<div className="prose max-w-none">
+								<div
+									className="whitespace-pre-wrap text-base leading-relaxed"
+									style={{ color: "var(--color-text-primary)" }}
+								>
+									{questionText}
+								</div>
+							</div>
+						</div>
+
+						{/* Answer Options */}
+						<div className="flex-1 p-6 overflow-y-auto">
+							<div className="space-y-3">
+								{currentQuestionData.choices.map((choice, index) => (
+									<div
+										key={choice.id}
+										className={`p-4 rounded-lg border cursor-pointer transition-all ${
+											answers[currentQuestion] === choice.id
+												? "border-primary ring-2 ring-primary/20"
+												: "border-border hover:border-primary/30"
+										}`}
+										style={{
+											backgroundColor: answers[currentQuestion] === choice.id ? "var(--primary-light)" : "transparent",
+										}}
+										onClick={() => handleAnswerSelect(choice.id)}
+									>
+										<div className="flex items-start space-x-3">
+											<div className="mt-0.5">
+												{answers[currentQuestion] === choice.id ? (
+													<div
+														className="w-5 h-5 rounded-full flex items-center justify-center"
+														style={{ backgroundColor: "var(--primary)" }}
+													>
+														<div className="w-2 h-2 bg-white rounded-full"></div>
+													</div>
+												) : (
+													<div
+														className="w-5 h-5 border-2 rounded-full"
+														style={{ borderColor: "var(--primary)" }}
+													></div>
+												)}
+											</div>
+											<div className="flex-1">
+												<span className="font-medium mr-3 text-lg" style={{ color: "var(--text-secondary)" }}>
+													{String.fromCharCode(65 + index)}
+												</span>
+												<span className="text-base" style={{ color: "var(--text-primary)" }}>
+													{choice.text}
+												</span>
+											</div>
+										</div>
+									</div>
+								))}
+							</div>
+						</div>
 					</div>
-				</div>
-
-				{/* Navigation Footer */}
-				<div className="flex justify-between items-center mt-8 pt-6 border-t">
-					<Button
-						variant="outline"
-						onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))}
-						disabled={currentQuestion === 0}
-					>
-						<ChevronLeft className="w-4 h-4 mr-2" />
-						Previous
-					</Button>
-
-					<div className="text-sm text-muted-foreground">
-						{getAnsweredCount()} of {questions.length} answered
-					</div>
-
-					<Button
-						variant="outline"
-						onClick={() => setCurrentQuestion(Math.min(questions.length - 1, currentQuestion + 1))}
-						disabled={currentQuestion === questions.length - 1}
-					>
-						Next
-						<ChevronRight className="w-4 h-4 ml-2" />
-					</Button>
 				</div>
 			</div>
 
-			{/* Tools Panel */}
-			{showTools && (
-				<APToolsPanel
-					isExpanded={isToolsExpanded}
-					onToggleExpanded={setIsToolsExpanded}
-					activeTab={activeToolTab}
-					setActiveTab={setActiveToolTab}
-					notes={notes}
-					setNotes={setNotes}
-				/>
-			)}
+			{/* BlueBook Style Footer */}
+			<div className="bg-white px-6 py-4 flex-shrink-0" style={{ borderTop: "2px solid var(--color-primary)" }}>
+				<div className="flex items-center justify-between">
+					{/* Left - Student Name */}
+					<div className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+						Test Student
+					</div>
+
+					{/* Center - Navigation */}
+					<div className="flex items-center justify-center space-x-4">
+						<Button
+							variant="outline"
+							onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))}
+							disabled={currentQuestion === 0}
+							className="flex items-center space-x-2 transition-all duration-200"
+							style={{
+								borderColor: "var(--color-primary)",
+								color: currentQuestion === 0 ? "var(--color-text-tertiary)" : "var(--color-primary)",
+							}}
+						>
+							<ChevronLeft className="w-4 h-4" />
+							<span>Previous</span>
+						</Button>
+
+						<Button
+							variant="default"
+							size="sm"
+							className="px-6 py-3 rounded-lg text-white cursor-pointer transition-all duration-200 hover:scale-105"
+							style={{
+								backgroundColor: "var(--color-primary)",
+								boxShadow: "0 4px 12px rgba(0, 145, 179, 0.3)",
+							}}
+							onClick={() => setShowQuestionNavigator(true)}
+						>
+							<Grid3X3 className="w-4 h-4 mr-2" />
+							Question {currentQuestion + 1} / {questions.length}
+						</Button>
+
+						<Button
+							onClick={() => setCurrentQuestion(Math.min(questions.length - 1, currentQuestion + 1))}
+							disabled={currentQuestion === questions.length - 1}
+							className="flex items-center space-x-2 text-white transition-all duration-200"
+							style={{
+								backgroundColor:
+									currentQuestion === questions.length - 1 ? "var(--color-text-tertiary)" : "var(--color-primary)",
+								cursor: currentQuestion === questions.length - 1 ? "not-allowed" : "pointer",
+							}}
+							onMouseEnter={(e) => {
+								if (currentQuestion !== questions.length - 1) {
+									e.currentTarget.style.backgroundColor = "var(--color-primary-hover)";
+								}
+							}}
+							onMouseLeave={(e) => {
+								if (currentQuestion !== questions.length - 1) {
+									e.currentTarget.style.backgroundColor = "var(--color-primary)";
+								}
+							}}
+						>
+							<span>Next</span>
+							<ChevronRight className="w-4 h-4" />
+						</Button>
+					</div>
+
+					{/* Right - Progress */}
+					<div className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+						{Math.round(((currentQuestion + 1) / questions.length) * 100)}%
+					</div>
+				</div>
+
+				{/* Progress Bar */}
+				<div className="mt-4">
+					<div className="w-full rounded-full h-2" style={{ backgroundColor: "var(--color-primary-light)" }}>
+						<div
+							className="h-2 rounded-full transition-all duration-300"
+							style={{
+								width: `${((currentQuestion + 1) / questions.length) * 100}%`,
+								backgroundColor: "var(--color-primary)",
+							}}
+						></div>
+					</div>
+				</div>
+			</div>
 		</div>
 	);
 }

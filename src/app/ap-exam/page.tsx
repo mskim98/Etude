@@ -44,18 +44,42 @@ export default function APExamPageRoute() {
 				const mockQuestions: ApExamQuestion[] = Array.from({ length: 60 }, (_, index) => ({
 					id: `q${index + 1}`,
 					order: index + 1,
-					question: `This is AP Chemistry question ${index + 1}. Which of the following best describes the concept being tested?`,
-					passage: index % 5 === 0 ? `Passage for questions ${index + 1}-${index + 3}: This passage provides context for the following chemistry problems...` : undefined,
+					question: `This is AP Chemistry question ${
+						index + 1
+					}. Which of the following best describes the concept being tested?`,
+					passage:
+						index % 5 === 0
+							? `Passage for questions ${index + 1}-${
+									index + 3
+							  }: This passage provides context for the following chemistry problems...`
+							: undefined,
 					choiceType: "text",
 					difficulty: "normal",
 					topic: "General Chemistry",
 					choices: [
 						{ id: "a", order: 1, text: "Option A - This represents one possible answer", isCorrect: index % 4 === 0 },
-						{ id: "b", order: 2, text: "Option B - This represents another possible answer", isCorrect: index % 4 === 1 },
-						{ id: "c", order: 3, text: "Option C - This represents a third possible answer", isCorrect: index % 4 === 2 },
-						{ id: "d", order: 4, text: "Option D - This represents the final possible answer", isCorrect: index % 4 === 3 },
+						{
+							id: "b",
+							order: 2,
+							text: "Option B - This represents another possible answer",
+							isCorrect: index % 4 === 1,
+						},
+						{
+							id: "c",
+							order: 3,
+							text: "Option C - This represents a third possible answer",
+							isCorrect: index % 4 === 2,
+						},
+						{
+							id: "d",
+							order: 4,
+							text: "Option D - This represents the final possible answer",
+							isCorrect: index % 4 === 3,
+						},
 					],
-					explanation: `This is the explanation for question ${index + 1}. The correct answer demonstrates the key chemistry principle being tested.`,
+					explanation: `This is the explanation for question ${
+						index + 1
+					}. The correct answer demonstrates the key chemistry principle being tested.`,
 				}));
 
 				setExamData(mockExamData);
@@ -97,10 +121,7 @@ export default function APExamPageRoute() {
 			<div className="min-h-screen flex items-center justify-center">
 				<div className="text-center">
 					<p className="text-red-600">시험 정보를 찾을 수 없습니다.</p>
-					<button
-						onClick={handleGoBack}
-						className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-					>
+					<button onClick={handleGoBack} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
 						돌아가기
 					</button>
 				</div>
@@ -109,11 +130,6 @@ export default function APExamPageRoute() {
 	}
 
 	return (
-		<APExamPage
-			examData={examData}
-			questions={questions}
-			onExamComplete={handleExamComplete}
-			onGoBack={handleGoBack}
-		/>
+		<APExamPage examData={examData} questions={questions} onExamComplete={handleExamComplete} onGoBack={handleGoBack} />
 	);
 }
