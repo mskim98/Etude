@@ -50,8 +50,22 @@ export type Database = {
 						foreignKeyName: "announcement_announced_by_fkey";
 						columns: ["announced_by"];
 						isOneToOne: false;
+						referencedRelation: "ap_subject_detail_view";
+						referencedColumns: ["teacher_id"];
+					},
+					{
+						foreignKeyName: "announcement_announced_by_fkey";
+						columns: ["announced_by"];
+						isOneToOne: false;
 						referencedRelation: "profile";
 						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "announcement_announced_by_fkey";
+						columns: ["announced_by"];
+						isOneToOne: false;
+						referencedRelation: "user_ap_access_view";
+						referencedColumns: ["teacher_id"];
 					}
 				];
 			};
@@ -60,12 +74,14 @@ export type Database = {
 					ap_score: number | null;
 					created_at: string;
 					deleted_at: string | null;
+					end_at: string | null;
 					gpa: number | null;
 					id: string;
 					major: string | null;
 					name: string;
 					role: Database["public"]["Enums"]["user_role"];
 					sat_score: number | null;
+					start_at: string | null;
 					state: Database["public"]["Enums"]["user_state"];
 					university: string | null;
 					updated_at: string;
@@ -74,12 +90,14 @@ export type Database = {
 					ap_score?: number | null;
 					created_at?: string;
 					deleted_at?: string | null;
+					end_at?: string | null;
 					gpa?: number | null;
 					id: string;
 					major?: string | null;
 					name: string;
 					role?: Database["public"]["Enums"]["user_role"];
 					sat_score?: number | null;
+					start_at?: string | null;
 					state?: Database["public"]["Enums"]["user_state"];
 					university?: string | null;
 					updated_at?: string;
@@ -88,132 +106,46 @@ export type Database = {
 					ap_score?: number | null;
 					created_at?: string;
 					deleted_at?: string | null;
+					end_at?: string | null;
 					gpa?: number | null;
 					id?: string;
 					major?: string | null;
 					name?: string;
 					role?: Database["public"]["Enums"]["user_role"];
 					sat_score?: number | null;
+					start_at?: string | null;
 					state?: Database["public"]["Enums"]["user_state"];
 					university?: string | null;
 					updated_at?: string;
 				};
 				Relationships: [];
 			};
-			schedule: {
-				Row: {
-					category: Database["public"]["Enums"]["exam_category"];
-					created_at: string | null;
-					created_by: string | null;
-					d_day: string;
-					deleted_at: string | null;
-					deleted_by: string | null;
-					id: string;
-					title: string;
-					updated_at: string | null;
-					updated_by: string | null;
-				};
-				Insert: {
-					category: Database["public"]["Enums"]["exam_category"];
-					created_at?: string | null;
-					created_by?: string | null;
-					d_day: string;
-					deleted_at?: string | null;
-					deleted_by?: string | null;
-					id?: string;
-					title: string;
-					updated_at?: string | null;
-					updated_by?: string | null;
-				};
-				Update: {
-					category?: Database["public"]["Enums"]["exam_category"];
-					created_at?: string | null;
-					created_by?: string | null;
-					d_day?: string;
-					deleted_at?: string | null;
-					deleted_by?: string | null;
-					id?: string;
-					title?: string;
-					updated_at?: string | null;
-					updated_by?: string | null;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "schedule_created_by_fkey";
-						columns: ["created_by"];
-						isOneToOne: false;
-						referencedRelation: "profile";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "schedule_deleted_by_fkey";
-						columns: ["deleted_by"];
-						isOneToOne: false;
-						referencedRelation: "profile";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "schedule_updated_by_fkey";
-						columns: ["updated_by"];
-						isOneToOne: false;
-						referencedRelation: "profile";
-						referencedColumns: ["id"];
-					}
-				];
-			};
-			service: {
-				Row: {
-					category: string;
-					created_at: string;
-					created_by: string;
-					deleted_at: string | null;
-					deleted_by: string | null;
-					id: string;
-					service_name: string;
-					updated_at: string;
-					updated_by: string;
-				};
-				Insert: {
-					category: string;
-					created_at?: string;
-					created_by: string;
-					deleted_at?: string | null;
-					deleted_by?: string | null;
-					id?: string;
-					service_name: string;
-					updated_at?: string;
-					updated_by: string;
-				};
-				Update: {
-					category?: string;
-					created_at?: string;
-					created_by?: string;
-					deleted_at?: string | null;
-					deleted_by?: string | null;
-					id?: string;
-					service_name?: string;
-					updated_at?: string;
-					updated_by?: string;
-				};
-				Relationships: [];
-			};
 			user_service: {
 				Row: {
+					created_at: string | null;
+					deleted_at: string | null;
 					id: string;
-					is_confirm: boolean;
+					is_active: boolean;
 					service_id: string;
+					updated_at: string | null;
 					user_id: string;
 				};
 				Insert: {
+					created_at?: string | null;
+					deleted_at?: string | null;
 					id?: string;
-					is_confirm?: boolean;
+					is_active?: boolean;
 					service_id: string;
+					updated_at?: string | null;
 					user_id: string;
 				};
 				Update: {
+					created_at?: string | null;
+					deleted_at?: string | null;
 					id?: string;
-					is_confirm?: boolean;
+					is_active?: boolean;
 					service_id?: string;
+					updated_at?: string | null;
 					user_id?: string;
 				};
 				Relationships: [
@@ -235,61 +167,43 @@ export type Database = {
 			};
 		};
 		Views: {
-			[_ in never]: never;
-		};
-		Functions: {
-			check_email_duplicate: {
-				Args: { email_to_check: string };
-				Returns: boolean;
-			};
-			create_announcement: {
-				Args: {
-					p_announcer_type?: string;
-					p_category?: string;
-					p_notification: string;
-					p_title: string;
-					p_urgency?: string;
+			ap_subject_detail_view: {
+				Row: {
+					active_chapters: number | null;
+					active_exams: number | null;
+					chapter_completion_rate: number | null;
+					completed_chapters: number | null;
+					completed_exams: number | null;
+					created_at: string | null;
+					description: string | null;
+					exam_date: string | null;
+					id: string | null;
+					is_active: boolean | null;
+					service_active: boolean | null;
+					service_category: string | null;
+					service_name: string | null;
+					teacher_id: string | null;
+					teacher_name: string | null;
+					title: string | null;
+					total_chapters: number | null;
+					total_exams: number | null;
+					updated_at: string | null;
 				};
-				Returns: string;
-			};
-			create_schedule: {
-				Args: { p_category: string; p_d_day: string; p_title: string };
-				Returns: string;
-			};
-			delete_announcement: {
-				Args: { p_announcement_id: string };
-				Returns: boolean;
-			};
-			delete_schedule: {
-				Args: { p_schedule_id: string };
-				Returns: boolean;
-			};
-			update_announcement: {
-				Args: {
-					p_announcement_id: string;
-					p_category?: string;
-					p_notification?: string;
-					p_title?: string;
-					p_urgency?: string;
-				};
-				Returns: boolean;
-			};
-			update_schedule: {
-				Args: {
-					p_category?: string;
-					p_d_day?: string;
-					p_schedule_id: string;
-					p_title?: string;
-				};
-				Returns: boolean;
+				Relationships: [];
 			};
 		};
+		Functions: {};
 		Enums: {
 			announcer_type: "teacher" | "admin" | "system";
+			choice_type: "text" | "image";
+			difficulty_level: "easy" | "normal" | "hard";
 			exam_category: "ap" | "sat";
+			question_type: "mcq" | "spr";
+			sat_subject_type: "reading" | "writing" | "math";
+			service_category: "ap" | "sat";
 			urgency_level: "low" | "medium" | "high";
 			user_role: "student" | "teacher" | "admin";
-			user_state: "pending" | "approve";
+			user_state: "pending" | "approve" | "expired";
 		};
 		CompositeTypes: {
 			[_ in never]: never;
@@ -327,93 +241,3 @@ export type Tables<
 		? R
 		: never
 	: never;
-
-export type TablesInsert<
-	DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
-	TableName extends DefaultSchemaTableNameOrOptions extends {
-		schema: keyof DatabaseWithoutInternals;
-	}
-		? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-		: never = never
-> = DefaultSchemaTableNameOrOptions extends {
-	schema: keyof DatabaseWithoutInternals;
-}
-	? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-			Insert: infer I;
-	  }
-		? I
-		: never
-	: DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-	? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-			Insert: infer I;
-	  }
-		? I
-		: never
-	: never;
-
-export type TablesUpdate<
-	DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
-	TableName extends DefaultSchemaTableNameOrOptions extends {
-		schema: keyof DatabaseWithoutInternals;
-	}
-		? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-		: never = never
-> = DefaultSchemaTableNameOrOptions extends {
-	schema: keyof DatabaseWithoutInternals;
-}
-	? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-			Update: infer U;
-	  }
-		? U
-		: never
-	: DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-	? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-			Update: infer U;
-	  }
-		? U
-		: never
-	: never;
-
-export type Enums<
-	DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
-	EnumName extends DefaultSchemaEnumNameOrOptions extends {
-		schema: keyof DatabaseWithoutInternals;
-	}
-		? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-		: never = never
-> = DefaultSchemaEnumNameOrOptions extends {
-	schema: keyof DatabaseWithoutInternals;
-}
-	? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-	: DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-	? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-	: never;
-
-export type CompositeTypes<
-	PublicCompositeTypeNameOrOptions extends
-		| keyof DefaultSchema["CompositeTypes"]
-		| { schema: keyof DatabaseWithoutInternals },
-	CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-		schema: keyof DatabaseWithoutInternals;
-	}
-		? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-		: never = never
-> = PublicCompositeTypeNameOrOptions extends {
-	schema: keyof DatabaseWithoutInternals;
-}
-	? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-	: PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-	? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-	: never;
-
-export const Constants = {
-	public: {
-		Enums: {
-			announcer_type: ["teacher", "admin", "system"],
-			exam_category: ["ap", "sat"],
-			urgency_level: ["low", "medium", "high"],
-			user_role: ["student", "teacher", "admin"],
-			user_state: ["pending", "approve"],
-		},
-	},
-} as const;

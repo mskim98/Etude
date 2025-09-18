@@ -1,19 +1,19 @@
 "use client";
 
-import { useState } from "react";
+// import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PersonalInformation } from "@/components/dashboard/PersonalInformation";
-import { DateSection } from "@/components/dashboard/DateSection";
-import { ExamSchedule } from "@/components/dashboard/ExamSchedule";
-import { Announcements } from "@/components/dashboard/Announcements";
-import { SubjectProgress } from "@/components/dashboard/SubjectProgress";
-import { useAuthStore } from "@/store/auth";
+import { PersonalInformation } from "@/components/dashboard/overview/personal-information/PersonalInformation";
+import { DateSection } from "@/components/dashboard/overview/personal-information/DateSection";
+import { ExamSchedule } from "@/components/dashboard/overview/exam-schedule/ExamSchedule";
+import { Announcements } from "@/components/dashboard/overview/announcement/Announcements";
+import { SubjectProgress } from "@/components/dashboard/overview/subject-progress/SubjectProgress";
+import { useAuth } from "@/features/auth";
 import type { Subject } from "@/types";
 
 export default function OverviewPage() {
 	const router = useRouter();
-	const { user } = useAuthStore();
-	const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
+	// const { user } = useAuth(); // Currently not used
+	// const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
 
 	const handleStartExam = (subject: Subject) => {
 		console.log("Starting exam for subject:", subject);
@@ -26,7 +26,7 @@ export default function OverviewPage() {
 			{/* Top Row - Personal Info and Date */}
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-shrink-0">
 				<div className="lg:col-span-2">
-					<PersonalInformation user={user} />
+					<PersonalInformation />
 				</div>
 				<DateSection />
 			</div>
@@ -49,11 +49,12 @@ export default function OverviewPage() {
 				<SubjectProgress
 					onStartExam={handleStartExam}
 					onNavigateToSubject={(subject) => {
-						setSelectedSubject(subject);
+						// setSelectedSubject(subject);
 						if (subject.type === "AP") {
-							router.push("/dashboard/ap-courses");
+							// Pass subject ID as URL parameter to auto-select the card
+							router.push(`/dashboard/ap-courses?subject=${subject.id}`);
 						} else if (subject.type === "SAT") {
-							router.push("/dashboard/sat-exams");
+							router.push(`/dashboard/sat-exams?subject=${subject.id}`);
 						}
 					}}
 				/>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { MockExamPage } from "@/components/MockExamPage";
+import { MockExamPage } from "@/components/features/exams/MockExamPage";
 import type { Subject } from "@/types";
 
 export default function ExamPage() {

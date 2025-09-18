@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { SATSectionSelectPage } from "@/components/SATSectionSelectPage";
+import { SATSectionSelectPage } from "@/components/features/exams/SATSectionSelectPage";
 import type { Subject } from "@/types";
 
 export default function SATSectionSelect() {

@@ -1,17 +1,22 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ForgotPasswordPage } from "@/components/ForgotPasswordPage";
 
-export default function ForgotPassword() {
+export default function ForgotPasswordRedirect() {
 	const router = useRouter();
 
+	useEffect(() => {
+		// Redirect to new auth structure
+		router.replace("/auth/forgot-password");
+	}, [router]);
+
 	return (
-		<ForgotPasswordPage
-			onNavigate={(page) => {
-				// Next.js 라우팅으로 페이지 이동
-				router.push(`/${page}`);
-			}}
-		/>
+		<div className="min-h-screen flex items-center justify-center">
+			<div className="text-center">
+				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+				<p className="text-gray-600">Redirecting...</p>
+			</div>
+		</div>
 	);
 }
