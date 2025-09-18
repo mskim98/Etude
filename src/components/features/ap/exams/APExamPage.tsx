@@ -42,21 +42,27 @@ function APToolsPanel({
 	const calculatorRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		if (activeTab === "calculator") {
+		if (activeTab === "calculator" && calculatorRef.current) {
 			// Load Desmos API if not already loaded
-			if (!(window as unknown as { Desmos?: unknown }).Desmos) {
+			const globalWindow = window as any;
+			
+			if (!globalWindow.Desmos) {
 				const script = document.createElement("script");
 				script.src = "https://www.desmos.com/api/v1.9/calculator.js";
 				script.async = true;
-				script.onload = initializeCalculator;
-				script.onerror = () => {
-					console.error("Failed to load Desmos calculator");
+				script.onload = () => {
+					console.log("Desmos script loaded successfully");
+					initializeCalculator();
+				};
+				script.onerror = (error) => {
+					console.error("Failed to load Desmos calculator script:", error);
 					if (calculatorRef.current) {
 						calculatorRef.current.innerHTML = `
               <div class="flex items-center justify-center h-full text-center p-4">
                 <div>
                   <div class="text-lg mb-2" style="color: var(--color-text-primary)">Calculator Loading Failed</div>
-                  <div class="text-sm" style="color: var(--color-text-secondary)">Please use an external calculator</div>
+                  <div class="text-sm" style="color: var(--color-text-secondary)">Check your internet connection</div>
+                  <button onclick="window.location.reload()" class="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-sm">Retry</button>
                 </div>
               </div>
             `;
@@ -69,27 +75,47 @@ function APToolsPanel({
 		}
 
 		function initializeCalculator() {
-			const windowWithDesmos = window as unknown as { Desmos?: { GraphingCalculator: (element: HTMLElement, options: unknown) => { setExpressions: (expressions: unknown[]) => void } } };
-			if (calculatorRef.current && windowWithDesmos.Desmos) {
+			const globalWindow = window as any;
+			if (calculatorRef.current && globalWindow.Desmos) {
 				// Clear any existing content
 				calculatorRef.current.innerHTML = "";
 
 				try {
-					const calculator = windowWithDesmos.Desmos.GraphingCalculator(calculatorRef.current, {
+					console.log("Initializing Desmos calculator...");
+					const calculator = globalWindow.Desmos.GraphingCalculator(calculatorRef.current, {
 						keypad: true,
-						settingsMenu: false,
+						settingsMenu: true,
 						expressionsTopbar: true,
 						pointsOfInterest: true,
 						trace: true,
 						border: false,
 						lockViewport: false,
 						expressionsCollapsed: false,
+						graphpaper: true,
+						showGrid: true,
+						showXAxis: true,
+						showYAxis: true,
+						xAxisNumbers: true,
+						yAxisNumbers: true,
 					});
 
-					// Set a simple welcome expression
+					// Set welcome expressions for AP Chemistry
 					calculator.setExpressions([
-						{ id: "help", latex: "\\text{AP Chemistry Calculator}", color: "#0091B3" },
+						{ 
+							id: "welcome", 
+							latex: "y = x^2", 
+							color: "#0091B3",
+							lineStyle: globalWindow.Desmos.Styles.SOLID,
+							lineWidth: 2
+						},
+						{ 
+							id: "help", 
+							latex: "\\text{AP Chemistry Calculator - Ready}", 
+							color: "#666666" 
+						}
 					]);
+					
+					console.log("Desmos calculator initialized successfully");
 				} catch (error) {
 					console.error("Failed to initialize Desmos calculator:", error);
 					if (calculatorRef.current) {
@@ -97,7 +123,8 @@ function APToolsPanel({
               <div class="flex items-center justify-center h-full text-center p-4">
                 <div>
                   <div class="text-lg mb-2" style="color: var(--color-text-primary)">Calculator Error</div>
-                  <div class="text-sm" style="color: var(--color-text-secondary)">Please refresh the page</div>
+                  <div class="text-sm" style="color: var(--color-text-secondary)">Error: ${error}</div>
+                  <button onclick="window.location.reload()" class="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-sm">Reload Page</button>
                 </div>
               </div>
             `;
@@ -236,6 +263,7 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 	const [showQuestionNavigator, setShowQuestionNavigator] = useState(false);
 	const [activeToolTab, setActiveToolTab] = useState<"calculator" | "notes" | "formulas">("calculator");
 	const [notes, setNotes] = useState("");
+	const [highlights, setHighlights] = useState<Map<number, string[]>>(new Map()); // questionIndex -> highlighted text array
 
 	// Timer effect
 	useEffect(() => {
@@ -252,17 +280,19 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 		return () => clearInterval(timer);
 	}, []);
 
-	// Auto-save answers
+	// Auto-save answers, flags, and highlights
 	useEffect(() => {
 		// TODO: Implement auto-save to backend
-		const saveAnswers = () => {
+		const saveData = () => {
 			localStorage.setItem(`ap-exam-${examData.id}-answers`, JSON.stringify(answers));
 			localStorage.setItem(`ap-exam-${examData.id}-flagged`, JSON.stringify(Array.from(flaggedQuestions)));
+			localStorage.setItem(`ap-exam-${examData.id}-highlights`, JSON.stringify(Array.from(highlights.entries())));
+			localStorage.setItem(`ap-exam-${examData.id}-notes`, notes);
 		};
 		
-		const debounceTimer = setTimeout(saveAnswers, 1000);
+		const debounceTimer = setTimeout(saveData, 1000);
 		return () => clearTimeout(debounceTimer);
-	}, [answers, flaggedQuestions, examData.id]);
+	}, [answers, flaggedQuestions, highlights, notes, examData.id]);
 
 	const formatTime = (seconds: number) => {
 		const hours = Math.floor(seconds / 3600);
@@ -293,6 +323,7 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 			answers,
 			timeSpent: examData.duration * 60 - timeLeft,
 			flaggedQuestions: Array.from(flaggedQuestions),
+			highlights: Array.from(highlights.entries()),
 			notes,
 		};
 		onExamComplete(result);
@@ -300,6 +331,47 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 
 	const getAnsweredCount = () => {
 		return answers.filter((answer) => answer !== null).length;
+	};
+
+	// Highlight functionality
+	const handleTextSelection = () => {
+		const selection = window.getSelection();
+		if (selection && selection.toString().trim()) {
+			const selectedText = selection.toString().trim();
+			const currentHighlights = highlights.get(currentQuestion) || [];
+			
+			if (!currentHighlights.includes(selectedText)) {
+				const newHighlights = new Map(highlights);
+				newHighlights.set(currentQuestion, [...currentHighlights, selectedText]);
+				setHighlights(newHighlights);
+			}
+			
+			// Clear selection
+			selection.removeAllRanges();
+		}
+	};
+
+	const removeHighlight = (questionIndex: number, textToRemove: string) => {
+		const currentHighlights = highlights.get(questionIndex) || [];
+		const newHighlights = new Map(highlights);
+		newHighlights.set(questionIndex, currentHighlights.filter(text => text !== textToRemove));
+		setHighlights(newHighlights);
+	};
+
+	const renderHighlightedText = (text: string, questionIndex: number) => {
+		const questionHighlights = highlights.get(questionIndex) || [];
+		if (questionHighlights.length === 0) return text;
+
+		let highlightedText = text;
+		questionHighlights.forEach((highlight) => {
+			const regex = new RegExp(`(${highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+			highlightedText = highlightedText.replace(
+				regex,
+				`<mark style="background-color: #fef08a; padding: 2px 4px; border-radius: 3px;" title="하이라이트된 텍스트">$1</mark>`
+			);
+		});
+
+		return highlightedText;
 	};
 
 	const currentQuestionData = questions[currentQuestion];
@@ -382,11 +454,15 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 					</div>
 
 					{/* Right section */}
-					<div className="flex items-center space-x-4">
+					<div className="flex items-center space-x-2">
 						<Button
 							variant="ghost"
 							size="sm"
-							onClick={() => setShowTools(!showTools)}
+							onClick={() => {
+								setActiveToolTab("calculator");
+								setIsToolsExpanded(true);
+								setShowTools(true);
+							}}
 							style={{ color: "var(--color-text-secondary)" }}
 							onMouseEnter={(e) => {
 								e.currentTarget.style.color = "var(--color-text-primary)";
@@ -395,8 +471,43 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 								e.currentTarget.style.color = "var(--color-text-secondary)";
 							}}
 						>
-							<Calculator className="w-4 h-4 mr-1" />
-							Tools
+							<Calculator className="w-4 h-4" />
+						</Button>
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => {
+								setActiveToolTab("formulas");
+								setIsToolsExpanded(true);
+								setShowTools(true);
+							}}
+							style={{ color: "var(--color-text-secondary)" }}
+							onMouseEnter={(e) => {
+								e.currentTarget.style.color = "var(--color-text-primary)";
+							}}
+							onMouseLeave={(e) => {
+								e.currentTarget.style.color = "var(--color-text-secondary)";
+							}}
+						>
+							<Sigma className="w-4 h-4" />
+						</Button>
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => {
+								setActiveToolTab("notes");
+								setIsToolsExpanded(true);
+								setShowTools(true);
+							}}
+							style={{ color: "var(--color-text-secondary)" }}
+							onMouseEnter={(e) => {
+								e.currentTarget.style.color = "var(--color-text-primary)";
+							}}
+							onMouseLeave={(e) => {
+								e.currentTarget.style.color = "var(--color-text-secondary)";
+							}}
+						>
+							<StickyNote className="w-4 h-4" />
 						</Button>
 						<Button
 							variant="outline"
@@ -534,19 +645,59 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 								{passageText ? (
 									<div className="space-y-4">
 										<div
-											className="p-4 rounded-lg"
+											className="p-4 rounded-lg select-text"
 											style={{
 												backgroundColor: "var(--color-primary-light)",
 												borderLeft: "4px solid var(--color-primary)",
 											}}
+											onMouseUp={handleTextSelection}
 										>
-											<div
-												className="whitespace-pre-wrap text-base leading-relaxed"
-												style={{ color: "var(--color-text-primary)" }}
-											>
-												{passageText}
+											<div className="mb-3 flex items-center justify-between">
+												<span className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
+													지문 (텍스트를 드래그하여 하이라이트)
+												</span>
+												{highlights.get(currentQuestion)?.length ? (
+													<span className="text-xs px-2 py-1 rounded bg-yellow-100 text-yellow-800">
+														{highlights.get(currentQuestion)?.length}개 하이라이트
+													</span>
+												) : null}
 											</div>
+											<div
+												className="whitespace-pre-wrap text-base leading-relaxed select-text"
+												style={{ color: "var(--color-text-primary)" }}
+												dangerouslySetInnerHTML={{
+													__html: renderHighlightedText(passageText, currentQuestion)
+												}}
+											/>
 										</div>
+										
+										{/* Highlight Management */}
+										{highlights.get(currentQuestion)?.length ? (
+											<div className="mt-4">
+												<h4 className="text-sm font-medium mb-2" style={{ color: "var(--color-text-primary)" }}>
+													하이라이트된 텍스트:
+												</h4>
+												<div className="space-y-2">
+													{highlights.get(currentQuestion)?.map((highlight, index) => (
+														<div
+															key={index}
+															className="flex items-center justify-between p-2 bg-yellow-50 rounded border border-yellow-200"
+														>
+															<span className="text-sm text-yellow-800 flex-1 truncate">
+																{highlight}
+															</span>
+															<button
+																onClick={() => removeHighlight(currentQuestion, highlight)}
+																className="ml-2 text-red-500 hover:text-red-700 text-sm"
+																title="하이라이트 제거"
+															>
+																<X className="w-3 h-3" />
+															</button>
+														</div>
+													))}
+												</div>
+											</div>
+										) : null}
 									</div>
 								) : (
 									<div className="text-center py-12" style={{ color: "var(--color-text-secondary)" }}>
