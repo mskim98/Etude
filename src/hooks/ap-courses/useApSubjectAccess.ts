@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useAuthStore } from "@/store/auth";
+import { useAuth } from "@/features/auth";
 
 /**
  * 사용자의 AP 과목별 접근 권한을 확인하는 훅
@@ -11,7 +11,7 @@ import { useAuthStore } from "@/store/auth";
  * 3. user_ap_subject.start_at <= now <= user_ap_subject.end_at (기간 체크)
  */
 export const useApSubjectAccess = (subjectId?: string) => {
-	const { user } = useAuthStore();
+	const { user } = useAuth();
 
 	return useQuery({
 		queryKey: ["ap-subject-access", user?.id, subjectId],
@@ -88,6 +88,6 @@ export const useServiceStatus = (subjectId?: string) => {
 		staleTime: 5 * 60 * 1000, // 5분 - 서비스 상태는 자주 변경되지 않음
 		gcTime: 10 * 60 * 1000, // 10분
 		retry: 2,
-		refetchOnWindowFocus: false
+		refetchOnWindowFocus: false,
 	});
 };

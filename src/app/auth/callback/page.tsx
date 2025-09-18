@@ -267,7 +267,7 @@ export default function AuthCallbackPage() {
 							<Button onClick={() => router.push("/dashboard")} className="w-full">
 								대시보드로 이동
 							</Button>
-							<Button onClick={() => router.push("/login")} variant="outline" className="w-full">
+							<Button onClick={() => router.push("/auth/login")} variant="outline" className="w-full">
 								로그인 페이지로 이동
 							</Button>
 							<Button onClick={() => window.location.reload()} variant="outline" className="w-full">

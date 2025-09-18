@@ -24,7 +24,6 @@ export const APCourseCard = memo(function APCourseCard({
 	title,
 	progress,
 	isSelected,
-	daysUntilExam,
 	completedChapters,
 	totalChapters,
 	completedExams,
@@ -35,7 +34,7 @@ export const APCourseCard = memo(function APCourseCard({
 		<Card
 			key={id}
 			className={`cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-[1.02] hover:shadow-lg border ${
-				isSelected ? "ring-2 shadow-lg scale-[1.02]" : "hover:shadow-md"
+				isSelected ? "ring-2 ring-primary shadow-lg scale-[1.02]" : "hover:shadow-md"
 			}`}
 			style={{
 				backgroundColor: "var(--color-card-default-bg)",
@@ -43,7 +42,6 @@ export const APCourseCard = memo(function APCourseCard({
 				boxShadow: isSelected
 					? "0 8px 20px -3px rgba(0, 145, 179, 0.15), 0 3px 4px -2px rgba(0, 145, 179, 0.08)"
 					: "var(--color-card-hover-shadow)",
-				ringColor: isSelected ? "var(--color-primary)" : "transparent",
 			}}
 			onClick={() => onSelect(id)}
 		>

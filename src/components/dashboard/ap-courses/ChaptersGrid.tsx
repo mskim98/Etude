@@ -23,7 +23,7 @@ interface ChaptersGridProps {
 	onStartExam?: () => void; // Optional since buttons are currently disabled
 }
 
-export function ChaptersGrid({ chapters, mcqActiveMap, frqActiveMap, onStartExam }: ChaptersGridProps) {
+export function ChaptersGrid({ chapters, mcqActiveMap, frqActiveMap }: ChaptersGridProps) {
 	if (!chapters || chapters.length === 0) return null;
 	return (
 		<div>

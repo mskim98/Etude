@@ -15,7 +15,7 @@ import type {
 	UrgencyLevel,
 	AnnouncementCategory,
 } from "../../types/announcement";
-import { useAuthStore } from "../../store/auth";
+import { useAuth } from "@/features/auth";
 
 /**
  * 기본 공지사항 훅
@@ -378,7 +378,7 @@ export function useAnnouncementAdmin(): {
 	clearFilter: () => void;
 } {
 	// 인증 상태에서 권한 확인
-	const { isTeacher, isAdmin } = useAuthStore();
+	const { isTeacher, isAdmin } = useAuth();
 	const canManage = isTeacher || isAdmin;
 
 	// 기본 공지사항 훅 사용

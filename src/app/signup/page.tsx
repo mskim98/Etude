@@ -1,25 +1,22 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { SignUpPage } from "@/components/SignUpPage";
 
-/**
- * 회원가입 페이지 래퍼 컴포넌트
- * SignUpPage 컴포넌트를 렌더링하고 네비게이션 함수 제공
- */
-export default function SignUp() {
+export default function SignupRedirect() {
 	const router = useRouter();
 
+	useEffect(() => {
+		// Redirect to new auth structure
+		router.replace("/auth/signup");
+	}, [router]);
+
 	return (
-		<SignUpPage
-			onNavigate={(page) => {
-				// Next.js 라우팅으로 페이지 이동
-				router.push(`/${page}`);
-			}}
-			onSignUpSuccess={() => {
-				// 회원가입 성공 시 로그인 페이지로 이동
-				router.push("/login");
-			}}
-		/>
+		<div className="min-h-screen flex items-center justify-center">
+			<div className="text-center">
+				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+				<p className="text-gray-600">Redirecting to signup...</p>
+			</div>
+		</div>
 	);
 }

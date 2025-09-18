@@ -2,31 +2,16 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useAuthStore, initializeAuthStore } from "@/store/auth";
-import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
+import { useAuth, useAuthRedirect } from "@/features/auth";
+import { DashboardNavigation } from "@/components/layout/DashboardNavigation";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
 	const router = useRouter();
-	const pathname = usePathname();
-	const {
-		user,
-		isAuthenticated,
-		isLoading: loading,
-		canAccessLMS,
-		getUserAccessStatus,
-		signOut,
-		forceLogout,
-	} = useAuthStore();
+	const { user, isAuthenticated, isLoading: loading, isApproved, isStudent, getUserAccessStatus, signOut } = useAuth();
 	const [isRedirecting, setIsRedirecting] = useState(false);
-
-	// Initialize auth store
-	useEffect(() => {
-		initializeAuthStore();
-	}, []);
-
 	// Handle authentication and access control
 	useEffect(() => {
-		// 로딩 중이거나 이미 리다이렉트 중이면 아무것도 하지 않음
+		// 로딩 중이거나 이미 리다이렉트 중이면 대기
 		if (loading || isRedirecting) return;
 
 		console.log("Dashboard Layout: 인증 상태 체크", {
@@ -47,7 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 		if (!isAuthenticated) {
 			console.log("Dashboard Layout: 인증되지 않은 사용자 → login으로 이동");
 			setIsRedirecting(true);
-			router.push("/login");
+			router.push("/auth/login");
 			return;
 		}
 
@@ -55,31 +40,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 		const accessStatus = getUserAccessStatus();
 		console.log("Dashboard Layout: 접근 상태", accessStatus);
 
+		if (accessStatus === "expired") {
+			console.log("Dashboard Layout: expired 사용자 → service-expired로 이동");
+			setIsRedirecting(true);
+			router.push("/auth/service-expired");
+			return;
+		}
+
 		if (accessStatus === "pending") {
 			console.log("Dashboard Layout: pending 사용자 → pending-approval로 이동");
 			setIsRedirecting(true);
-			router.push("/pending-approval");
+			router.push("/auth/pending-approval");
 			return;
 		}
 
 		if (accessStatus === "denied" || accessStatus === "no_profile") {
 			console.log("Dashboard Layout: denied/no_profile 사용자 → login으로 이동");
 			setIsRedirecting(true);
-			router.push("/login");
+			router.push("/auth/login");
 			return;
 		}
 
 		console.log("Dashboard Layout: approved 사용자 → 대시보드 표시");
 
+		const canAccessLMS = isStudent && isApproved;
 		if (!canAccessLMS) {
 			console.log("Dashboard Layout: LMS 접근 권한 없음 → login으로 이동");
 			setIsRedirecting(true);
-			router.push("/login");
+			router.push("/auth/login");
 			return;
 		}
-	}, [isAuthenticated, loading, canAccessLMS, isRedirecting, user]);
+	}, [isAuthenticated, loading, isApproved, isStudent, isRedirecting, user, getUserAccessStatus, router]);
 
 	// Show loading while checking authentication or redirecting
+	const canAccessLMS = isStudent && isApproved;
 	if (loading || isRedirecting || !isAuthenticated || !canAccessLMS) {
 		return (
 			<div className="min-h-screen flex items-center justify-center">
