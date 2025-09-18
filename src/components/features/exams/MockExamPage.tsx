@@ -273,7 +273,13 @@ interface MockExamPageProps {
 	startImmediately?: boolean; // 바로 시험 시작 여부
 }
 
-export function MockExamPage({ subject, onExamComplete, onNavigate, onNavigateToSection, startImmediately = false }: MockExamPageProps) {
+export function MockExamPage({
+	subject,
+	onExamComplete,
+	onNavigate,
+	onNavigateToSection,
+	startImmediately = false,
+}: MockExamPageProps) {
 	const [currentQuestion, setCurrentQuestion] = useState(0);
 	const [timeLeft, setTimeLeft] = useState(180 * 60); // 3 hours in seconds
 	const [answers, setAnswers] = useState<(number | null)[]>([]);
