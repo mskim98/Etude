@@ -56,6 +56,10 @@ export interface ApSubject {
 	totalChapters: number;
 	/** 완료된 챕터 수 */
 	completedChapters: number;
+	/** 총 시험 수 */
+	totalExams: number;
+	/** 완료된 시험 수 */
+	completedExams: number;
 	/** 진행률 (0-100) */
 	progress: number;
 	/** 시험일 */
@@ -106,6 +110,8 @@ export interface ApExam {
 	isActive: boolean;
 	/** 응시 가능 여부 */
 	canTake: boolean;
+	/** 완료 여부 */
+	completed?: boolean;
 	/** 이전 최고 점수 */
 	bestScore?: number;
 	/** 응시 횟수 */

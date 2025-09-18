@@ -1,8 +1,9 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
-import { BookOpen, TrendingUp, Award, Clock } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { APCourseCard } from "./APCourseCard";
+import { APSubjectStats } from "./APSubjectStats";
 import { ChaptersGrid } from "./ChaptersGrid";
 import { PracticeExamsGrid } from "./PracticeExamsGrid";
 import { useDashboardApSubjects } from "@/hooks/ap-courses/useApSubjects";
@@ -12,8 +13,8 @@ import { useApMaterialsStatus } from "@/hooks/ap-courses/useApMaterialsStatus";
 import { useApSubjectAccess, useServiceStatus } from "@/hooks/ap-courses/useApSubjectAccess";
 import type { ApSubject } from "../../../types";
 import { CourseCardSkeleton, GridSkeleton } from "./Skeletons";
-import { getSubjectStats as calcSubjectStats, getDaysUntilExam as calcDaysUntilExam } from "@/lib/ap-courses/utils";
-import { useAuthStore } from "@/store/auth";
+import { getDaysUntilExam as calcDaysUntilExam } from "@/lib/ap-courses/utils";
+// import { useAuthStore } from "@/store/auth";
 import {
 	AlertDialog,
 	AlertDialogContent,
@@ -34,7 +35,7 @@ interface APCoursesProps {
 export function APCourses({ onStartExam, selectedSubject, onTabChange, className }: APCoursesProps) {
 	const { subjects, isLoading, error, refresh } = useDashboardApSubjects();
 	const [selectedCard, setSelectedCard] = useState<string | null>(null);
-	const hasServiceAccess = useAuthStore((s) => s.hasServiceAccess);
+	// const hasServiceAccess = useAuthStore((s) => s.hasServiceAccess);
 	const [accessDialogOpen, setAccessDialogOpen] = useState(false);
 	const [serviceMaintenanceDialogOpen, setServiceMaintenanceDialogOpen] = useState(false);
 	const [dialogMessage, setDialogMessage] = useState("");
@@ -110,18 +111,18 @@ export function APCourses({ onStartExam, selectedSubject, onTabChange, className
 
 	const { chapters: selectedChapters, isLoading: chaptersLoading } = useApChapters(selectedCard || undefined);
 	const { exams: selectedExams, isLoading: examsLoading } = useApExams(selectedCard || undefined);
-	const { mcqActiveMap, frqActiveMap } = useApMaterialsStatus(selectedChapters as any);
+	const { mcqActiveMap, frqActiveMap } = useApMaterialsStatus(selectedChapters);
 
-	const getSubjectStats = (subjectId: string) => {
-		const chapters = selectedCard === subjectId ? selectedChapters || [] : [];
-		return calcSubjectStats(chapters as any);
-	};
+	// const getSubjectStats = (subjectId: string) => {
+	// 	const chapters = selectedCard === subjectId ? selectedChapters || [] : [];
+	// 	return calcSubjectStats(chapters);
+	// };
 
 	const getDaysUntilExam = (examDate: Date) => calcDaysUntilExam(examDate);
 
 	const availableSubjects = useMemo(() => subjects || [], [subjects]);
 	const selectedSubjectData = useMemo(() => {
-		return selectedCard ? availableSubjects.find((s: any) => s.id === selectedCard) : null;
+		return selectedCard ? availableSubjects.find((s: ApSubject) => s.id === selectedCard) : null;
 	}, [availableSubjects, selectedCard]);
 
 	if (isLoading || chaptersLoading || examsLoading) {
@@ -172,7 +173,7 @@ export function APCourses({ onStartExam, selectedSubject, onTabChange, className
 					<div className="flex items-center justify-center py-8">
 						<div className="text-center">
 							<p style={{ color: "var(--color-status-error)" }}>Error loading AP courses: {error}</p>
-							<button className="mt-4" onClick={refresh}>
+							<button className="mt-4" onClick={() => refresh()}>
 								Try Again
 							</button>
 						</div>
@@ -210,8 +211,8 @@ export function APCourses({ onStartExam, selectedSubject, onTabChange, className
 							scrollbarGutter: "stable",
 						}}
 					>
-						{(subjects || []).map((subject: any) => {
-							const stats = getSubjectStats(subject.id);
+						{(subjects || []).map((subject: ApSubject) => {
+							// const stats = getSubjectStats(subject.id);
 							const daysUntilExam = getDaysUntilExam(subject.examDate);
 							const isSelected = selectedCard === subject.id;
 							return (
@@ -222,6 +223,10 @@ export function APCourses({ onStartExam, selectedSubject, onTabChange, className
 									progress={subject.progress}
 									isSelected={isSelected}
 									daysUntilExam={daysUntilExam}
+									completedChapters={subject.completedChapters || 0}
+									totalChapters={subject.totalChapters || 0}
+									completedExams={subject.completedExams || 0}
+									totalExams={subject.totalExams || 0}
 									onSelect={handleCardSelect}
 								/>
 							);
@@ -254,76 +259,19 @@ export function APCourses({ onStartExam, selectedSubject, onTabChange, className
 
 					{selectedSubjectData && (
 						<div className="space-y-6">
-							<div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-								<div
-									className="p-4 rounded-lg text-center"
-									style={{
-										backgroundColor: "var(--color-card-default-bg)",
-										border: "1px solid var(--color-card-border)",
-										boxShadow: "var(--color-card-hover-shadow)",
-									}}
-								>
-									<TrendingUp className="w-5 h-5 mx-auto mb-2" style={{ color: "var(--color-primary)" }} />
-									<div className="font-semibold" style={{ color: "var(--color-text-primary)", fontSize: "18px" }}>
-										{selectedSubjectData.progress}%
-									</div>
-									<div style={{ color: "var(--color-text-secondary)", fontSize: "12px" }}>Progress</div>
-								</div>
-								<div
-									className="p-4 rounded-lg text-center"
-									style={{
-										backgroundColor: "var(--color-card-default-bg)",
-										border: "1px solid var(--color-card-border)",
-										boxShadow: "var(--color-card-hover-shadow)",
-									}}
-								>
-									<Award className="w-5 h-5 mx-auto mb-2" style={{ color: "var(--color-primary)" }} />
-									<div className="font-semibold" style={{ color: "var(--color-text-primary)", fontSize: "18px" }}>
-										{getSubjectStats(selectedSubjectData.id).completed}
-									</div>
-									<div style={{ color: "var(--color-text-secondary)", fontSize: "12px" }}>Chapters</div>
-								</div>
-								<div
-									className="p-4 rounded-lg text-center"
-									style={{
-										backgroundColor: "var(--color-card-default-bg)",
-										border: "1px solid var(--color-card-border)",
-										boxShadow: "var(--color-card-hover-shadow)",
-									}}
-								>
-									<Clock className="w-5 h-5 mx-auto mb-2" style={{ color: "var(--color-primary)" }} />
-									<div className="font-semibold" style={{ color: "var(--color-text-primary)", fontSize: "18px" }}>
-										{getDaysUntilExam(selectedSubjectData.examDate)}d
-									</div>
-									<div style={{ color: "var(--color-text-secondary)", fontSize: "12px" }}>Until Exam</div>
-								</div>
-								<div
-									className="p-4 rounded-lg text-center"
-									style={{
-										backgroundColor: "var(--color-card-default-bg)",
-										border: "1px solid var(--color-card-border)",
-										boxShadow: "var(--color-card-hover-shadow)",
-									}}
-								>
-									<BookOpen className="w-5 h-5 mx-auto mb-2" style={{ color: "var(--color-primary)" }} />
-									<div className="font-semibold" style={{ color: "var(--color-text-primary)", fontSize: "18px" }}>
-										{getSubjectStats(selectedSubjectData.id).total}
-									</div>
-									<div style={{ color: "var(--color-text-secondary)", fontSize: "12px" }}>Total</div>
-								</div>
-							</div>
+							<APSubjectStats subject={selectedSubjectData} />
 
 							<ChaptersGrid
 								chapters={selectedChapters || []}
 								mcqActiveMap={mcqActiveMap}
 								frqActiveMap={frqActiveMap}
-								onStartExam={() => handleWithApAccess(() => onStartExam(selectedSubjectData as any))}
+								onStartExam={() => handleWithApAccess(() => selectedSubjectData && onStartExam(selectedSubjectData))}
 							/>
 
 							<PracticeExamsGrid
 								exams={selectedExams || []}
 								subjectTitle={selectedSubjectData?.title || ""}
-								onStartExam={() => handleWithApAccess(() => onStartExam(selectedSubjectData as any))}
+								onStartExam={() => handleWithApAccess(() => selectedSubjectData && onStartExam(selectedSubjectData))}
 							/>
 						</div>
 					)}

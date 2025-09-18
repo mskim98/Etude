@@ -27,24 +27,31 @@ export interface APExamCardProps {
 	onWatchVideo?: () => void;
 	className?: string;
 	isActive?: boolean;
+	// New fields for accuracy and completion
+	correctAnswers?: number; // Number of correct answers
+	totalQuestions?: number; // Total number of questions
+	accuracyRate?: number; // Accuracy percentage
 }
 
 export function APExamCard({
-	examId,
+	// examId,
 	title,
 	description,
 	duration,
-	questionCount,
+	// questionCount,
 	difficulty,
 	hasExplanatoryVideo,
 	videoLength,
 	completed,
-	score,
+	// score,
 	subject,
 	onStartExam,
 	onWatchVideo,
 	className,
 	isActive = true,
+	correctAnswers,
+	totalQuestions,
+	accuracyRate,
 }: APExamCardProps) {
 	const getDifficultyStyles = (diff: string) => {
 		const baseClasses = "text-xs flex-shrink-0 border font-medium";
@@ -89,17 +96,17 @@ export function APExamCard({
 		}
 	};
 
-	const formatAPScore = (score?: number) => {
-		if (!score && score !== 0) return "---";
-		return `${score}/5`;
-	};
+	// const formatAPScore = (score?: number) => {
+	// 	if (!score && score !== 0) return "---";
+	// 	return `${score}/5`;
+	// };
 
-	const getAPScoreColor = (score?: number) => {
-		if (!score && score !== 0) return "var(--color-text-tertiary)";
-		if (score >= 4) return "var(--color-status-success)";
-		if (score >= 3) return "var(--color-status-warning)";
-		return "var(--color-status-error)";
-	};
+	// const getAPScoreColor = (score?: number) => {
+	// 	if (!score && score !== 0) return "var(--color-text-tertiary)";
+	// 	if (score >= 4) return "var(--color-status-success)";
+	// 	if (score >= 3) return "var(--color-status-warning)";
+	// 	return "var(--color-status-error)";
+	// };
 
 	// Ensure subject label doesn't duplicate 'AP'
 	const subjectLabel = (subject as unknown as string).replace(/^AP\s+/i, "");
@@ -198,10 +205,10 @@ export function APExamCard({
 								}}
 							>
 								<div className="text-xs mb-1 font-medium" style={{ color: "var(--color-text-secondary)" }}>
-									Questions
+									Accuracy
 								</div>
 								<div className="font-semibold" style={{ color: "var(--color-text-primary)" }}>
-									{questionCount ? questionCount : "---"}
+									{accuracyRate !== undefined ? `${accuracyRate}%` : "---"}
 								</div>
 							</div>
 							<div
@@ -215,8 +222,10 @@ export function APExamCard({
 								<div className="text-xs mb-1 font-medium" style={{ color: "var(--color-text-secondary)" }}>
 									Score
 								</div>
-								<div className="font-semibold" style={{ color: getAPScoreColor(score) }}>
-									{formatAPScore(score)}
+								<div className="font-semibold" style={{ color: "var(--color-text-primary)" }}>
+									{correctAnswers !== undefined && totalQuestions !== undefined
+										? `${correctAnswers}/${totalQuestions}`
+										: "---"}
 								</div>
 							</div>
 						</div>

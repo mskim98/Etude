@@ -1,16 +1,26 @@
 "use client";
 import React from "react";
 import { BookOpen } from "lucide-react";
-import { ChapterBox } from "../ChapterBox";
+import { APChapterCard } from "./APChapterCard";
 
 /**
  * 선택된 과목의 챕터 목록을 카드 그리드로 표시합니다.
  */
+interface Chapter {
+	id: string;
+	chapterNumber: number;
+	title: string;
+	isCompleted: boolean;
+	progress: number;
+	difficulty: "Easy" | "Medium" | "Hard";
+	isActive: boolean;
+}
+
 interface ChaptersGridProps {
-	chapters: any[];
+	chapters: Chapter[];
 	mcqActiveMap: Record<string, boolean>;
 	frqActiveMap: Record<string, boolean>;
-	onStartExam: () => void;
+	onStartExam?: () => void; // Optional since buttons are currently disabled
 }
 
 export function ChaptersGrid({ chapters, mcqActiveMap, frqActiveMap, onStartExam }: ChaptersGridProps) {
@@ -30,8 +40,8 @@ export function ChaptersGrid({ chapters, mcqActiveMap, frqActiveMap, onStartExam
 				className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto scrollbar-custom px-4 py-2"
 				style={{ maxHeight: "500px", scrollbarGutter: "stable" }}
 			>
-				{chapters.map((chapter: any) => (
-					<ChapterBox
+				{chapters.map((chapter: Chapter) => (
+					<APChapterCard
 						key={chapter.chapterNumber}
 						chapterNumber={chapter.chapterNumber}
 						title={chapter.title}
@@ -42,10 +52,9 @@ export function ChaptersGrid({ chapters, mcqActiveMap, frqActiveMap, onStartExam
 						score={chapter.progress}
 						timeSpent={0}
 						difficulty={chapter.difficulty}
-						onClick={onStartExam}
 						isActive={chapter.isActive}
-						mcqActive={!!mcqActiveMap[(chapter as any).id]}
-						frqActive={!!frqActiveMap[(chapter as any).id]}
+						mcqActive={!!mcqActiveMap[chapter.id]}
+						frqActive={!!frqActiveMap[chapter.id]}
 					/>
 				))}
 			</div>

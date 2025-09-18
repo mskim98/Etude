@@ -1,10 +1,11 @@
 import React from "react";
-import { Card, CardContent } from "../ui/card";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
-import { HelpCircle, FileText, Play, CheckCircle, Clock, Star, ChevronRight } from "lucide-react";
+import { Card, CardContent } from "../../ui/card";
+import { Badge } from "../../ui/badge";
+import { Button } from "../../ui/button";
+import { HelpCircle, FileText, Play, CheckCircle } from "lucide-react";
+import { ChapterMask } from "./ChapterMask";
 
-export interface ChapterBoxProps {
+export interface APChapterCardProps {
 	chapterNumber: number;
 	title: string;
 	mcqCount: number;
@@ -16,30 +17,32 @@ export interface ChapterBoxProps {
 	difficulty: "Easy" | "Medium" | "Hard";
 	reviewCompleted?: boolean;
 	className?: string;
-	onClick?: () => void;
+	// Individual action handlers (removed - will be connected to other pages later)
+	// onMcqClick?: () => void;
+	// onFrqClick?: () => void;
+	// onVideoClick?: () => void;
+	// onReviewTestClick?: () => void;
+	// onReviewResultClick?: () => void;
 	// Status flags for availability
 	isActive?: boolean; // chapter availability
 	mcqActive?: boolean; // mcq availability
 	frqActive?: boolean; // frq availability
 }
 
-export function ChapterBox({
+export function APChapterCard({
 	chapterNumber,
 	title,
 	mcqCount,
 	frqCount,
 	hasVideo,
 	completed,
-	score,
-	timeSpent,
 	difficulty,
 	reviewCompleted = false,
 	className,
-	onClick,
 	isActive = true,
 	mcqActive = true,
 	frqActive = true,
-}: ChapterBoxProps) {
+}: APChapterCardProps) {
 	const getDifficultyColor = (diff: string) => {
 		switch (diff) {
 			case "Easy":
@@ -53,34 +56,23 @@ export function ChapterBox({
 		}
 	};
 
-	const getScoreColor = (score: number) => {
-		if (score >= 80) return "text-green-600";
-		if (score >= 60) return "text-yellow-600";
-		return "text-red-600";
-	};
+	// const getScoreColor = (score: number) => {
+	// 	if (score >= 80) return "text-green-600";
+	// 	if (score >= 60) return "text-yellow-600";
+	// 	return "text-red-600";
+	// };
 
 	return (
 		<Card
-			className={`transition-all shadow-sm cursor-pointer hover:shadow-md ${className || ""}`}
+			className={`transition-all shadow-sm ${className || ""}`}
 			style={{
-				backgroundColor: completed ? "var(--color-card-completed-bg)" : "var(--color-card-default-bg)",
-				border: "1px solid var(--color-card-border)",
+				backgroundColor: completed ? "#f0fdf4" : "var(--color-card-default-bg)", // Light green for completed
+				border: completed ? "1px solid #22c55e" : "1px solid var(--color-card-border)", // Green border for completed
 			}}
-			onClick={onClick}
 		>
 			<CardContent className="p-4 relative">
 				{/* Inactive chapter overlay */}
-				{!isActive && (
-					<div
-						className="absolute inset-0 z-10 flex items-center justify-center rounded-lg"
-						style={{ backgroundColor: "rgba(0,0,0,0.45)", backdropFilter: "blur(2px)", color: "#fff" }}
-					>
-						<div className="text-center">
-							<div className="text-sm font-semibold">Unavailable</div>
-							<div className="text-xs opacity-90">This chapter cannot be used</div>
-						</div>
-					</div>
-				)}
+				<ChapterMask isVisible={!isActive} />
 
 				<div className={`${!isActive ? "pointer-events-none select-none opacity-60" : ""}`}>
 					<div className="flex items-start justify-between mb-3">
@@ -90,7 +82,7 @@ export function ChapterBox({
 									completed ? "bg-green-500 text-white" : "text-white"
 								}`}
 								style={{
-									backgroundColor: completed ? "#10B981" : "#4A9FCC",
+									backgroundColor: completed ? "#22c55e" : "#4A9FCC", // Consistent green color
 								}}
 							>
 								{completed ? <CheckCircle className="w-5 h-5" /> : chapterNumber}
@@ -122,38 +114,38 @@ export function ChapterBox({
 					<div className="grid grid-cols-3 gap-2 mb-3">
 						{/* MCQ Box */}
 						<div
-							className={`p-2 rounded border text-center transition-all ${
-								mcqActive ? "hover:shadow-sm/50 cursor-pointer" : "opacity-50 cursor-not-allowed"
+							className={`p-2 rounded border text-center transition-all min-h-[4.5rem] flex flex-col justify-center ${
+								mcqActive && isActive ? "hover:shadow-sm/50" : "opacity-50"
 							}`}
 							style={{
 								backgroundColor: mcqActive ? "#F0F8FF" : "#F5F5F5",
 								borderColor: mcqActive ? "#4A9FCC40" : "#E5E5E5",
 							}}
 						>
-							<HelpCircle className="w-4 h-4 mx-auto mb-1 cursor-pointer" style={{ color: "#4A9FCC" }} />
+							<HelpCircle className="w-4 h-4 mx-auto mb-1" style={{ color: "#4A9FCC" }} />
 							<div className="text-xs font-semibold text-gray-900">{mcqCount} MCQ</div>
 							<div className="text-xs text-gray-600">{mcqActive ? "Multiple Choice" : "Unavailable"}</div>
 						</div>
 
 						{/* FRQ Box */}
 						<div
-							className={`p-2 rounded border text-center transition-all ${
-								frqActive ? "hover:shadow-sm/50 cursor-pointer" : "opacity-50 cursor-not-allowed"
+							className={`p-2 rounded border text-center transition-all min-h-[4.5rem] flex flex-col justify-center ${
+								frqActive && isActive ? "hover:shadow-sm/50" : "opacity-50"
 							}`}
 							style={{
 								backgroundColor: frqActive ? "#F0FFF8" : "#F5F5F5",
 								borderColor: frqActive ? "#6BB6C740" : "#E5E5E5",
 							}}
 						>
-							<FileText className="w-4 h-4 mx-auto mb-1 cursor-pointer" style={{ color: "#6BB6C7" }} />
+							<FileText className="w-4 h-4 mx-auto mb-1" style={{ color: "#6BB6C7" }} />
 							<div className="text-xs font-semibold text-gray-900">{frqCount} FRQ</div>
 							<div className="text-xs text-gray-600">{frqActive ? "Free Response" : "Unavailable"}</div>
 						</div>
 
 						{/* Video Box */}
 						<div
-							className={`p-2 rounded border text-center transition-all ${
-								hasVideo ? "hover:shadow-sm/50 cursor-pointer" : "opacity-50 cursor-not-allowed"
+							className={`p-2 rounded border text-center transition-all min-h-[4.5rem] flex flex-col justify-center ${
+								hasVideo && isActive ? "hover:shadow-sm/50" : "opacity-50"
 							}`}
 							style={{
 								backgroundColor: hasVideo ? "#FFF8F0" : "#F5F5F5",
@@ -161,19 +153,13 @@ export function ChapterBox({
 							}}
 						>
 							<Play
-								className={`w-4 h-4 mx-auto mb-1 ${hasVideo ? "cursor-pointer" : "cursor-not-allowed"}`}
+								className="w-4 h-4 mx-auto mb-1"
 								style={{
 									color: hasVideo ? "#8CC7D3" : "#9CA3AF",
 								}}
 							/>
-							<div
-								className={`text-xs font-semibold text-gray-900 ${hasVideo ? "cursor-pointer" : "cursor-not-allowed"}`}
-							>
-								{hasVideo ? "Video" : "No Video"}
-							</div>
-							<div className={`text-xs text-gray-600 ${hasVideo ? "cursor-pointer" : "cursor-not-allowed"}`}>
-								{hasVideo ? "Solutions" : "Coming Soon"}
-							</div>
+							<div className="text-xs font-semibold text-gray-900">{hasVideo ? "Video" : "No Video"}</div>
+							<div className="text-xs text-gray-600">{hasVideo ? "Solutions" : "Coming Soon"}</div>
 						</div>
 					</div>
 
@@ -184,15 +170,7 @@ export function ChapterBox({
 								size="sm"
 								variant={reviewCompleted ? "outline" : "default"}
 								className="h-8 px-2 text-xs flex-1 flex items-center justify-center"
-								onClick={(e) => {
-									e.stopPropagation();
-									if (!reviewCompleted) {
-										// 챕터 리뷰 시험 시작 로직
-										console.log(`챕터 ${chapterNumber} 리뷰 시험 시작: ${title}`);
-										// TODO: 챕터 리뷰 시험 페이지로 이동 또는 모달 열기
-									}
-								}}
-								disabled={reviewCompleted}
+								disabled={reviewCompleted || !isActive}
 							>
 								{reviewCompleted ? "Review Complete" : "Review Test"}
 							</Button>
@@ -200,12 +178,7 @@ export function ChapterBox({
 								size="sm"
 								variant="outline"
 								className="h-8 px-2 text-xs flex-1 flex items-center justify-center"
-								onClick={(e) => {
-									e.stopPropagation();
-									// 리뷰 결과 보기 로직
-									console.log(`챕터 ${chapterNumber} 리뷰 결과 보기: ${title}`);
-									// TODO: 리뷰 결과 페이지로 이동 또는 모달 열기
-								}}
+								disabled={!isActive}
 							>
 								Review Result
 							</Button>

@@ -12,6 +12,10 @@ export interface APCourseCardProps {
 	progress: number;
 	isSelected: boolean;
 	daysUntilExam: number;
+	completedChapters: number;
+	totalChapters: number;
+	completedExams: number;
+	totalExams: number;
 	onSelect: (subjectId: string) => void;
 }
 
@@ -21,6 +25,10 @@ export const APCourseCard = memo(function APCourseCard({
 	progress,
 	isSelected,
 	daysUntilExam,
+	completedChapters,
+	totalChapters,
+	completedExams,
+	totalExams,
 	onSelect,
 }: APCourseCardProps) {
 	return (
@@ -94,15 +102,15 @@ export const APCourseCard = memo(function APCourseCard({
 					</div>
 					<div className="text-center">
 						<div className="font-semibold" style={{ color: "var(--color-text-primary)", fontSize: "14px" }}>
-							{Math.max(daysUntilExam, 0)}d
+							{completedChapters}/{totalChapters}
 						</div>
-						<div style={{ color: "var(--color-text-secondary)", fontSize: "10px", fontWeight: 500 }}>Until Exam</div>
+						<div style={{ color: "var(--color-text-secondary)", fontSize: "10px", fontWeight: 500 }}>Chapters</div>
 					</div>
 					<div className="text-center">
 						<div className="font-semibold" style={{ color: "var(--color-text-primary)", fontSize: "14px" }}>
-							AP
+							{completedExams}/{totalExams}
 						</div>
-						<div style={{ color: "var(--color-text-secondary)", fontSize: "10px", fontWeight: 500 }}>Type</div>
+						<div style={{ color: "var(--color-text-secondary)", fontSize: "10px", fontWeight: 500 }}>Exams</div>
 					</div>
 				</div>
 			</CardContent>
