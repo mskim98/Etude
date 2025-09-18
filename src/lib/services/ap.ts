@@ -76,8 +76,10 @@ export class ApServiceImpl implements ApService {
 					isActive: item.is_active,
 					totalChapters: item.total_chapters,
 					completedChapters: 0, // TODO: 실제 사용자 진행도 계산
+					totalExams: item.total_exams,
+					completedExams: 0, // TODO: 실제 사용자 진행도 계산
 					progress: item.chapter_completion_rate,
-					examDate: item.exam_date ? new Date(item.exam_date) : new Date("2024-05-15"),
+					examDate: item.exam_date ? new Date(item.exam_date) : new Date("2025-05-15"),
 					createdAt: new Date(item.created_at),
 				};
 			});

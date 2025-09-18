@@ -61,19 +61,20 @@ export function ChapterBox({
 
 	return (
 		<Card
-			className={`transition-all shadow-sm cursor-pointer hover:shadow-md ${className || ""}`}
+			className={`transition-all shadow-sm ${isActive ? "cursor-pointer hover:shadow-md" : "cursor-not-allowed"} ${className || ""}`}
 			style={{
 				backgroundColor: completed ? "var(--color-card-completed-bg)" : "var(--color-card-default-bg)",
 				border: "1px solid var(--color-card-border)",
 			}}
-			onClick={onClick}
+			onClick={isActive ? onClick : undefined}
 		>
 			<CardContent className="p-4 relative">
 				{/* Inactive chapter overlay */}
 				{!isActive && (
 					<div
-						className="absolute inset-0 z-10 flex items-center justify-center rounded-lg"
+						className="absolute inset-0 z-10 flex items-center justify-center rounded-lg cursor-not-allowed"
 						style={{ backgroundColor: "rgba(0,0,0,0.45)", backdropFilter: "blur(2px)", color: "#fff" }}
+						onClick={(e) => e.stopPropagation()}
 					>
 						<div className="text-center">
 							<div className="text-sm font-semibold">Unavailable</div>

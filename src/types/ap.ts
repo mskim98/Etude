@@ -56,6 +56,10 @@ export interface ApSubject {
 	totalChapters: number;
 	/** 완료된 챕터 수 */
 	completedChapters: number;
+	/** 총 시험 수 */
+	totalExams: number;
+	/** 완료된 시험 수 */
+	completedExams: number;
 	/** 진행률 (0-100) */
 	progress: number;
 	/** 시험일 */
