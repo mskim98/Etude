@@ -3,21 +3,8 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-	Clock,
-	FileText,
-	AlertTriangle,
-	CheckCircle,
-	ArrowLeft,
-	Play,
-	BookOpen,
-	Target,
-	Timer,
-	Users,
-	Flag,
-} from "lucide-react";
+import { Clock, AlertTriangle, CheckCircle, ArrowLeft, Play, BookOpen, Target, Flag } from "lucide-react";
 import type { ApExam } from "@/types/ap";
 
 interface APExamInstructionPageProps {
@@ -69,7 +56,7 @@ export function APExamInstructionPage({ examData, onStartExam, onGoBack }: APExa
 						</div>
 						<h1 className="text-2xl font-semibold text-foreground mb-4">{examData.title}</h1>
 						<p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-							This is a full-length practice exam designed to simulate the real AP exam experience. You'll have{" "}
+							This is a full-length practice exam designed to simulate the real AP exam experience. You&apos;ll have{" "}
 							{formatDuration(examData.duration)} to complete {examData.questionCount} questions in a BlueBook-style
 							interface with access to tools and formulas.
 						</p>

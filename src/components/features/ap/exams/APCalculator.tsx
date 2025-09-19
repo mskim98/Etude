@@ -4,11 +4,9 @@ import React, { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { evaluate } from "mathjs";
 
-interface APCalculatorProps {
-	onClose: () => void;
-}
+interface APCalculatorProps {}
 
-export function APCalculator({ onClose }: APCalculatorProps) {
+export function APCalculator({}: APCalculatorProps) {
 	// Calculator state
 	const [calcDisplay, setCalcDisplay] = useState("0");
 	const [calcValue, setCalcValue] = useState("");
@@ -87,220 +85,233 @@ export function APCalculator({ onClose }: APCalculatorProps) {
 	};
 
 	return (
-		<div className="w-full">
-			<div className="bg-white rounded-lg p-4">
-				<div className="flex items-center justify-between mb-4">
-					<h3 className="text-lg font-semibold">AP Chemistry Calculator</h3>
+		<div className="w-full h-full">
+			<div className="bg-white rounded-lg p-3 h-full flex flex-col">
+				<div className="flex items-center justify-between mb-3 flex-shrink-0">
+					<h4 className="text-lg font-semibold">Calculator</h4>
 					<div className="flex items-center gap-2">
 						<Button
 							onClick={() => setIsRadianMode(!isRadianMode)}
-							className={`text-xs px-2 py-1 ${isRadianMode ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+							className={`text-sm font-medium px-3 py-2 ${isRadianMode ? "bg-gray-600 text-white" : "bg-gray-200"}`}
 						>
 							{isRadianMode ? "RAD" : "DEG"}
 						</Button>
-						<Button onClick={clearHistory} className="text-xs px-2 py-1 bg-red-500 text-white">
-							Clear History
+						<Button onClick={clearHistory} className="text-sm font-medium px-3 py-2 bg-gray-600 text-white">
+							Clear
 						</Button>
 					</div>
 				</div>
 
-				{/* Calculator History */}
-				{calcHistory.length > 0 && (
-					<div className="mb-3 p-2 bg-gray-50 rounded text-xs max-h-20 overflow-y-auto">
-						{calcHistory.map((entry, index) => (
-							<div key={index} className="text-gray-600 font-mono">
-								{entry}
-							</div>
-						))}
-					</div>
-				)}
+				{/* Calculator Only */}
+				<div className="flex-1 flex flex-col">
+					{/* Calculator History */}
+					{calcHistory.length > 0 && (
+						<div className="mb-3 p-2 bg-gray-50 rounded text-xs max-h-20 overflow-y-auto">
+							{calcHistory.map((entry, index) => (
+								<div key={index} className="text-gray-600 font-mono">
+									{entry}
+								</div>
+							))}
+						</div>
+					)}
 
-				<div className="grid grid-cols-4 gap-2 text-sm">
-					<input
-						type="text"
-						value={calcDisplay}
-						readOnly
-						className="col-span-4 p-3 border rounded text-right text-lg font-mono bg-gray-50"
-					/>
-					<Button onClick={clearCalc} className="p-2 bg-red-500 text-white rounded hover:bg-red-600">
-						C
-					</Button>
-					<Button
-						onClick={() => appendToCalc("/")}
-						className="p-2 bg-orange-500 text-white rounded hover:bg-orange-600"
-					>
-						÷
-					</Button>
-					<Button
-						onClick={() => appendToCalc("*")}
-						className="p-2 bg-orange-500 text-white rounded hover:bg-orange-600"
-					>
-						×
-					</Button>
-					<Button onClick={deleteLast} className="p-2 bg-gray-500 text-white rounded hover:bg-gray-600">
-						⌫
-					</Button>
-					<Button onClick={() => appendToCalc("7")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
-						7
-					</Button>
-					<Button onClick={() => appendToCalc("8")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
-						8
-					</Button>
-					<Button onClick={() => appendToCalc("9")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
-						9
-					</Button>
-					<Button
-						onClick={() => appendToCalc("-")}
-						className="p-2 bg-orange-500 text-white rounded hover:bg-orange-600"
-					>
-						-
-					</Button>
-					<Button onClick={() => appendToCalc("4")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
-						4
-					</Button>
-					<Button onClick={() => appendToCalc("5")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
-						5
-					</Button>
-					<Button onClick={() => appendToCalc("6")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
-						6
-					</Button>
-					<Button
-						onClick={() => appendToCalc("+")}
-						className="p-2 bg-orange-500 text-white rounded hover:bg-orange-600"
-					>
-						+
-					</Button>
-					<Button onClick={() => appendToCalc("1")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
-						1
-					</Button>
-					<Button onClick={() => appendToCalc("2")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
-						2
-					</Button>
-					<Button onClick={() => appendToCalc("3")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
-						3
-					</Button>
-					<Button onClick={calculate} className="row-span-2 p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-						=
-					</Button>
-					<Button onClick={() => appendToCalc("0")} className="col-span-2 p-2 bg-gray-200 rounded hover:bg-gray-300">
-						0
-					</Button>
-					<Button onClick={() => appendToCalc(".")} className="p-2 bg-gray-200 rounded hover:bg-gray-300">
-						.
-					</Button>
-				</div>
-				{/* Advanced Math Functions */}
-				<div className="mt-4 space-y-3">
-					<div className="text-xs font-semibold text-gray-700 mb-2">과학 함수</div>
-					<div className="grid grid-cols-4 gap-1">
+					<div className="grid grid-cols-4 gap-2 text-base flex-1">
+						<input
+							type="text"
+							value={calcDisplay}
+							readOnly
+							className="col-span-4 p-4 border rounded text-right text-xl font-mono bg-gray-50 mb-2"
+						/>
 						<Button
-							onClick={() => insertFunction("sqrt(")}
-							className="p-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs"
+							onClick={clearCalc}
+							className="p-3 bg-gray-600 text-white rounded hover:bg-gray-700 h-12 text-base font-medium"
 						>
-							√
+							C
 						</Button>
 						<Button
-							onClick={() => insertFunction("^")}
-							className="p-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs"
+							onClick={() => appendToCalc("/")}
+							className="p-3 bg-gray-500 text-white rounded hover:bg-gray-600 h-12 text-base font-medium"
 						>
-							x^y
+							÷
 						</Button>
 						<Button
-							onClick={() => insertFunction("log(")}
-							className="p-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs"
+							onClick={() => appendToCalc("*")}
+							className="p-3 bg-gray-500 text-white rounded hover:bg-gray-600 h-12 text-base font-medium"
 						>
-							ln
+							×
 						</Button>
 						<Button
-							onClick={() => insertFunction("log10(")}
-							className="p-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs"
+							onClick={deleteLast}
+							className="p-3 bg-gray-400 text-white rounded hover:bg-gray-500 h-12 text-base font-medium"
 						>
-							log
+							⌫
 						</Button>
 						<Button
-							onClick={() => insertFunction("sin(")}
-							className="p-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+							onClick={() => appendToCalc("7")}
+							className="p-3 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 h-12 text-base font-medium"
 						>
-							sin
+							7
 						</Button>
 						<Button
-							onClick={() => insertFunction("cos(")}
-							className="p-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+							onClick={() => appendToCalc("8")}
+							className="p-3 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 h-12 text-base font-medium"
 						>
-							cos
+							8
 						</Button>
 						<Button
-							onClick={() => insertFunction("tan(")}
-							className="p-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+							onClick={() => appendToCalc("9")}
+							className="p-3 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 h-12 text-base font-medium"
 						>
-							tan
+							9
 						</Button>
 						<Button
-							onClick={() => insertFunction("abs(")}
-							className="p-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+							onClick={() => appendToCalc("-")}
+							className="p-3 bg-gray-500 text-white rounded hover:bg-gray-600 h-12 text-base font-medium"
 						>
-							|x|
+							-
+						</Button>
+						<Button
+							onClick={() => appendToCalc("4")}
+							className="p-3 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 h-12 text-base font-medium"
+						>
+							4
+						</Button>
+						<Button
+							onClick={() => appendToCalc("5")}
+							className="p-3 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 h-12 text-base font-medium"
+						>
+							5
+						</Button>
+						<Button
+							onClick={() => appendToCalc("6")}
+							className="p-3 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 h-12 text-base font-medium"
+						>
+							6
+						</Button>
+						<Button
+							onClick={() => appendToCalc("+")}
+							className="p-3 bg-gray-500 text-white rounded hover:bg-gray-600 h-12 text-base font-medium"
+						>
+							+
+						</Button>
+						<Button
+							onClick={() => appendToCalc("1")}
+							className="p-3 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 h-12 text-base font-medium"
+						>
+							1
+						</Button>
+						<Button
+							onClick={() => appendToCalc("2")}
+							className="p-3 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 h-12 text-base font-medium"
+						>
+							2
+						</Button>
+						<Button
+							onClick={() => appendToCalc("3")}
+							className="p-3 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 h-12 text-base font-medium"
+						>
+							3
+						</Button>
+						<Button
+							onClick={calculate}
+							className="row-span-2 p-3 bg-gray-700 text-white rounded hover:bg-gray-800 text-base font-medium"
+						>
+							=
+						</Button>
+						<Button
+							onClick={() => appendToCalc("0")}
+							className="col-span-2 p-3 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 h-12 text-base font-medium"
+						>
+							0
+						</Button>
+						<Button
+							onClick={() => appendToCalc(".")}
+							className="p-3 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 h-12 text-base font-medium"
+						>
+							.
 						</Button>
 					</div>
+					{/* Advanced Math Functions */}
+					<div className="mt-4 space-y-3">
+						<div className="text-sm font-semibold text-gray-700 mb-2">과학 함수</div>
+						<div className="grid grid-cols-4 gap-2">
+							<Button
+								onClick={() => insertFunction("sqrt(")}
+								className="p-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm font-medium h-10"
+							>
+								√
+							</Button>
+							<Button
+								onClick={() => insertFunction("^")}
+								className="p-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm font-medium h-10"
+							>
+								x^y
+							</Button>
+							<Button
+								onClick={() => insertFunction("log(")}
+								className="p-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm font-medium h-10"
+							>
+								ln
+							</Button>
+							<Button
+								onClick={() => insertFunction("log10(")}
+								className="p-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm font-medium h-10"
+							>
+								log
+							</Button>
+							<Button
+								onClick={() => insertFunction("sin(")}
+								className="p-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm font-medium h-10"
+							>
+								sin
+							</Button>
+							<Button
+								onClick={() => insertFunction("cos(")}
+								className="p-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm font-medium h-10"
+							>
+								cos
+							</Button>
+							<Button
+								onClick={() => insertFunction("tan(")}
+								className="p-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm font-medium h-10"
+							>
+								tan
+							</Button>
+							<Button
+								onClick={() => insertFunction("abs(")}
+								className="p-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm font-medium h-10"
+							>
+								|x|
+							</Button>
+						</div>
 
-					<div className="text-xs font-semibold text-gray-700 mb-2">상수 & 기타</div>
-					<div className="grid grid-cols-4 gap-1">
-						<Button
-							onClick={() => insertConstant("pi")}
-							className="p-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 text-xs"
-						>
-							π
-						</Button>
-						<Button
-							onClick={() => insertConstant("e")}
-							className="p-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 text-xs"
-						>
-							e
-						</Button>
-						<Button
-							onClick={() => appendToCalc("(")}
-							className="p-1 bg-gray-400 text-white rounded hover:bg-gray-500 text-xs"
-						>
-							(
-						</Button>
-						<Button
-							onClick={() => appendToCalc(")")}
-							className="p-1 bg-gray-400 text-white rounded hover:bg-gray-500 text-xs"
-						>
-							)
-						</Button>
-					</div>
-
-					<div className="text-xs font-semibold text-gray-700 mb-2">화학 상수</div>
-					<div className="grid grid-cols-2 gap-1">
-						<Button
-							onClick={() => insertConstant("8.314")}
-							className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs"
-							title="기체 상수 R"
-						>
-							R
-						</Button>
-						<Button
-							onClick={() => insertConstant("6.022e23")}
-							className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs"
-							title="아보가드로 수"
-						>
-							NA
-						</Button>
-						<Button
-							onClick={() => insertConstant("1.602e-19")}
-							className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs"
-							title="전자 전하"
-						>
-							e-
-						</Button>
-						<Button
-							onClick={() => insertConstant("273.15")}
-							className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs"
-							title="절대온도"
-						>
-							K
-						</Button>
+						<div className="text-sm font-semibold text-gray-700 mb-2">상수 & 기타</div>
+						<div className="grid grid-cols-4 gap-2">
+							<Button
+								onClick={() => insertConstant("pi")}
+								className="p-2 bg-gray-700 text-white rounded hover:bg-gray-800 text-sm font-medium h-10"
+							>
+								π
+							</Button>
+							<Button
+								onClick={() => insertConstant("e")}
+								className="p-2 bg-gray-700 text-white rounded hover:bg-gray-800 text-sm font-medium h-10"
+							>
+								e
+							</Button>
+							<Button
+								onClick={() => appendToCalc("(")}
+								className="p-2 bg-gray-400 text-white rounded hover:bg-gray-500 text-sm font-medium h-10"
+							>
+								(
+							</Button>
+							<Button
+								onClick={() => appendToCalc(")")}
+								className="p-2 bg-gray-400 text-white rounded hover:bg-gray-500 text-sm font-medium h-10"
+							>
+								)
+							</Button>
+						</div>
 					</div>
 				</div>
 			</div>

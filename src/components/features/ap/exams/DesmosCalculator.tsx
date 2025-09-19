@@ -29,58 +29,58 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 		// 컴포넌트가 마운트된 후 DOM이 준비될 때까지 대기
 		const initializeAfterMount = () => {
 			const loadDesmos = async () => {
-			// Desmos API가 이미 로드되어 있는지 확인
-			if (window.Desmos && window.Desmos.GraphingCalculator) {
-				console.log("Desmos API already loaded");
-				setIsLoaded(true);
-				// DOM이 준비될 때까지 대기 후 초기화
-				setTimeout(() => initializeCalculator(), 300);
-				return;
-			}
+				// Desmos API가 이미 로드되어 있는지 확인
+				if (window.Desmos && window.Desmos.GraphingCalculator) {
+					console.log("Desmos API already loaded");
+					setIsLoaded(true);
+					// DOM이 준비될 때까지 대기 후 초기화
+					setTimeout(() => initializeCalculator(), 300);
+					return;
+				}
 
-			// 이미 로딩 중이면 중복 로드 방지
-			if (isInitializing) return;
+				// 이미 로딩 중이면 중복 로드 방지
+				if (isInitializing) return;
 
-			setIsInitializing(true);
-			setLoadError(null);
+				setIsInitializing(true);
+				setLoadError(null);
 
-			try {
-				// Desmos API 스크립트 로드 (공식 문서에 따른 정확한 URL)
-				script = document.createElement("script");
-				script.src = "https://www.desmos.com/api/v1.11/calculator.js?apiKey=2c8bb554a339499fa62031c68955ae65";
-				script.async = true;
-				script.crossOrigin = "anonymous";
+				try {
+					// Desmos API 스크립트 로드 (공식 문서에 따른 정확한 URL)
+					script = document.createElement("script");
+					script.src = "https://www.desmos.com/api/v1.11/calculator.js?apiKey=2c8bb554a339499fa62031c68955ae65";
+					script.async = true;
+					script.crossOrigin = "anonymous";
 
-				script.onload = () => {
-					console.log("Desmos API loaded successfully");
-					// API 로드 후 충분한 지연을 두고 초기화
-					setTimeout(() => {
-						if (window.Desmos && window.Desmos.GraphingCalculator) {
-							setIsLoaded(true);
-							setIsInitializing(false);
-							// DOM 준비를 위해 추가 지연
-							setTimeout(() => initializeCalculator(), 200);
-						} else {
-							console.error("Desmos API not properly loaded");
-							setLoadError("Desmos API failed to initialize properly");
-							setIsInitializing(false);
-						}
-					}, 300);
-				};
+					script.onload = () => {
+						console.log("Desmos API loaded successfully");
+						// API 로드 후 충분한 지연을 두고 초기화
+						setTimeout(() => {
+							if (window.Desmos && window.Desmos.GraphingCalculator) {
+								setIsLoaded(true);
+								setIsInitializing(false);
+								// DOM 준비를 위해 추가 지연
+								setTimeout(() => initializeCalculator(), 200);
+							} else {
+								console.error("Desmos API not properly loaded");
+								setLoadError("Desmos API failed to initialize properly");
+								setIsInitializing(false);
+							}
+						}, 300);
+					};
 
-				script.onerror = (error) => {
-					console.error("Failed to load Desmos API:", error);
-					setLoadError("Failed to load Desmos calculator. Please check your internet connection and API key.");
+					script.onerror = (error) => {
+						console.error("Failed to load Desmos API:", error);
+						setLoadError("Failed to load Desmos calculator. Please check your internet connection and API key.");
+						setIsInitializing(false);
+					};
+
+					document.head.appendChild(script);
+				} catch (error) {
+					console.error("Error loading Desmos script:", error);
+					setLoadError("Error loading calculator");
 					setIsInitializing(false);
-				};
-
-				document.head.appendChild(script);
-			} catch (error) {
-				console.error("Error loading Desmos script:", error);
-				setLoadError("Error loading calculator");
-				setIsInitializing(false);
-			}
-		};
+				}
+			};
 
 			loadDesmos();
 		};

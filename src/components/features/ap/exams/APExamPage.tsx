@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { APCalculator } from "./APCalculator";
-import { DesmosCalculator } from "./DesmosCalculator";
+import { APGraphCalculator } from "./APGraphCalculator";
 import {
 	Clock,
 	Flag,
@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import type { ApExam, ApExamQuestion } from "@/types/ap";
 
-// Simple tool modals for header buttons
+// Draggable tool modal for header buttons
 function ToolModal({
 	isOpen,
 	onClose,
@@ -31,33 +31,163 @@ function ToolModal({
 }: {
 	isOpen: boolean;
 	onClose: () => void;
-	type: "calculator" | "formulas" | "notes" | "graphing";
+	type: "calculator" | "graph" | "formulas" | "notes";
 	notes: string;
 	setNotes: (notes: string) => void;
 }) {
+	const [position, setPosition] = useState({ x: 50, y: 50 });
+	// Resizable size for graph modal
+	const [size, setSize] = useState({ width: 1000, height: 740 });
+	const [isDragging, setIsDragging] = useState(false);
+	const [isResizing, setIsResizing] = useState(false);
+	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+	const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+	const modalRef = useRef<HTMLDivElement>(null);
+
+	// Global mouse event handlers for better stability
+	React.useEffect(() => {
+		const handleGlobalMouseMove = (e: MouseEvent) => {
+			if (isDragging) {
+				const newX = e.clientX - dragStart.x;
+				const newY = e.clientY - dragStart.y;
+				setPosition({
+					x: Math.max(0, Math.min(window.innerWidth - 300, newX)),
+					y: Math.max(0, Math.min(window.innerHeight - 200, newY)),
+				});
+			} else if (isResizing) {
+				const deltaX = e.clientX - resizeStart.x;
+				const deltaY = e.clientY - resizeStart.y;
+				const newWidth = Math.max(800, Math.min(window.innerWidth - position.x - 50, resizeStart.width + deltaX));
+				const newHeight = Math.max(600, Math.min(window.innerHeight - position.y - 50, resizeStart.height + deltaY));
+				setSize({ width: newWidth, height: newHeight });
+
+				// Dispatch custom event to notify graph calculator of resize
+				if (modalRef.current) {
+					const event = new CustomEvent("modal-resize", {
+						detail: { width: newWidth, height: newHeight },
+					});
+					modalRef.current.dispatchEvent(event);
+				}
+			}
+		};
+
+		const handleGlobalMouseUp = () => {
+			setIsDragging(false);
+			setIsResizing(false);
+		};
+
+		if (isDragging || isResizing) {
+			document.addEventListener("mousemove", handleGlobalMouseMove);
+			document.addEventListener("mouseup", handleGlobalMouseUp);
+			document.body.style.userSelect = "none"; // Prevent text selection during drag/resize
+		}
+
+		return () => {
+			document.removeEventListener("mousemove", handleGlobalMouseMove);
+			document.removeEventListener("mouseup", handleGlobalMouseUp);
+			document.body.style.userSelect = "";
+		};
+	}, [isDragging, isResizing, dragStart, resizeStart, position]);
+
+	const handleMouseDown = (e: React.MouseEvent) => {
+		if (modalRef.current && !isResizing) {
+			e.preventDefault();
+			setIsDragging(true);
+			setDragStart({
+				x: e.clientX - position.x,
+				y: e.clientY - position.y,
+			});
+		}
+	};
+
+	const handleMouseMove = (e: React.MouseEvent) => {
+		// This is now handled by global event listeners
+	};
+
+	const handleMouseUp = () => {
+		// This is now handled by global event listeners
+	};
+
+	const handleResizeStart = (e: React.MouseEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		if (!isDragging) {
+			setIsResizing(true);
+			setResizeStart({
+				x: e.clientX,
+				y: e.clientY,
+				width: size.width,
+				height: size.height,
+			});
+		}
+	};
+
 	if (!isOpen) return null;
 
 	return (
-		<div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+		<div className="fixed inset-0 z-50 pointer-events-none" onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
 			<div
-				className={`bg-white rounded-lg shadow-xl w-full max-h-[80vh] overflow-y-auto ${
-					type === "graphing" ? "max-w-2xl" : "max-w-md"
-				}`}
+				ref={modalRef}
+				className="absolute bg-white rounded-lg shadow-2xl border-2 border-blue-200 pointer-events-auto overflow-hidden"
+				style={{
+					left: position.x,
+					top: position.y,
+					width: type === "calculator" ? 600 : type === "graph" ? size.width : 500,
+					height: type === "calculator" ? 700 : type === "graph" ? size.height : "auto",
+					cursor: isDragging ? "grabbing" : "grab",
+				}}
 			>
-				<div className="flex items-center justify-between p-4 border-b">
-					<h3 className="font-semibold">
-						{type === "calculator" && "계산기"}
+				<div
+					className="flex items-center justify-between p-3 border-b bg-blue-50 cursor-grab active:cursor-grabbing"
+					onMouseDown={handleMouseDown}
+				>
+					<h3 className="font-semibold text-blue-800">
+						{type === "calculator" && "Calculator"}
+						{type === "graph" && "Graph"}
 						{type === "formulas" && "공식 참조"}
 						{type === "notes" && "메모장"}
-						{type === "graphing" && "그래프 계산기"}
 					</h3>
-					<Button variant="ghost" size="sm" onClick={onClose}>
+					<Button variant="ghost" size="sm" onClick={onClose} className="hover:bg-blue-100">
 						<X className="h-4 w-4" />
 					</Button>
 				</div>
 
-				<div className="p-4">
-					{type === "calculator" && <DesmosCalculator onClose={onClose} />}
+				<div
+					className="p-4 overflow-y-auto"
+					style={{
+						height:
+							type === "calculator"
+								? "calc(700px - 60px)"
+								: type === "graph"
+								? `calc(${size.height}px - 60px)`
+								: "auto",
+						maxHeight:
+							type === "calculator"
+								? "calc(700px - 60px)"
+								: type === "graph"
+								? `calc(${size.height}px - 60px)`
+								: "calc(80vh - 60px)",
+					}}
+				>
+					{type === "calculator" && (
+						<div>
+							<APCalculator />
+						</div>
+					)}
+
+					{type === "graph" && (
+						<div className="relative h-full">
+							<APGraphCalculator />
+							{/* Resize handle for graph modal */}
+							<div
+								className="absolute bottom-0 right-0 w-4 h-4 bg-blue-500 cursor-se-resize opacity-50 hover:opacity-100"
+								onMouseDown={handleResizeStart}
+								style={{
+									background: "linear-gradient(-45deg, transparent 30%, #3b82f6 30%, #3b82f6 70%, transparent 70%)",
+								}}
+							/>
+						</div>
+					)}
 
 					{type === "formulas" && (
 						<div className="space-y-4 text-sm">
@@ -86,7 +216,7 @@ function ToolModal({
 								<div className="font-mono text-gray-600">m = mol solute / kg solvent</div>
 							</div>
 							<div className="bg-gray-50 p-3 rounded">
-								<div className="font-medium mb-1">Beer's Law</div>
+								<div className="font-medium mb-1">Beer&apos;s Law</div>
 								<div className="font-mono text-gray-600">A = εbc</div>
 							</div>
 						</div>
@@ -103,8 +233,6 @@ function ToolModal({
 							<p className="text-xs text-gray-500 mt-2">메모는 자동으로 저장됩니다.</p>
 						</div>
 					)}
-
-					{type === "graphing" && <APCalculator onClose={onClose} />}
 				</div>
 			</div>
 		</div>
@@ -118,14 +246,14 @@ interface APExamPageProps {
 	onGoBack: () => void;
 }
 
-export function APExamPage({ examData, questions, onExamComplete, onGoBack }: APExamPageProps) {
+export function APExamPage({ examData, questions, onExamComplete }: APExamPageProps) {
 	const [currentQuestion, setCurrentQuestion] = useState(0);
 	const [timeLeft, setTimeLeft] = useState(examData.duration * 60); // Convert minutes to seconds
 	const [answers, setAnswers] = useState<(string | null)[]>(new Array(questions.length).fill(null));
 	const [flaggedQuestions, setFlaggedQuestions] = useState<Set<number>>(new Set());
 	const [showSubmitDialog, setShowSubmitDialog] = useState(false);
 	const [showQuestionNavigator, setShowQuestionNavigator] = useState(false);
-	const [activeToolModal, setActiveToolModal] = useState<"calculator" | "notes" | "formulas" | "graphing" | null>(null);
+	const [activeToolModal, setActiveToolModal] = useState<"calculator" | "graph" | "notes" | "formulas" | null>(null);
 	const [notes, setNotes] = useState("");
 	const [highlights, setHighlights] = useState<Map<number, string[]>>(new Map()); // questionIndex -> highlighted text array
 
@@ -321,7 +449,7 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 						</span>
 					</div>
 
-					{/* Right section - Tools reordered: Calculator, Graphing, Formulas, Notes */}
+					{/* Right section - Separated Tools: Calculator, Graph, Formulas, Notes */}
 					<div className="flex items-center space-x-2">
 						<Button
 							variant="ghost"
@@ -334,14 +462,14 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 							onMouseLeave={(e) => {
 								e.currentTarget.style.color = "var(--color-text-secondary)";
 							}}
-							title="계산기"
+							title="Calculator"
 						>
 							<Calculator className="w-4 h-4" />
 						</Button>
 						<Button
 							variant="ghost"
 							size="sm"
-							onClick={() => setActiveToolModal("graphing")}
+							onClick={() => setActiveToolModal("graph")}
 							style={{ color: "var(--color-text-secondary)" }}
 							onMouseEnter={(e) => {
 								e.currentTarget.style.color = "var(--color-text-primary)";
@@ -349,7 +477,7 @@ export function APExamPage({ examData, questions, onExamComplete, onGoBack }: AP
 							onMouseLeave={(e) => {
 								e.currentTarget.style.color = "var(--color-text-secondary)";
 							}}
-							title="그래프 계산기"
+							title="Graph"
 						>
 							<TrendingUp className="w-4 h-4" />
 						</Button>
