@@ -28,10 +28,11 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 
 		const loadDesmos = async () => {
 			// Desmos API가 이미 로드되어 있는지 확인
-			if (window.Desmos) {
+			if (window.Desmos && window.Desmos.GraphingCalculator) {
 				console.log("Desmos API already loaded");
 				setIsLoaded(true);
-				initializeCalculator();
+				// 약간의 지연 후 초기화 (DOM이 준비될 때까지)
+				setTimeout(() => initializeCalculator(), 100);
 				return;
 			}
 
@@ -42,21 +43,31 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 			setLoadError(null);
 
 			try {
-				// Desmos API 스크립트 로드
+				// Desmos API 스크립트 로드 (공식 문서에 따른 정확한 URL)
 				script = document.createElement("script");
 				script.src = "https://www.desmos.com/api/v1.11/calculator.js?apiKey=2c8bb554a339499fa62031c68955ae65";
 				script.async = true;
+				script.crossOrigin = "anonymous";
 				
 				script.onload = () => {
 					console.log("Desmos API loaded successfully");
-					setIsLoaded(true);
-					setIsInitializing(false);
-					initializeCalculator();
+					// API 로드 후 약간의 지연을 두고 초기화
+					setTimeout(() => {
+						if (window.Desmos && window.Desmos.GraphingCalculator) {
+							setIsLoaded(true);
+							setIsInitializing(false);
+							initializeCalculator();
+						} else {
+							console.error("Desmos API not properly loaded");
+							setLoadError("Desmos API failed to initialize properly");
+							setIsInitializing(false);
+						}
+					}, 200);
 				};
 				
 				script.onerror = (error) => {
 					console.error("Failed to load Desmos API:", error);
-					setLoadError("Failed to load Desmos calculator. Please check your internet connection.");
+					setLoadError("Failed to load Desmos calculator. Please check your internet connection and API key.");
 					setIsInitializing(false);
 				};
 
@@ -83,23 +94,37 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 	}, []);
 
 	const initializeCalculator = () => {
-		if (!calculatorRef.current || !window.Desmos) {
-			console.error("Calculator ref or Desmos API not available");
+		console.log("Attempting to initialize calculator...");
+		console.log("Calculator ref:", calculatorRef.current);
+		console.log("Window.Desmos:", window.Desmos);
+		console.log("GraphingCalculator available:", window.Desmos?.GraphingCalculator);
+
+		if (!calculatorRef.current) {
+			console.error("Calculator ref not available");
+			setLoadError("Calculator container not ready");
+			return;
+		}
+
+		if (!window.Desmos || !window.Desmos.GraphingCalculator) {
+			console.error("Desmos API not available");
+			setLoadError("Desmos API not loaded");
 			return;
 		}
 
 		try {
 			console.log("Initializing Desmos calculator...");
 			
+			// 공식 문서에 따른 기본 옵션으로 시작
 			desmosCalculatorRef.current = window.Desmos.GraphingCalculator(calculatorRef.current, {
 				keypad: true,
+				graphpaper: true,
 				expressions: true,
 				settingsMenu: true,
 				zoomButtons: true,
 				expressionsTopbar: true,
 				autosize: true,
 				lockViewport: false,
-				showResetButtonOnGraphpaper: true,
+				showResetButtonOnGraphpaper: false,
 				showGrid: true,
 				showXAxis: true,
 				showYAxis: true,
@@ -113,23 +138,44 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 				images: true,
 				sliders: true,
 				notes: true,
-				graphpaper: true,
+				border: true,
+				pointsOfInterest: true,
+				trace: true,
+				capExpressionSize: false,
+				authorFeatures: false,
+				folders: true,
+				actions: 'auto',
+				substitutions: true,
+				links: true,
+				qwertyKeyboard: true,
+				distributions: true,
+				restrictedFunctions: false,
+				forceEnableGeometryFunctions: false,
+				pasteGraphLink: false,
+				pasteTableData: true,
+				clearIntoDegreeMode: false,
 			});
 
 			console.log("Desmos calculator initialized successfully");
+			console.log("Calculator instance:", desmosCalculatorRef.current);
 			
 			// AP Chemistry 관련 기본 설정
-			setupChemistryDefaults();
+			setTimeout(() => setupChemistryDefaults(), 500);
 		} catch (error) {
 			console.error("Failed to initialize Desmos calculator:", error);
-			setLoadError("Failed to initialize calculator");
+			setLoadError(`Failed to initialize calculator: ${error}`);
 		}
 	};
 
 	const setupChemistryDefaults = () => {
-		if (!desmosCalculatorRef.current) return;
+		if (!desmosCalculatorRef.current) {
+			console.error("Calculator not ready for chemistry setup");
+			return;
+		}
 
 		try {
+			console.log("Setting up chemistry defaults...");
+			
 			// 기본 그래프 설정
 			desmosCalculatorRef.current.setMathBounds({
 				left: -10,
@@ -142,38 +188,48 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 			const chemistryFunctions = [
 				// 이상기체법칙 관련
 				{ latex: "y = 8.314x", label: "PV = nRT (R = 8.314)" },
-
+				
 				// pH 계산 관련
-				{ latex: "y = -log(x)", label: "pH = -log[H+]" },
-
+				{ latex: "y = -\\log(x)", label: "pH = -log[H+]" },
+				
 				// Arrhenius 방정식
 				{ latex: "y = e^{-x}", label: "Arrhenius: k = Ae^(-Ea/RT)" },
-
+				
 				// Beer's Law
 				{ latex: "y = x", label: "A = εbc (Beer's Law)" },
-
+				
 				// Van't Hoff 방정식
-				{ latex: "y = 1/x", label: "ln(K2/K1) = -ΔH°/R(1/T2 - 1/T1)" },
+				{ latex: "y = \\frac{1}{x}", label: "ln(K2/K1) = -ΔH°/R(1/T2 - 1/T1)" },
 			];
 
 			// 기본 화학 함수들을 추가
 			chemistryFunctions.forEach((func, index) => {
-				desmosCalculatorRef.current.setExpression({
-					id: `chemistry_${index}`,
-					latex: func.latex,
-					hidden: true, // 기본적으로 숨김
-					label: func.label,
-				});
+				try {
+					desmosCalculatorRef.current.setExpression({
+						id: `chemistry_${index}`,
+						latex: func.latex,
+						hidden: true, // 기본적으로 숨김
+						label: func.label,
+					});
+				} catch (exprError) {
+					console.error(`Failed to add chemistry function ${index}:`, exprError);
+				}
 			});
+			
+			console.log("Chemistry defaults setup completed");
 		} catch (error) {
 			console.error("Failed to setup chemistry defaults:", error);
 		}
 	};
 
 	const insertChemistryFunction = (latex: string, label?: string) => {
-		if (!desmosCalculatorRef.current) return;
+		if (!desmosCalculatorRef.current) {
+			console.error("Calculator not ready for function insertion");
+			return;
+		}
 
 		try {
+			console.log("Inserting chemistry function:", latex);
 			desmosCalculatorRef.current.setExpression({
 				latex,
 				label,
@@ -255,10 +311,7 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 								<div className="text-red-500 text-4xl mb-4">⚠️</div>
 								<p className="text-red-600 font-medium mb-2">Failed to Load Calculator</p>
 								<p className="text-red-500 text-sm mb-4">{loadError}</p>
-								<Button 
-									onClick={() => window.location.reload()} 
-									className="bg-red-500 text-white hover:bg-red-600"
-								>
+								<Button onClick={() => window.location.reload()} className="bg-red-500 text-white hover:bg-red-600">
 									Reload Page
 								</Button>
 							</div>
@@ -267,20 +320,12 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 						<div className="flex items-center justify-center h-96 bg-gray-100 rounded">
 							<div className="text-center">
 								<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-								<p className="text-gray-600">
-									{isInitializing ? "Loading Desmos Calculator..." : "Initializing..."}
-								</p>
-								<p className="text-gray-500 text-xs mt-2">
-									This may take a few seconds on first load
-								</p>
+								<p className="text-gray-600">{isInitializing ? "Loading Desmos Calculator..." : "Initializing..."}</p>
+								<p className="text-gray-500 text-xs mt-2">This may take a few seconds on first load</p>
 							</div>
 						</div>
 					) : (
-						<div
-							ref={calculatorRef}
-							className="w-full"
-							style={{ minHeight: "400px" }}
-						/>
+						<div ref={calculatorRef} className="w-full" style={{ minHeight: "400px" }} />
 					)}
 				</div>
 
