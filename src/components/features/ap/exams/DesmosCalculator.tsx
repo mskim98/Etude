@@ -26,13 +26,15 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 	useEffect(() => {
 		let script: HTMLScriptElement | null = null;
 
-		const loadDesmos = async () => {
+		// 컴포넌트가 마운트된 후 DOM이 준비될 때까지 대기
+		const initializeAfterMount = () => {
+			const loadDesmos = async () => {
 			// Desmos API가 이미 로드되어 있는지 확인
 			if (window.Desmos && window.Desmos.GraphingCalculator) {
 				console.log("Desmos API already loaded");
 				setIsLoaded(true);
-				// 약간의 지연 후 초기화 (DOM이 준비될 때까지)
-				setTimeout(() => initializeCalculator(), 100);
+				// DOM이 준비될 때까지 대기 후 초기화
+				setTimeout(() => initializeCalculator(), 300);
 				return;
 			}
 
@@ -48,23 +50,24 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 				script.src = "https://www.desmos.com/api/v1.11/calculator.js?apiKey=2c8bb554a339499fa62031c68955ae65";
 				script.async = true;
 				script.crossOrigin = "anonymous";
-				
+
 				script.onload = () => {
 					console.log("Desmos API loaded successfully");
-					// API 로드 후 약간의 지연을 두고 초기화
+					// API 로드 후 충분한 지연을 두고 초기화
 					setTimeout(() => {
 						if (window.Desmos && window.Desmos.GraphingCalculator) {
 							setIsLoaded(true);
 							setIsInitializing(false);
-							initializeCalculator();
+							// DOM 준비를 위해 추가 지연
+							setTimeout(() => initializeCalculator(), 200);
 						} else {
 							console.error("Desmos API not properly loaded");
 							setLoadError("Desmos API failed to initialize properly");
 							setIsInitializing(false);
 						}
-					}, 200);
+					}, 300);
 				};
-				
+
 				script.onerror = (error) => {
 					console.error("Failed to load Desmos API:", error);
 					setLoadError("Failed to load Desmos calculator. Please check your internet connection and API key.");
@@ -79,7 +82,11 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 			}
 		};
 
-		loadDesmos();
+			loadDesmos();
+		};
+
+		// 컴포넌트 마운트 후 즉시 실행
+		initializeAfterMount();
 
 		return () => {
 			// Cleanup
@@ -99,9 +106,17 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 		console.log("Window.Desmos:", window.Desmos);
 		console.log("GraphingCalculator available:", window.Desmos?.GraphingCalculator);
 
+		// DOM 요소가 준비될 때까지 대기
 		if (!calculatorRef.current) {
-			console.error("Calculator ref not available");
-			setLoadError("Calculator container not ready");
+			console.log("Calculator ref not ready, retrying in 100ms...");
+			setTimeout(() => {
+				if (calculatorRef.current) {
+					initializeCalculator();
+				} else {
+					console.error("Calculator ref still not available after retry");
+					setLoadError("Calculator container not ready");
+				}
+			}, 100);
 			return;
 		}
 
@@ -113,7 +128,7 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 
 		try {
 			console.log("Initializing Desmos calculator...");
-			
+
 			// 공식 문서에 따른 기본 옵션으로 시작
 			desmosCalculatorRef.current = window.Desmos.GraphingCalculator(calculatorRef.current, {
 				keypad: true,
@@ -144,7 +159,7 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 				capExpressionSize: false,
 				authorFeatures: false,
 				folders: true,
-				actions: 'auto',
+				actions: "auto",
 				substitutions: true,
 				links: true,
 				qwertyKeyboard: true,
@@ -158,7 +173,7 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 
 			console.log("Desmos calculator initialized successfully");
 			console.log("Calculator instance:", desmosCalculatorRef.current);
-			
+
 			// AP Chemistry 관련 기본 설정
 			setTimeout(() => setupChemistryDefaults(), 500);
 		} catch (error) {
@@ -175,7 +190,7 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 
 		try {
 			console.log("Setting up chemistry defaults...");
-			
+
 			// 기본 그래프 설정
 			desmosCalculatorRef.current.setMathBounds({
 				left: -10,
@@ -188,16 +203,16 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 			const chemistryFunctions = [
 				// 이상기체법칙 관련
 				{ latex: "y = 8.314x", label: "PV = nRT (R = 8.314)" },
-				
+
 				// pH 계산 관련
 				{ latex: "y = -\\log(x)", label: "pH = -log[H+]" },
-				
+
 				// Arrhenius 방정식
 				{ latex: "y = e^{-x}", label: "Arrhenius: k = Ae^(-Ea/RT)" },
-				
+
 				// Beer's Law
 				{ latex: "y = x", label: "A = εbc (Beer's Law)" },
-				
+
 				// Van't Hoff 방정식
 				{ latex: "y = \\frac{1}{x}", label: "ln(K2/K1) = -ΔH°/R(1/T2 - 1/T1)" },
 			];
@@ -215,7 +230,7 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 					console.error(`Failed to add chemistry function ${index}:`, exprError);
 				}
 			});
-			
+
 			console.log("Chemistry defaults setup completed");
 		} catch (error) {
 			console.error("Failed to setup chemistry defaults:", error);
