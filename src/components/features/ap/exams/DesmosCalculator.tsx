@@ -20,43 +20,77 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 	const calculatorRef = useRef<HTMLDivElement>(null);
 	const desmosCalculatorRef = useRef<any>(null);
 	const [isLoaded, setIsLoaded] = useState(false);
+	const [loadError, setLoadError] = useState<string | null>(null);
+	const [isInitializing, setIsInitializing] = useState(false);
 
 	useEffect(() => {
-		// Desmos API가 이미 로드되어 있는지 확인
-		if (window.Desmos) {
-			initializeCalculator();
-			return;
-		}
+		let script: HTMLScriptElement | null = null;
 
-		// Desmos API 스크립트 로드
-		const script = document.createElement("script");
-		script.src = "https://www.desmos.com/api/v1.11/calculator.js?apiKey=2c8bb554a339499fa62031c68955ae65";
-		script.async = true;
-		script.onload = () => {
-			setIsLoaded(true);
-			initializeCalculator();
-		};
-		script.onerror = () => {
-			console.error("Failed to load Desmos API");
+		const loadDesmos = async () => {
+			// Desmos API가 이미 로드되어 있는지 확인
+			if (window.Desmos) {
+				console.log("Desmos API already loaded");
+				setIsLoaded(true);
+				initializeCalculator();
+				return;
+			}
+
+			// 이미 로딩 중이면 중복 로드 방지
+			if (isInitializing) return;
+
+			setIsInitializing(true);
+			setLoadError(null);
+
+			try {
+				// Desmos API 스크립트 로드
+				script = document.createElement("script");
+				script.src = "https://www.desmos.com/api/v1.11/calculator.js?apiKey=2c8bb554a339499fa62031c68955ae65";
+				script.async = true;
+				
+				script.onload = () => {
+					console.log("Desmos API loaded successfully");
+					setIsLoaded(true);
+					setIsInitializing(false);
+					initializeCalculator();
+				};
+				
+				script.onerror = (error) => {
+					console.error("Failed to load Desmos API:", error);
+					setLoadError("Failed to load Desmos calculator. Please check your internet connection.");
+					setIsInitializing(false);
+				};
+
+				document.head.appendChild(script);
+			} catch (error) {
+				console.error("Error loading Desmos script:", error);
+				setLoadError("Error loading calculator");
+				setIsInitializing(false);
+			}
 		};
 
-		document.head.appendChild(script);
+		loadDesmos();
 
 		return () => {
 			// Cleanup
 			if (desmosCalculatorRef.current) {
 				desmosCalculatorRef.current.destroy();
+				desmosCalculatorRef.current = null;
 			}
-			if (script.parentNode) {
+			if (script && script.parentNode) {
 				script.parentNode.removeChild(script);
 			}
 		};
 	}, []);
 
 	const initializeCalculator = () => {
-		if (!calculatorRef.current || !window.Desmos) return;
+		if (!calculatorRef.current || !window.Desmos) {
+			console.error("Calculator ref or Desmos API not available");
+			return;
+		}
 
 		try {
+			console.log("Initializing Desmos calculator...");
+			
 			desmosCalculatorRef.current = window.Desmos.GraphingCalculator(calculatorRef.current, {
 				keypad: true,
 				expressions: true,
@@ -75,24 +109,20 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 				degreeMode: false,
 				projectorMode: false,
 				inequalityMode: false,
-				lockViewport: false,
 				expressionsCollapsed: false,
-				administerSecretFolders: false,
 				images: true,
 				sliders: true,
 				notes: true,
 				graphpaper: true,
-				expressions: true,
-				settingsMenu: true,
-				zoomButtons: true,
-				expressionsTopbar: true,
-				autosize: true,
 			});
 
+			console.log("Desmos calculator initialized successfully");
+			
 			// AP Chemistry 관련 기본 설정
 			setupChemistryDefaults();
 		} catch (error) {
 			console.error("Failed to initialize Desmos calculator:", error);
+			setLoadError("Failed to initialize calculator");
 		}
 	};
 
@@ -112,16 +142,16 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 			const chemistryFunctions = [
 				// 이상기체법칙 관련
 				{ latex: "y = 8.314x", label: "PV = nRT (R = 8.314)" },
-				
+
 				// pH 계산 관련
 				{ latex: "y = -log(x)", label: "pH = -log[H+]" },
-				
+
 				// Arrhenius 방정식
 				{ latex: "y = e^{-x}", label: "Arrhenius: k = Ae^(-Ea/RT)" },
-				
+
 				// Beer's Law
 				{ latex: "y = x", label: "A = εbc (Beer's Law)" },
-				
+
 				// Van't Hoff 방정식
 				{ latex: "y = 1/x", label: "ln(K2/K1) = -ΔH°/R(1/T2 - 1/T1)" },
 			];
@@ -219,18 +249,38 @@ export function DesmosCalculator({ onClose }: DesmosCalculatorProps) {
 
 				{/* Desmos Calculator Container */}
 				<div className="border rounded bg-white">
-					<div
-						ref={calculatorRef}
-						className="w-full"
-						style={{ minHeight: "400px" }}
-					/>
-					{!isLoaded && (
+					{loadError ? (
+						<div className="flex items-center justify-center h-96 bg-red-50 rounded">
+							<div className="text-center">
+								<div className="text-red-500 text-4xl mb-4">⚠️</div>
+								<p className="text-red-600 font-medium mb-2">Failed to Load Calculator</p>
+								<p className="text-red-500 text-sm mb-4">{loadError}</p>
+								<Button 
+									onClick={() => window.location.reload()} 
+									className="bg-red-500 text-white hover:bg-red-600"
+								>
+									Reload Page
+								</Button>
+							</div>
+						</div>
+					) : !isLoaded ? (
 						<div className="flex items-center justify-center h-96 bg-gray-100 rounded">
 							<div className="text-center">
 								<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-								<p className="text-gray-600">Loading Desmos Calculator...</p>
+								<p className="text-gray-600">
+									{isInitializing ? "Loading Desmos Calculator..." : "Initializing..."}
+								</p>
+								<p className="text-gray-500 text-xs mt-2">
+									This may take a few seconds on first load
+								</p>
 							</div>
 						</div>
+					) : (
+						<div
+							ref={calculatorRef}
+							className="w-full"
+							style={{ minHeight: "400px" }}
+						/>
 					)}
 				</div>
 

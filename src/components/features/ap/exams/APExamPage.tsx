@@ -35,10 +35,6 @@ function ToolModal({
 	notes: string;
 	setNotes: (notes: string) => void;
 }) {
-
-
-
-
 	if (!isOpen) return null;
 
 	return (
