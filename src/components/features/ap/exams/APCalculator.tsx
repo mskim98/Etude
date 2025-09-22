@@ -148,7 +148,7 @@ export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
 			// Configure mathjs for faster calculation with lower precision
 			const config = {
 				number: "number", // Use regular numbers instead of BigNumber for faster calculation
-				precision: 6,     // Reduced precision for faster computation
+				precision: 6, // Reduced precision for faster computation
 			};
 
 			// Convert degrees to radians if needed for trig functions
@@ -283,15 +283,17 @@ export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
 							</button>
 							<button
 								onClick={deleteLast}
-								className="h-12 bg-gray-500 text-white rounded-xl hover:bg-gray-600 
-								font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 cursor-pointer"
+								className="h-12 bg-orange-500 text-white rounded-xl hover:bg-orange-600 
+								font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 cursor-pointer
+								border-2 border-orange-400 hover:border-orange-500"
 							>
 								⌫
 							</button>
 							<button
 								onClick={clearCalc}
-								className="h-12 bg-gray-700 text-white rounded-xl hover:bg-gray-800 
-								font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 cursor-pointer"
+								className="h-12 bg-red-500 text-white rounded-xl hover:bg-red-600 
+								font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 cursor-pointer
+								border-2 border-red-400 hover:border-red-500"
 							>
 								C
 							</button>
