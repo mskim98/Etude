@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import functionPlot from "function-plot";
 import { X, Plus } from "lucide-react";
+import { evaluate } from "mathjs";
 
 interface GraphFunction {
 	id: string;
@@ -115,24 +116,28 @@ export function APGraphCalculator({ examId, onDataChange }: APGraphCalculatorPro
 			const plotWidth = Math.max(300, containerWidth - 20);
 			const plotHeight = Math.max(200, containerHeight - 20);
 
-			functionPlot({
+			const xDomain = [-10, 10];
+			const yDomain = [-10, 10];
+
+			const plotInstance = functionPlot({
 				target: plotRef.current,
 				width: plotWidth,
 				height: plotHeight,
 				grid: true,
 				xAxis: {
 					label: "x",
-					domain: [-10, 10],
+					domain: xDomain,
 				},
 				yAxis: {
 					label: "y",
-					domain: [-10, 10],
+					domain: yDomain,
 				},
 				tip: {
 					xLine: true,
 					yLine: true,
 					renderer: function (x: number, y: number) {
-						return `x: ${x.toFixed(3)}, y: ${y.toFixed(3)}`;
+						// Show current mouse coordinates with 3 decimal places
+						return `(${x.toFixed(3)}, ${y.toFixed(3)})`;
 					},
 				},
 				data: validFunctions.map((func, index) => ({
@@ -223,54 +228,75 @@ export function APGraphCalculator({ examId, onDataChange }: APGraphCalculatorPro
 								Add
 							</Button>
 						</div>
-						<div className="space-y-2 overflow-y-auto flex-1 min-h-0">
+						<div className="space-y-3 overflow-y-auto flex-1 min-h-0">
 							{functions.map((func, index) => (
-								<div
-									key={func.id}
-									className={`flex items-center gap-2 p-2 rounded border-2 cursor-pointer transition-all ${
-										selectedFunctionId === func.id
-											? "border-blue-400 bg-blue-50"
-											: "border-gray-200 hover:border-gray-300"
-									}`}
-									onClick={() => setSelectedFunctionId(func.id)}
-								>
-									<div
-										className="w-4 h-4 rounded-full border-2 border-gray-300"
-										style={{ backgroundColor: func.color }}
-									/>
-									<span className="text-sm font-medium text-gray-600 w-12">
-										f{functions.length > 1 ? index + 1 : ""}(x):
-									</span>
-									<Input
-										type="text"
-										value={func.expression}
-										onChange={(e) => updateFunction(func.id, e.target.value)}
-										placeholder="e.g., x^2"
-										className="flex-1 text-sm bg-white"
-										onKeyPress={(e) => {
-											if (e.key === "Enter") {
-												plotGraph();
-											}
-										}}
-										onFocus={() => setSelectedFunctionId(func.id)}
-									/>
-									<Button
-										onClick={(e) => {
-											e.stopPropagation();
-											if (functions.length > 1) {
-												removeFunction(func.id);
-											} else {
-												// If it's the last function, clear it instead of removing
-												updateFunction(func.id, "");
-											}
-										}}
-										variant="ghost"
-										size="sm"
-										className="text-red-500 hover:text-red-700 p-1"
-										title={functions.length > 1 ? "Remove function" : "Clear function"}
-									>
-										<X className="w-4 h-4" />
-									</Button>
+								<div key={func.id} className="space-y-2">
+									{/* Function Label */}
+									<div className="flex items-center gap-2">
+										<div
+											className="w-3 h-3 rounded-full border cursor-pointer hover:scale-110 transition-transform"
+											style={{
+												backgroundColor: func.color,
+												borderColor: selectedFunctionId === func.id ? "#3b82f6" : "#d1d5db",
+												borderWidth: selectedFunctionId === func.id ? "2px" : "1px",
+											}}
+											onClick={() => setSelectedFunctionId(func.id)}
+										/>
+										<span className="text-xs font-medium text-gray-600">
+											f{functions.length > 1 ? index + 1 : ""}(x) =
+										</span>
+										<Button
+											onClick={() => {
+												if (functions.length > 1) {
+													removeFunction(func.id);
+												} else {
+													updateFunction(func.id, "");
+												}
+											}}
+											variant="ghost"
+											size="sm"
+											className="ml-auto text-red-500 hover:text-red-700 hover:bg-red-50 p-1 h-auto"
+											title={functions.length > 1 ? "Remove function" : "Clear function"}
+										>
+											<X className="w-3 h-3" />
+										</Button>
+									</div>
+
+									{/* Input Field */}
+									<div className="relative">
+										<textarea
+											value={func.expression}
+											onChange={(e) => {
+												updateFunction(func.id, e.target.value);
+											}}
+											onFocus={() => setSelectedFunctionId(func.id)}
+											onKeyDown={(e) => {
+												// Allow all normal key inputs including numbers and backspace
+												if (e.key === "Enter" && !e.shiftKey) {
+													e.preventDefault();
+													plotGraph();
+													return;
+												}
+												// Don't prevent any other key events to allow normal typing
+											}}
+											onInput={(e) => {
+												// Ensure input changes are properly handled
+												const target = e.target as HTMLTextAreaElement;
+												updateFunction(func.id, target.value);
+											}}
+											placeholder="Enter function (e.g., x^2, sin(x), 2*x+1)"
+											className={`w-full text-sm resize-none rounded-lg border-2 px-3 py-2 transition-all duration-200 ${
+												selectedFunctionId === func.id
+													? "border-blue-400 bg-blue-50 focus:border-blue-500 focus:bg-white"
+													: "border-gray-200 bg-white hover:border-gray-300 focus:border-blue-400"
+											} focus:outline-none focus:ring-0`}
+											rows={1}
+											style={{ minHeight: "36px" }}
+											autoComplete="off"
+											spellCheck="false"
+											inputMode="text"
+										/>
+									</div>
 								</div>
 							))}
 						</div>

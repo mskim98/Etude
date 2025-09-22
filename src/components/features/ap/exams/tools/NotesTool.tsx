@@ -11,9 +11,17 @@ interface NotesToolProps {
 	onNotesChange: (notes: string) => void;
 	onBringToFront?: () => void;
 	zIndex?: number;
+	isActive?: boolean;
 }
 
-export function NotesTool({ onClose, notes, onNotesChange, onBringToFront, zIndex = 53 }: NotesToolProps) {
+export function NotesTool({
+	onClose,
+	notes,
+	onNotesChange,
+	onBringToFront,
+	zIndex = 53,
+	isActive = false,
+}: NotesToolProps) {
 	const [position, setPosition] = useState({ x: 200, y: 200 });
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });

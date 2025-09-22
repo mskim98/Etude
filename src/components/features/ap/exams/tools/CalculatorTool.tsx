@@ -11,9 +11,17 @@ interface CalculatorToolProps {
 	onDataChange?: (data: any) => void;
 	onBringToFront?: () => void;
 	zIndex?: number;
+	isActive?: boolean;
 }
 
-export function CalculatorTool({ onClose, examId, onDataChange, onBringToFront, zIndex = 50 }: CalculatorToolProps) {
+export function CalculatorTool({
+	onClose,
+	examId,
+	onDataChange,
+	onBringToFront,
+	zIndex = 50,
+	isActive = false,
+}: CalculatorToolProps) {
 	const [position, setPosition] = useState({ x: 50, y: 50 });
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -98,7 +106,7 @@ export function CalculatorTool({ onClose, examId, onDataChange, onBringToFront, 
 						maxHeight: "calc(700px - 60px)",
 					}}
 				>
-					<APCalculator examId={examId} onDataChange={onDataChange} />
+					<APCalculator examId={examId} onDataChange={onDataChange} isActive={isActive} />
 				</div>
 			</div>
 		</div>

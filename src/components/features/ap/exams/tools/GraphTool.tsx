@@ -11,9 +11,17 @@ interface GraphToolProps {
 	onDataChange?: (data: any) => void;
 	onBringToFront?: () => void;
 	zIndex?: number;
+	isActive?: boolean;
 }
 
-export function GraphTool({ onClose, examId, onDataChange, onBringToFront, zIndex = 51 }: GraphToolProps) {
+export function GraphTool({
+	onClose,
+	examId,
+	onDataChange,
+	onBringToFront,
+	zIndex = 51,
+	isActive = false,
+}: GraphToolProps) {
 	const [position, setPosition] = useState({ x: 100, y: 100 });
 	const [size, setSize] = useState({ width: 1000, height: 740 });
 	const [isDragging, setIsDragging] = useState(false);

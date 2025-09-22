@@ -30,9 +30,9 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 	const [showFormulas, setShowFormulas] = useState(false);
 	const [showNotes, setShowNotes] = useState(false);
 
-	// Tool data states for persistence
-	const [calculatorData, setCalculatorData] = useState<any>(null);
-	const [graphData, setGraphData] = useState<any>(null);
+	// Tool data states for persistence - used for saving/loading tool states
+	const [, setCalculatorData] = useState<unknown>(null);
+	const [, setGraphData] = useState<unknown>(null);
 
 	// Z-index management for tool modals
 	const [toolZIndexes, setToolZIndexes] = useState({
@@ -42,6 +42,7 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 		notes: 53,
 	});
 	const [highestZIndex, setHighestZIndex] = useState(53);
+	const [activeTool, setActiveTool] = useState<keyof typeof toolZIndexes | null>(null);
 
 	// Function to bring a tool to front
 	const bringToolToFront = useCallback(
@@ -52,6 +53,7 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 				[toolName]: newZIndex,
 			}));
 			setHighestZIndex(newZIndex);
+			setActiveTool(toolName);
 		},
 		[highestZIndex]
 	);
@@ -98,9 +100,32 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 		return () => clearTimeout(debounceTimer);
 	}, [answers, flaggedQuestions, highlights, notes, examData.id]);
 
+	// Define removeHighlight function before using it in useEffect
+	const removeHighlight = useCallback(
+		(questionIndex: number, highlightToRemove: { text: string; start: number; end: number }) => {
+			const currentHighlights = highlights.get(questionIndex) || [];
+			const newHighlights = new Map(highlights);
+			newHighlights.set(
+				questionIndex,
+				currentHighlights.filter(
+					(highlight) =>
+						!(
+							highlight.text === highlightToRemove.text &&
+							highlight.start === highlightToRemove.start &&
+							highlight.end === highlightToRemove.end
+						)
+				)
+			);
+			setHighlights(newHighlights);
+		},
+		[highlights]
+	);
+
 	// Register global highlight removal function
 	useEffect(() => {
-		(window as any).removeHighlight = (questionIndex: number, highlightIndex: number) => {
+		(
+			window as typeof window & { removeHighlight?: (questionIndex: number, highlightIndex: number) => void }
+		).removeHighlight = (questionIndex: number, highlightIndex: number) => {
 			try {
 				const currentHighlights = highlights.get(questionIndex) || [];
 				if (highlightIndex >= 0 && highlightIndex < currentHighlights.length) {
@@ -113,9 +138,10 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 		};
 
 		return () => {
-			delete (window as any).removeHighlight;
+			delete (window as typeof window & { removeHighlight?: (questionIndex: number, highlightIndex: number) => void })
+				.removeHighlight;
 		};
-	}, [highlights]);
+	}, [highlights, removeHighlight]);
 
 	const formatTime = (seconds: number) => {
 		const hours = Math.floor(seconds / 3600);
@@ -190,7 +216,7 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 			const tempDiv = document.createElement("div");
 			tempDiv.innerHTML = selectedText;
 			selectedText = tempDiv.textContent || tempDiv.innerText || "";
-		} catch (error) {
+		} catch {
 			selectedText = selectedText
 				.replace(/<[^>]*>/g, "")
 				.replace(/\s+/g, " ")
@@ -243,7 +269,7 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 					}
 				}
 			}
-		} catch (error) {
+		} catch {
 			// Fallback to indexOf if DOM calculation fails
 			startOffset = passageText.indexOf(selectedText);
 		}
@@ -296,23 +322,6 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 
 		// Clear selection
 		selection.removeAllRanges();
-	};
-
-	const removeHighlight = (questionIndex: number, highlightToRemove: { text: string; start: number; end: number }) => {
-		const currentHighlights = highlights.get(questionIndex) || [];
-		const newHighlights = new Map(highlights);
-		newHighlights.set(
-			questionIndex,
-			currentHighlights.filter(
-				(highlight) =>
-					!(
-						highlight.text === highlightToRemove.text &&
-						highlight.start === highlightToRemove.start &&
-						highlight.end === highlightToRemove.end
-					)
-			)
-		);
-		setHighlights(newHighlights);
 	};
 
 	const clearHighlights = (questionIndex: number) => {
@@ -417,10 +426,46 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 
 					{/* Right section - Header Tools */}
 					<ExamHeaderTools
-						onCalculatorClick={() => setShowCalculator(true)}
-						onGraphClick={() => setShowGraph(true)}
-						onFormulasClick={() => setShowFormulas(true)}
-						onNotesClick={() => setShowNotes(true)}
+						showCalculator={showCalculator}
+						showGraph={showGraph}
+						showFormulas={showFormulas}
+						showNotes={showNotes}
+						onCalculatorClick={() => {
+							if (showCalculator) {
+								setShowCalculator(false);
+								if (activeTool === "calculator") setActiveTool(null);
+							} else {
+								setShowCalculator(true);
+								bringToolToFront("calculator");
+							}
+						}}
+						onGraphClick={() => {
+							if (showGraph) {
+								setShowGraph(false);
+								if (activeTool === "graph") setActiveTool(null);
+							} else {
+								setShowGraph(true);
+								bringToolToFront("graph");
+							}
+						}}
+						onFormulasClick={() => {
+							if (showFormulas) {
+								setShowFormulas(false);
+								if (activeTool === "formulas") setActiveTool(null);
+							} else {
+								setShowFormulas(true);
+								bringToolToFront("formulas");
+							}
+						}}
+						onNotesClick={() => {
+							if (showNotes) {
+								setShowNotes(false);
+								if (activeTool === "notes") setActiveTool(null);
+							} else {
+								setShowNotes(true);
+								bringToolToFront("notes");
+							}
+						}}
 						onSubmitClick={() => setShowSubmitDialog(true)}
 					/>
 				</div>
@@ -815,36 +860,52 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 			{/* Tool Modals - Always rendered for data persistence */}
 			<div style={{ display: showCalculator ? "block" : "none" }}>
 				<CalculatorTool
-					onClose={() => setShowCalculator(false)}
+					onClose={() => {
+						setShowCalculator(false);
+						if (activeTool === "calculator") setActiveTool(null);
+					}}
 					examId={examData.id}
 					onDataChange={setCalculatorData}
 					onBringToFront={() => bringToolToFront("calculator")}
 					zIndex={toolZIndexes.calculator}
+					isActive={activeTool === "calculator"}
 				/>
 			</div>
 			<div style={{ display: showGraph ? "block" : "none" }}>
 				<GraphTool
-					onClose={() => setShowGraph(false)}
+					onClose={() => {
+						setShowGraph(false);
+						if (activeTool === "graph") setActiveTool(null);
+					}}
 					examId={examData.id}
 					onDataChange={setGraphData}
 					onBringToFront={() => bringToolToFront("graph")}
 					zIndex={toolZIndexes.graph}
+					isActive={activeTool === "graph"}
 				/>
 			</div>
 			{showFormulas && (
 				<FormulasTool
-					onClose={() => setShowFormulas(false)}
+					onClose={() => {
+						setShowFormulas(false);
+						if (activeTool === "formulas") setActiveTool(null);
+					}}
 					onBringToFront={() => bringToolToFront("formulas")}
 					zIndex={toolZIndexes.formulas}
+					isActive={activeTool === "formulas"}
 				/>
 			)}
 			{showNotes && (
 				<NotesTool
-					onClose={() => setShowNotes(false)}
+					onClose={() => {
+						setShowNotes(false);
+						if (activeTool === "notes") setActiveTool(null);
+					}}
 					notes={notes}
 					onNotesChange={setNotes}
 					onBringToFront={() => bringToolToFront("notes")}
 					zIndex={toolZIndexes.notes}
+					isActive={activeTool === "notes"}
 				/>
 			)}
 		</div>

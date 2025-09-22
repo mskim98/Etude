@@ -14,9 +14,10 @@ interface CalculatorData {
 interface APCalculatorProps {
 	examId?: string;
 	onDataChange?: (data: CalculatorData) => void;
+	isActive?: boolean;
 }
 
-export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
+export function APCalculator({ examId, onDataChange, isActive = false }: APCalculatorProps) {
 	// Calculator state with persistence
 	const [calcDisplay, setCalcDisplay] = useState("0");
 	const [calcValue, setCalcValue] = useState("");
@@ -78,7 +79,22 @@ export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
 		const handleKeyPress = (event: KeyboardEvent) => {
 			const key = event.key;
 
-			// Prevent default for calculator keys
+			// Only handle keyboard events if this calculator is active
+			if (!isActive) {
+				return;
+			}
+
+			// Check if the event target is an input field (textarea, input)
+			const target = event.target as HTMLElement;
+			const isInputField =
+				target.tagName === "TEXTAREA" || target.tagName === "INPUT" || target.contentEditable === "true";
+
+			// Don't interfere with input fields - let them handle their own keyboard events
+			if (isInputField) {
+				return;
+			}
+
+			// Prevent default for calculator keys only when not in input fields
 			if (/[0-9+\-*/.=]/.test(key) || key === "Enter" || key === "Escape" || key === "Backspace") {
 				event.preventDefault();
 			}
@@ -111,7 +127,7 @@ export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
 		return () => {
 			document.removeEventListener("keydown", handleKeyPress);
 		};
-	}, []); // Empty dependency array - only register once
+	}, [isActive]); // Re-register when isActive changes
 
 	const appendToCalc = useCallback(
 		(value: string) => {

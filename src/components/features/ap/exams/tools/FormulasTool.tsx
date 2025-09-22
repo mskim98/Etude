@@ -8,9 +8,10 @@ interface FormulasToolProps {
 	onClose: () => void;
 	onBringToFront?: () => void;
 	zIndex?: number;
+	isActive?: boolean;
 }
 
-export function FormulasTool({ onClose, onBringToFront, zIndex = 52 }: FormulasToolProps) {
+export function FormulasTool({ onClose, onBringToFront, zIndex = 52, isActive = false }: FormulasToolProps) {
 	const [position, setPosition] = useState({ x: 150, y: 150 });
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
