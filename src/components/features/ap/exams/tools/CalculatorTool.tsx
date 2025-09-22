@@ -9,9 +9,11 @@ interface CalculatorToolProps {
 	onClose: () => void;
 	examId?: string;
 	onDataChange?: (data: any) => void;
+	onBringToFront?: () => void;
+	zIndex?: number;
 }
 
-export function CalculatorTool({ onClose, examId, onDataChange }: CalculatorToolProps) {
+export function CalculatorTool({ onClose, examId, onDataChange, onBringToFront, zIndex = 50 }: CalculatorToolProps) {
 	const [position, setPosition] = useState({ x: 50, y: 50 });
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -58,8 +60,12 @@ export function CalculatorTool({ onClose, examId, onDataChange }: CalculatorTool
 		}
 	};
 
+	const handleModalClick = () => {
+		onBringToFront?.();
+	};
+
 	return (
-		<div className="fixed inset-0 z-50 pointer-events-none">
+		<div className="fixed inset-0 pointer-events-none" style={{ zIndex }}>
 			<div
 				ref={modalRef}
 				className="absolute bg-white rounded-lg shadow-2xl border-2 border-blue-200 pointer-events-auto overflow-hidden"
@@ -70,6 +76,7 @@ export function CalculatorTool({ onClose, examId, onDataChange }: CalculatorTool
 					height: 700,
 					cursor: isDragging ? "grabbing" : "grab",
 				}}
+				onClick={handleModalClick}
 			>
 				<div
 					className="flex items-center justify-between p-3 border-b bg-blue-50 cursor-grab active:cursor-grabbing"

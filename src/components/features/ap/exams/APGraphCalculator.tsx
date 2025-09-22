@@ -204,14 +204,6 @@ export function APGraphCalculator({ examId, onDataChange }: APGraphCalculatorPro
 			{/* Header */}
 			<div className="flex items-center justify-between mb-4 flex-shrink-0">
 				<h4 className="text-lg font-semibold">Graph Calculator</h4>
-				<Button
-					onClick={addFunction}
-					disabled={functions.length >= 8}
-					className="bg-blue-500 text-white hover:bg-blue-600 text-sm px-3 py-1 disabled:opacity-50"
-				>
-					<Plus className="w-4 h-4 mr-1" />
-					Add Function
-				</Button>
 			</div>
 
 			{/* Main Content - Left/Right Split */}
@@ -220,7 +212,17 @@ export function APGraphCalculator({ examId, onDataChange }: APGraphCalculatorPro
 				<div className="w-80 flex flex-col bg-gray-50 border rounded p-4">
 					{/* Function Inputs - Flexible Height */}
 					<div className="flex-1 flex flex-col mb-4 min-h-0">
-						<div className="text-sm font-semibold text-gray-700 mb-3 flex-shrink-0">Functions</div>
+						<div className="flex items-center justify-between mb-3 flex-shrink-0">
+							<div className="text-sm font-semibold text-gray-700">Functions</div>
+							<Button
+								onClick={addFunction}
+								disabled={functions.length >= 8}
+								className="bg-blue-500 text-white hover:bg-blue-600 text-xs px-2 py-1 disabled:opacity-50"
+							>
+								<Plus className="w-3 h-3 mr-1" />
+								Add
+							</Button>
+						</div>
 						<div className="space-y-2 overflow-y-auto flex-1 min-h-0">
 							{functions.map((func, index) => (
 								<div

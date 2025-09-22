@@ -9,9 +9,11 @@ interface NotesToolProps {
 	onClose: () => void;
 	notes: string;
 	onNotesChange: (notes: string) => void;
+	onBringToFront?: () => void;
+	zIndex?: number;
 }
 
-export function NotesTool({ onClose, notes, onNotesChange }: NotesToolProps) {
+export function NotesTool({ onClose, notes, onNotesChange, onBringToFront, zIndex = 53 }: NotesToolProps) {
 	const [position, setPosition] = useState({ x: 200, y: 200 });
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -74,8 +76,12 @@ export function NotesTool({ onClose, notes, onNotesChange }: NotesToolProps) {
 		}, 500);
 	};
 
+	const handleModalClick = () => {
+		onBringToFront?.();
+	};
+
 	return (
-		<div className="fixed inset-0 z-53 pointer-events-none">
+		<div className="fixed inset-0 pointer-events-none" style={{ zIndex }}>
 			<div
 				ref={modalRef}
 				className="absolute bg-white rounded-lg shadow-2xl border-2 border-blue-200 pointer-events-auto overflow-hidden"
@@ -87,6 +93,7 @@ export function NotesTool({ onClose, notes, onNotesChange }: NotesToolProps) {
 					maxHeight: "80vh",
 					cursor: isDragging ? "grabbing" : "grab",
 				}}
+				onClick={handleModalClick}
 			>
 				<div
 					className="flex items-center justify-between p-3 border-b bg-blue-50 cursor-grab active:cursor-grabbing"

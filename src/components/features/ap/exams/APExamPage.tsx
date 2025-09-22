@@ -34,6 +34,25 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 	const [calculatorData, setCalculatorData] = useState<any>(null);
 	const [graphData, setGraphData] = useState<any>(null);
 
+	// Z-index management for tool modals
+	const [toolZIndexes, setToolZIndexes] = useState({
+		calculator: 50,
+		graph: 51,
+		formulas: 52,
+		notes: 53,
+	});
+	const [highestZIndex, setHighestZIndex] = useState(53);
+
+	// Function to bring a tool to front
+	const bringToolToFront = useCallback((toolName: keyof typeof toolZIndexes) => {
+		const newZIndex = highestZIndex + 1;
+		setToolZIndexes(prev => ({
+			...prev,
+			[toolName]: newZIndex,
+		}));
+		setHighestZIndex(newZIndex);
+	}, [highestZIndex]);
+
 	// Define handleSubmitExam before useEffect
 	const handleSubmitExam = useCallback(() => {
 		const result = {
@@ -796,13 +815,35 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 					onClose={() => setShowCalculator(false)}
 					examId={examData.id}
 					onDataChange={setCalculatorData}
+					onBringToFront={() => bringToolToFront('calculator')}
+					zIndex={toolZIndexes.calculator}
 				/>
 			</div>
 			<div style={{ display: showGraph ? "block" : "none" }}>
-				<GraphTool onClose={() => setShowGraph(false)} examId={examData.id} onDataChange={setGraphData} />
+				<GraphTool 
+					onClose={() => setShowGraph(false)} 
+					examId={examData.id} 
+					onDataChange={setGraphData}
+					onBringToFront={() => bringToolToFront('graph')}
+					zIndex={toolZIndexes.graph}
+				/>
 			</div>
-			{showFormulas && <FormulasTool onClose={() => setShowFormulas(false)} />}
-			{showNotes && <NotesTool onClose={() => setShowNotes(false)} notes={notes} onNotesChange={setNotes} />}
+			{showFormulas && (
+				<FormulasTool 
+					onClose={() => setShowFormulas(false)}
+					onBringToFront={() => bringToolToFront('formulas')}
+					zIndex={toolZIndexes.formulas}
+				/>
+			)}
+			{showNotes && (
+				<NotesTool 
+					onClose={() => setShowNotes(false)} 
+					notes={notes} 
+					onNotesChange={setNotes}
+					onBringToFront={() => bringToolToFront('notes')}
+					zIndex={toolZIndexes.notes}
+				/>
+			)}
 		</div>
 	);
 }

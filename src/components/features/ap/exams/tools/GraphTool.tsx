@@ -9,9 +9,11 @@ interface GraphToolProps {
 	onClose: () => void;
 	examId?: string;
 	onDataChange?: (data: any) => void;
+	onBringToFront?: () => void;
+	zIndex?: number;
 }
 
-export function GraphTool({ onClose, examId, onDataChange }: GraphToolProps) {
+export function GraphTool({ onClose, examId, onDataChange, onBringToFront, zIndex = 51 }: GraphToolProps) {
 	const [position, setPosition] = useState({ x: 100, y: 100 });
 	const [size, setSize] = useState({ width: 1000, height: 740 });
 	const [isDragging, setIsDragging] = useState(false);
@@ -90,8 +92,12 @@ export function GraphTool({ onClose, examId, onDataChange }: GraphToolProps) {
 		}
 	};
 
+	const handleModalClick = () => {
+		onBringToFront?.();
+	};
+
 	return (
-		<div className="fixed inset-0 z-51 pointer-events-none">
+		<div className="fixed inset-0 pointer-events-none" style={{ zIndex }}>
 			<div
 				ref={modalRef}
 				className="absolute bg-white rounded-lg shadow-2xl border-2 border-blue-200 pointer-events-auto overflow-hidden"
@@ -102,6 +108,7 @@ export function GraphTool({ onClose, examId, onDataChange }: GraphToolProps) {
 					height: size.height,
 					cursor: isDragging ? "grabbing" : "grab",
 				}}
+				onClick={handleModalClick}
 			>
 				<div
 					className="flex items-center justify-between p-3 border-b bg-blue-50 cursor-grab active:cursor-grabbing"

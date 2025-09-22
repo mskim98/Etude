@@ -6,9 +6,11 @@ import { Sigma, X } from "lucide-react";
 
 interface FormulasToolProps {
 	onClose: () => void;
+	onBringToFront?: () => void;
+	zIndex?: number;
 }
 
-export function FormulasTool({ onClose }: FormulasToolProps) {
+export function FormulasTool({ onClose, onBringToFront, zIndex = 52 }: FormulasToolProps) {
 	const [position, setPosition] = useState({ x: 150, y: 150 });
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -117,8 +119,12 @@ export function FormulasTool({ onClose }: FormulasToolProps) {
 		return acc;
 	}, {} as Record<string, typeof formulas>);
 
+	const handleModalClick = () => {
+		onBringToFront?.();
+	};
+
 	return (
-		<div className="fixed inset-0 z-52 pointer-events-none">
+		<div className="fixed inset-0 pointer-events-none" style={{ zIndex }}>
 			<div
 				ref={modalRef}
 				className="absolute bg-white rounded-lg shadow-2xl border-2 border-blue-200 pointer-events-auto overflow-hidden"
@@ -130,6 +136,7 @@ export function FormulasTool({ onClose }: FormulasToolProps) {
 					maxHeight: "80vh",
 					cursor: isDragging ? "grabbing" : "grab",
 				}}
+				onClick={handleModalClick}
 			>
 				<div
 					className="flex items-center justify-between p-3 border-b bg-blue-50 cursor-grab active:cursor-grabbing"
