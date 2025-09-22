@@ -113,7 +113,7 @@ export function Dashboard({
 											e.currentTarget.style.color = activeTab === "overview" ? "#0091B3" : "#666666";
 											const icon = e.currentTarget.querySelector("svg");
 											if (icon) {
-												(icon as HTMLElement).style.color = activeTab === "overview" ? "#0091B3" : "#666666";
+												(icon as any).style.color = activeTab === "overview" ? "#0091B3" : "#666666";
 											}
 										}}
 										className="relative flex items-center px-3 py-2 rounded-lg transition-all duration-200 ease-in-out border-0 bg-transparent hover:scale-105 focus:outline-none cursor-pointer"
@@ -128,7 +128,7 @@ export function Dashboard({
 												e.currentTarget.style.color = "var(--color-text-primary)";
 												const icon = e.currentTarget.querySelector("svg");
 												if (icon) {
-													(icon as HTMLElement).style.color = "var(--color-accent)";
+													(icon as any).style.color = "var(--color-accent)";
 												}
 											}
 										}}
@@ -138,7 +138,7 @@ export function Dashboard({
 												e.currentTarget.style.color = "#666666";
 												const icon = e.currentTarget.querySelector("svg");
 												if (icon) {
-													(icon as HTMLElement).style.color = "#666666";
+													(icon as any).style.color = "#666666";
 												}
 											}
 										}}
@@ -166,7 +166,7 @@ export function Dashboard({
 											e.currentTarget.style.color = activeTab === "ap-courses" ? "#0091B3" : "#666666";
 											const icon = e.currentTarget.querySelector("svg");
 											if (icon) {
-												(icon as HTMLElement).style.color = activeTab === "ap-courses" ? "#0091B3" : "#666666";
+												(icon as any).style.color = activeTab === "ap-courses" ? "#0091B3" : "#666666";
 											}
 										}}
 										className="relative flex items-center px-3 py-2 rounded-lg transition-all duration-200 ease-in-out border-0 bg-transparent hover:scale-105 focus:outline-none cursor-pointer"
@@ -181,7 +181,7 @@ export function Dashboard({
 												e.currentTarget.style.color = "var(--color-text-primary)";
 												const icon = e.currentTarget.querySelector("svg");
 												if (icon) {
-													(icon as HTMLElement).style.color = "var(--color-accent)";
+													(icon as any).style.color = "var(--color-accent)";
 												}
 											}
 										}}
@@ -191,7 +191,7 @@ export function Dashboard({
 												e.currentTarget.style.color = "#666666";
 												const icon = e.currentTarget.querySelector("svg");
 												if (icon) {
-													(icon as HTMLElement).style.color = "#666666";
+													(icon as any).style.color = "#666666";
 												}
 											}
 										}}
@@ -219,7 +219,7 @@ export function Dashboard({
 											e.currentTarget.style.color = activeTab === "sat-exams" ? "#0091B3" : "#666666";
 											const icon = e.currentTarget.querySelector("svg");
 											if (icon) {
-												(icon as HTMLElement).style.color = activeTab === "sat-exams" ? "#0091B3" : "#666666";
+												(icon as any).style.color = activeTab === "sat-exams" ? "#0091B3" : "#666666";
 											}
 										}}
 										className="relative flex items-center px-3 py-2 rounded-lg transition-all duration-200 ease-in-out border-0 bg-transparent hover:scale-105 focus:outline-none cursor-pointer"
@@ -234,7 +234,7 @@ export function Dashboard({
 												e.currentTarget.style.color = "var(--color-text-primary)";
 												const icon = e.currentTarget.querySelector("svg");
 												if (icon) {
-													(icon as HTMLElement).style.color = "var(--color-accent)";
+													(icon as any).style.color = "var(--color-accent)";
 												}
 											}
 										}}
@@ -244,7 +244,7 @@ export function Dashboard({
 												e.currentTarget.style.color = "#666666";
 												const icon = e.currentTarget.querySelector("svg");
 												if (icon) {
-													(icon as HTMLElement).style.color = "#666666";
+													(icon as any).style.color = "#666666";
 												}
 											}
 										}}
@@ -297,7 +297,7 @@ export function Dashboard({
 										e.currentTarget.style.color = activeTab === "overview" ? "#0091B3" : "#666666";
 										const icon = e.currentTarget.querySelector("svg");
 										if (icon) {
-											(icon as HTMLElement).style.color = activeTab === "overview" ? "#0091B3" : "#666666";
+											(icon as any).style.color = activeTab === "overview" ? "#0091B3" : "#666666";
 										}
 									}}
 									className="relative flex items-center px-3 py-2 rounded-lg transition-all duration-200 ease-in-out border-0 bg-transparent hover:scale-105 focus:outline-none cursor-pointer"
@@ -312,7 +312,7 @@ export function Dashboard({
 											e.currentTarget.style.color = "var(--color-text-primary)";
 											const icon = e.currentTarget.querySelector("svg");
 											if (icon) {
-												(icon as HTMLElement).style.color = "var(--color-accent)";
+												(icon as any).style.color = "var(--color-accent)";
 											}
 										}
 									}}
@@ -322,7 +322,7 @@ export function Dashboard({
 											e.currentTarget.style.color = "#666666";
 											const icon = e.currentTarget.querySelector("svg");
 											if (icon) {
-												(icon as HTMLElement).style.color = "#666666";
+												(icon as any).style.color = "#666666";
 											}
 										}
 									}}
@@ -350,7 +350,7 @@ export function Dashboard({
 										e.currentTarget.style.color = activeTab === "ap-courses" ? "#0091B3" : "#666666";
 										const icon = e.currentTarget.querySelector("svg");
 										if (icon) {
-											(icon as HTMLElement).style.color = activeTab === "ap-courses" ? "#0091B3" : "#666666";
+											(icon as any).style.color = activeTab === "ap-courses" ? "#0091B3" : "#666666";
 										}
 									}}
 									className="relative flex items-center px-3 py-2 rounded-lg transition-all duration-200 ease-in-out border-0 bg-transparent hover:scale-105 focus:outline-none cursor-pointer"
@@ -365,7 +365,7 @@ export function Dashboard({
 											e.currentTarget.style.color = "var(--color-text-primary)";
 											const icon = e.currentTarget.querySelector("svg");
 											if (icon) {
-												(icon as HTMLElement).style.color = "var(--color-accent)";
+												(icon as any).style.color = "var(--color-accent)";
 											}
 										}
 									}}
@@ -375,7 +375,7 @@ export function Dashboard({
 											e.currentTarget.style.color = "#666666";
 											const icon = e.currentTarget.querySelector("svg");
 											if (icon) {
-												(icon as HTMLElement).style.color = "#666666";
+												(icon as any).style.color = "#666666";
 											}
 										}
 									}}
@@ -403,7 +403,7 @@ export function Dashboard({
 										e.currentTarget.style.color = activeTab === "sat-exams" ? "#0091B3" : "#666666";
 										const icon = e.currentTarget.querySelector("svg");
 										if (icon) {
-											(icon as HTMLElement).style.color = activeTab === "sat-exams" ? "#0091B3" : "#666666";
+											(icon as any).style.color = activeTab === "sat-exams" ? "#0091B3" : "#666666";
 										}
 									}}
 									className="relative flex items-center px-3 py-2 rounded-lg transition-all duration-200 ease-in-out border-0 bg-transparent hover:scale-105 focus:outline-none cursor-pointer"
@@ -418,7 +418,7 @@ export function Dashboard({
 											e.currentTarget.style.color = "var(--color-text-primary)";
 											const icon = e.currentTarget.querySelector("svg");
 											if (icon) {
-												(icon as HTMLElement).style.color = "var(--color-accent)";
+												(icon as any).style.color = "var(--color-accent)";
 											}
 										}
 									}}
@@ -428,7 +428,7 @@ export function Dashboard({
 											e.currentTarget.style.color = "#666666";
 											const icon = e.currentTarget.querySelector("svg");
 											if (icon) {
-												(icon as HTMLElement).style.color = "#666666";
+												(icon as any).style.color = "#666666";
 											}
 										}
 									}}

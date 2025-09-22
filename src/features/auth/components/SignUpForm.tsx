@@ -53,7 +53,7 @@ export function SignUpForm({ onSuccess }: SignUpFormProps) {
 							</div>
 							<h2 className="text-xl font-semibold text-gray-900">Check Your Email</h2>
 							<p className="text-gray-600">
-								We've sent a verification link to your email address. Please check your inbox and click the link to
+								We&apos;ve sent a verification link to your email address. Please check your inbox and click the link to
 								verify your account.
 							</p>
 							<Button asChild className="w-full">

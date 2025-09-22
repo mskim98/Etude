@@ -65,8 +65,7 @@ export default function ApExamReviewPage() {
 
 			// Fetch full questions with choices by IDs
 			(async () => {
-				// @ts-expect-error - Supabase type issue
-				const { data, error } = await supabase
+				const { data, error } = await (supabase as any)
 					.from("ap_exam_question")
 					.select(
 						`id, question_order, question, passage, topic, explanation,
@@ -83,7 +82,6 @@ export default function ApExamReviewPage() {
 				}
 
 				const normalized: ReviewQuestion[] = (data || [])
-					// @ts-expect-error - Dynamic data from Supabase
 					.map((q: any) => ({
 						id: q.id,
 						question_order: q.question_order,
@@ -91,11 +89,10 @@ export default function ApExamReviewPage() {
 						passage: q.passage,
 						topic: q.topic,
 						explanation: q.explanation ?? null,
-						// @ts-expect-error - Dynamic choice data
 						choices: (q.choices || []).sort((a: any, b: any) => (a.choice_order || 0) - (b.choice_order || 0)),
 					}))
 					// preserve wrong question order based on payload mapping
-					.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+					.sort((a: any, b: any) => ids.indexOf(a.id) - ids.indexOf(b.id));
 
 				setQuestions(normalized);
 

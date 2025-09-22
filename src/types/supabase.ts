@@ -192,7 +192,7 @@ export type Database = {
 				Relationships: [];
 			};
 		};
-		Functions: {};
+		Functions: Record<string, never>;
 		Enums: {
 			announcer_type: "teacher" | "admin" | "system";
 			choice_type: "text" | "image";

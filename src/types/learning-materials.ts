@@ -18,11 +18,11 @@ export type ApChapterVideoInsert = Database["public"]["Tables"]["ap_chapter_vide
 export type ApChapterVideoUpdate = Database["public"]["Tables"]["ap_chapter_video"]["Update"];
 
 // UI용 확장 타입
-export interface ApMcqQuestion extends ApMcqRow {}
+export type ApMcqQuestion = ApMcqRow;
 
-export interface ApFrqQuestion extends ApFrqRow {}
+export type ApFrqQuestion = ApFrqRow;
 
-export interface ApChapterVideo extends ApChapterVideoRow {}
+export type ApChapterVideo = ApChapterVideoRow;
 
 // 요청/응답 타입
 export interface CreateApMcqRequest {
