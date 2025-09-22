@@ -19,7 +19,7 @@ interface APGraphCalculatorProps {
 }
 
 export function APGraphCalculator({ examId, onDataChange }: APGraphCalculatorProps) {
-	const [functions, setFunctions] = useState<GraphFunction[]>([{ id: "1", expression: "x^2", color: "#2563eb" }]);
+	const [functions, setFunctions] = useState<GraphFunction[]>([{ id: "1", expression: "", color: "#2563eb" }]);
 	const [graphError, setGraphError] = useState<string | null>(null);
 	const [selectedFunctionId, setSelectedFunctionId] = useState<string>("1");
 	const plotRef = useRef<HTMLDivElement>(null);
@@ -277,15 +277,15 @@ export function APGraphCalculator({ examId, onDataChange }: APGraphCalculatorPro
 							<div className="flex gap-2">
 								<Button
 									onClick={plotGraph}
-									className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-sm font-medium"
+									className="flex-1 bg-gray-500 text-white hover:bg-gray-600 text-sm font-medium"
 								>
-									🎯 Plot & Center
+									Center
 								</Button>
 								<Button
 									onClick={resetAllFunctions}
-									className="flex-1 bg-red-500 text-white hover:bg-red-600 text-sm font-medium"
+									className="flex-1 bg-gray-500 text-white hover:bg-gray-600 text-sm font-medium"
 								>
-									🗑️ Reset
+									Reset
 								</Button>
 							</div>
 						</div>
@@ -420,8 +420,8 @@ export function APGraphCalculator({ examId, onDataChange }: APGraphCalculatorPro
 						<div className="text-sm font-semibold text-blue-800 mb-2">Usage Guide</div>
 						<div className="text-xs text-blue-700 space-y-1">
 							<div>• Click function input to select, then use quick buttons</div>
-							<div>• 🎯 Plot & Center: Draw graphs and reset view to (-10, 10)</div>
-							<div>• 🗑️ Reset: Clear all functions and start fresh</div>
+							<div>• Center: Draw graphs and reset view to (-10, 10)</div>
+							<div>• Reset: Clear all functions and start fresh</div>
 							<div>• Examples: x^2, sin(x), 2*x+1, sqrt(x), log(x)</div>
 						</div>
 					</div>
