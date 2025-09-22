@@ -51,32 +51,51 @@ export function SubmitTool({ onSubmit, onCancel, answeredCount, totalQuestions }
 						)}
 					</div>
 
-					<div className="flex flex-col space-y-3">
-						<Button
+					<div className="flex flex-col space-y-4">
+						{/* Submit Button */}
+						<button
 							onClick={onSubmit}
-							className="w-full text-white transition-all duration-200"
-							style={{ backgroundColor: "var(--color-primary)" }}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.backgroundColor = "var(--color-primary-hover)";
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.backgroundColor = "var(--color-primary)";
-							}}
+							className="group relative w-full h-14 overflow-hidden rounded-2xl bg-[#0091B3] px-8 
+								font-semibold text-white text-lg transition-all duration-300 ease-out 
+								hover:bg-[#007a9b] hover:shadow-2xl hover:shadow-[#0091B3]/25 
+								focus:outline-none focus:ring-4 focus:ring-[#0091B3]/30
+								active:scale-[0.98] border-0 cursor-pointer"
 						>
-							Submit Exam
-						</Button>
+							<div
+								className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent 
+								-skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"
+							></div>
+							<div className="relative flex items-center h-full">
+								<div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+									<svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+									</svg>
+								</div>
+								<span className="flex-1 text-center">Submit Exam</span>
+							</div>
+						</button>
 
-						<Button
-							variant="outline"
+						{/* Continue Button */}
+						<button
 							onClick={onCancel}
-							className="w-full"
-							style={{
-								borderColor: "var(--color-primary)",
-								color: "var(--color-text-primary)",
-							}}
+							className="group w-full h-14 rounded-2xl border-2 border-[#0091B3] bg-transparent px-8 
+								font-semibold text-[#0091B3] text-lg transition-all duration-300 ease-out 
+								hover:bg-[#0091B3] hover:text-white hover:shadow-lg hover:shadow-[#0091B3]/20
+								focus:outline-none focus:ring-4 focus:ring-[#0091B3]/30
+								active:scale-[0.98] cursor-pointer"
 						>
-							Continue Exam
-						</Button>
+							<div className="flex items-center h-full">
+								<div
+									className="w-6 h-6 rounded-full border-2 border-current flex items-center justify-center flex-shrink-0
+									transition-all duration-300 group-hover:border-white"
+								>
+									<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+									</svg>
+								</div>
+								<span className="flex-1 text-center">Continue Exam</span>
+							</div>
+						</button>
 					</div>
 
 					{unansweredCount > 0 && (

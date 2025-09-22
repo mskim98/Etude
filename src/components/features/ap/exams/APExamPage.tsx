@@ -525,10 +525,7 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 											}}
 											onMouseUp={handleTextSelection}
 										>
-											<div className="mb-3 flex items-center justify-between">
-												<span className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
-													Passage
-												</span>
+											<div className="mb-3 flex items-center justify-end">
 												<div className="flex items-center space-x-2">
 													{(highlights.get(currentQuestion)?.length || 0) > 0 ? (
 														<span className="text-xs px-2 py-1 rounded bg-yellow-100 text-yellow-800">
