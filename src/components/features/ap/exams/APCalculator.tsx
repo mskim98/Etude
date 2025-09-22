@@ -282,20 +282,18 @@ export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
 								×
 							</button>
 							<button
-								onClick={deleteLast}
-								className="h-12 bg-orange-500 text-white rounded-xl hover:bg-orange-600 
-								font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 cursor-pointer
-								border-2 border-orange-400 hover:border-orange-500"
+								onClick={() => appendToCalc("-")}
+								className="h-12 bg-gray-600 text-white rounded-xl hover:bg-gray-700 
+								font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 cursor-pointer"
 							>
-								⌫
+								−
 							</button>
 							<button
-								onClick={clearCalc}
-								className="h-12 bg-red-500 text-white rounded-xl hover:bg-red-600 
-								font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 cursor-pointer
-								border-2 border-red-400 hover:border-red-500"
+								onClick={() => appendToCalc("+")}
+								className="h-12 bg-gray-600 text-white rounded-xl hover:bg-gray-700 
+								font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 cursor-pointer"
 							>
-								C
+								+
 							</button>
 							<button
 								onClick={() => appendToCalc("7")}
@@ -319,11 +317,12 @@ export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
 								9
 							</button>
 							<button
-								onClick={() => appendToCalc("-")}
-								className="h-12 bg-gray-600 text-white rounded-xl hover:bg-gray-700 
-								font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 cursor-pointer"
+								onClick={deleteLast}
+								className="h-12 bg-orange-500 text-white rounded-xl hover:bg-orange-600 
+								font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 cursor-pointer
+								border-2 border-orange-400 hover:border-orange-500"
 							>
-								−
+								⌫
 							</button>
 							<button
 								onClick={() => appendToCalc("4")}
@@ -347,11 +346,12 @@ export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
 								6
 							</button>
 							<button
-								onClick={() => appendToCalc("+")}
-								className="h-12 bg-gray-600 text-white rounded-xl hover:bg-gray-700 
-								font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 cursor-pointer"
+								onClick={clearCalc}
+								className="h-12 bg-red-500 text-white rounded-xl hover:bg-red-600 
+								font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 cursor-pointer
+								border-2 border-red-400 hover:border-red-500"
 							>
-								+
+								C
 							</button>
 							<button
 								onClick={() => appendToCalc("1")}
