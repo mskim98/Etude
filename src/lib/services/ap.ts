@@ -312,7 +312,7 @@ export class ApServiceImpl implements ApService {
 				query = query.eq("difficulty", filter.difficulty);
 			}
 
-			const { data, error } = await query;
+			const { data, error } = await query.order("created_at", { ascending: false });
 
 			if (error) {
 				console.error("❌ AP 시험 조회 오류:", error);
@@ -456,13 +456,13 @@ export class ApServiceImpl implements ApService {
 						choice_text,
 						image_url,
 						is_answer,
-						order_field
+						choice_order
 					)
 				`
 				)
 				.eq("ap_exam_id", examId)
 				.is("deleted_at", null)
-				.order("order_field", { ascending: true });
+				.order("question_order", { ascending: true });
 
 			if (error) {
 				console.error("❌ 시험 문제 조회 오류:", error);
@@ -477,17 +477,17 @@ export class ApServiceImpl implements ApService {
 			// 데이터 변환
 			const questions: ApExamQuestion[] = data.map((item: any) => ({
 				id: item.id,
-				order: item.order_field,
+				order: item.question_order,
 				question: item.question,
 				passage: item.passage,
 				choiceType: item.choice_type,
 				difficulty: item.difficulty,
 				topic: item.topic,
 				choices: item.choices
-					.sort((a: any, b: any) => a.order_field - b.order_field)
+					.sort((a: any, b: any) => (a.choice_order || 0) - (b.choice_order || 0))
 					.map((choice: any) => ({
 						id: choice.id,
-						order: choice.order_field,
+						order: choice.choice_order || 0,
 						text: choice.choice_text,
 						imageUrl: choice.image_url,
 						// 정답 여부는 시험 중에는 숨김
@@ -501,6 +501,382 @@ export class ApServiceImpl implements ApService {
 			return questions;
 		} catch (error) {
 			console.error("❌ ApService.getExamQuestions 예외 발생:", error);
+			throw error;
+		}
+	}
+
+	/**
+	 * 시험 답안 제출 및 채점
+	 */
+	async submitExamAnswers(request: SubmitExamAnswersRequest): Promise<UserApResult> {
+		try {
+			console.log("📝 시험 답안 제출 시작:", request.examId);
+
+			// 1. 시험 문제와 정답 조회
+			const { data: questions, error: questionsError } = await supabase
+				.from("ap_exam_question")
+				.select(
+					`
+					id,
+					question_order,
+					topic,
+					choices:ap_exam_choice (
+						id,
+						choice_text,
+						is_answer
+					)
+				`
+				)
+				.eq("ap_exam_id", request.examId)
+				.is("deleted_at", null)
+				.order("question_order", { ascending: true });
+
+			if (questionsError) {
+				console.error("❌ 시험 문제 조회 오류:", questionsError);
+				throw new Error(`시험 문제를 불러오는데 실패했습니다: ${questionsError.message}`);
+			}
+
+			if (!questions || questions.length === 0) {
+				throw new Error("시험 문제를 찾을 수 없습니다.");
+			}
+
+			// 2. 채점 로직
+			const totalQuestions = questions.length;
+			let correctAnswers = 0;
+			const wrongAnswers: WrongAnswer[] = [];
+
+			questions.forEach((question: any, index: number) => {
+				const userAnswerId = request.answers[index];
+				const correctChoice = question.choices.find((choice: any) => choice.is_answer);
+				const userChoice = question.choices.find((choice: any) => choice.id === userAnswerId);
+
+				if (userAnswerId === correctChoice?.id) {
+					correctAnswers++;
+				} else {
+					wrongAnswers.push({
+						questionId: question.id,
+						questionNumber: question.question_order || index + 1,
+						question: question.question || "",
+						userAnswer: userChoice?.choice_text || "Not answered",
+						correctAnswer: correctChoice?.choice_text || "N/A",
+						topic: question.topic || "General",
+						questionType: "MCQ",
+						reasoning: "이 문제를 다시 검토해보세요.",
+						difficulty: (question.difficulty === "easy"
+							? "Easy"
+							: question.difficulty === "normal"
+							? "Medium"
+							: question.difficulty === "hard"
+							? "Hard"
+							: "Medium") as "Easy" | "Medium" | "Hard",
+					});
+				}
+			});
+
+			// 3. AP 점수 계산 (1-5 스케일)
+			const percentage = (correctAnswers / totalQuestions) * 100;
+			let apScore: number;
+			if (percentage >= 75) apScore = 5;
+			else if (percentage >= 60) apScore = 4;
+			else if (percentage >= 45) apScore = 3;
+			else if (percentage >= 30) apScore = 2;
+			else apScore = 1;
+
+			// 4. 기존 시도 레코드 찾기 및 업데이트
+			const { data: existingResult, error: findError } = await supabase
+				.from("user_ap_result")
+				.select("id")
+				.eq("user_id", request.userId)
+				.eq("ap_exam_id", request.examId)
+				.is("completed_at", null)
+				.single();
+
+			let resultData: any;
+			if (existingResult) {
+				// 기존 미완료 레코드 업데이트
+				const { data: updateData, error: updateError } = await supabase
+					.from("user_ap_result")
+					.update({
+						completed_at: new Date().toISOString(), // 시험 완료 시간
+						duration: `${Math.floor(request.timeSpent / 60)
+							.toString()
+							.padStart(2, "0")}:${String(request.timeSpent % 60).padStart(2, "0")}`,
+						correct_amount: correctAnswers,
+						score: apScore,
+					})
+					.eq("id", existingResult.id)
+					.select()
+					.single();
+
+				if (updateError) {
+					console.error("❌ 시험 결과 업데이트 오류:", updateError);
+					throw new Error(`시험 결과 업데이트에 실패했습니다: ${updateError.message}`);
+				}
+				resultData = updateData;
+			} else {
+				// 새로운 레코드 생성 (fallback)
+				const { data: insertData, error: insertError } = await supabase
+					.from("user_ap_result")
+					.insert({
+						user_id: request.userId,
+						ap_exam_id: request.examId,
+						tested_at: new Date(Date.now() - request.timeSpent * 1000).toISOString(), // 시험 시작 시간
+						completed_at: new Date().toISOString(), // 시험 완료 시간
+						duration: `${Math.floor(request.timeSpent / 60)
+							.toString()
+							.padStart(2, "0")}:${String(request.timeSpent % 60).padStart(2, "0")}`,
+						correct_amount: correctAnswers,
+						score: apScore,
+					})
+					.select()
+					.single();
+
+				if (insertError) {
+					console.error("❌ 시험 결과 저장 오류:", insertError);
+					throw new Error(`시험 결과 저장에 실패했습니다: ${insertError.message}`);
+				}
+				resultData = insertData;
+			}
+
+			// 5. 기존 틀린 답안 삭제 후 새로 저장
+			// 기존 틀린 답안 삭제
+			const { error: deleteError } = await supabase
+				.from("user_ap_wrong_answer")
+				.delete()
+				.eq("ap_result_id", resultData.id);
+
+			if (deleteError) {
+				console.error("❌ 기존 틀린 답안 삭제 오류:", deleteError);
+				// 삭제 실패는 치명적이지 않으므로 경고만 출력
+			}
+
+			// 새로운 틀린 답안 저장
+			if (wrongAnswers.length > 0) {
+				const wrongAnswerInserts = wrongAnswers.map((wrongAnswer) => ({
+					ap_result_id: resultData.id,
+					ap_question_id: wrongAnswer.questionId,
+					user_answer: wrongAnswer.userAnswer,
+				}));
+
+				const { error: wrongAnswersError } = await supabase.from("user_ap_wrong_answer").insert(wrongAnswerInserts);
+
+				if (wrongAnswersError) {
+					console.error("❌ 틀린 답안 저장 오류:", wrongAnswersError);
+					// 틀린 답안 저장 실패는 치명적이지 않으므로 경고만 출력
+				}
+			}
+
+			// 6. 결과 반환
+			const result: UserApResult = {
+				id: resultData.id,
+				examId: request.examId,
+				userId: request.userId,
+				totalQuestions,
+				correctAnswers,
+				score: apScore,
+				timeSpent: request.timeSpent,
+				completedAt: new Date(resultData.completed_at),
+				wrongAnswers,
+				questionTypeAnalysis: this.calculateQuestionTypeAnalysis(questions, wrongAnswers),
+			};
+
+			console.log("📝 시험 답안 제출 성공:", result);
+			return result;
+		} catch (error) {
+			console.error("❌ ApService.submitExamAnswers 예외 발생:", error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Duration 파싱 (interval -> 초)
+	 */
+	private parseDuration(duration: string): number {
+		try {
+			// "HH:MM:SS" 형식의 duration을 초로 변환
+			const parts = duration.split(":");
+			if (parts.length === 3) {
+				const hours = parseInt(parts[0]) || 0;
+				const minutes = parseInt(parts[1]) || 0;
+				const seconds = parseInt(parts[2]) || 0;
+				return hours * 3600 + minutes * 60 + seconds;
+			}
+			// "MM:SS" 형식의 duration을 초로 변환
+			if (parts.length === 2) {
+				const minutes = parseInt(parts[0]) || 0;
+				const seconds = parseInt(parts[1]) || 0;
+				return minutes * 60 + seconds;
+			}
+			return 0;
+		} catch (error) {
+			console.error("Duration 파싱 오류:", error);
+			return 0;
+		}
+	}
+
+	/**
+	 * 주제별 분석 계산
+	 */
+	private calculateQuestionTypeAnalysis(questions: any[], wrongAnswers: WrongAnswer[]) {
+		console.log("🔍 주제별 분석 계산 시작:", {
+			questionsCount: questions.length,
+			wrongAnswersCount: wrongAnswers.length,
+		});
+
+		const topicStats: Record<string, { correct: number; total: number }> = {};
+
+		questions.forEach((question) => {
+			const topic = question.topic || "General";
+			console.log(`📝 문제 ${question.question_order}: ${topic}`);
+
+			if (!topicStats[topic]) {
+				topicStats[topic] = { correct: 0, total: 0 };
+			}
+			topicStats[topic].total++;
+
+			// 틀린 답안에 없는 경우 정답으로 간주
+			const isWrong = wrongAnswers.some((wa) => wa.questionId === question.id);
+			if (!isWrong) {
+				topicStats[topic].correct++;
+			}
+		});
+
+		const result = Object.entries(topicStats).map(([name, stats]) => ({
+			name,
+			correct: stats.correct,
+			total: stats.total,
+			percentage: stats.total > 0 ? (stats.correct / stats.total) * 100 : 0,
+		}));
+
+		console.log("🔍 주제별 분석 결과:", result);
+		return result;
+	}
+
+	/**
+	 * 결과 ID로 주제별 분석 계산
+	 */
+	private async calculateQuestionTypeAnalysisForResult(
+		resultId: string,
+		examId: string,
+		correctAnswers: number,
+		totalQuestions: number
+	) {
+		try {
+			console.log("🔍 결과별 주제 분석 시작:", { resultId, examId, correctAnswers, totalQuestions });
+
+			// 틀린 답안 조회
+			const { data: wrongAnswers } = await supabase
+				.from("user_ap_wrong_answer")
+				.select("ap_question_id")
+				.eq("ap_result_id", resultId);
+
+			// 문제와 주제 정보 조회
+			const { data: questions } = await supabase
+				.from("ap_exam_question")
+				.select("id, question_order, topic")
+				.eq("ap_exam_id", examId)
+				.is("deleted_at", null)
+				.order("question_order", { ascending: true });
+
+			if (!questions) return [];
+
+			const wrongQuestionIds = wrongAnswers?.map((wa) => wa.ap_question_id) || [];
+			console.log("🔍 틀린 문제 ID들:", wrongQuestionIds);
+
+			const topicStats: Record<string, { correct: number; total: number }> = {};
+
+			questions.forEach((question) => {
+				const topic = question.topic || "General";
+				console.log(
+					`📝 문제 ${question.question_order} (${topic}): ${wrongQuestionIds.includes(question.id) ? "틀림" : "맞음"}`
+				);
+
+				if (!topicStats[topic]) {
+					topicStats[topic] = { correct: 0, total: 0 };
+				}
+				topicStats[topic].total++;
+
+				// 틀린 답안에 없는 경우 정답으로 간주
+				if (!wrongQuestionIds.includes(question.id)) {
+					topicStats[topic].correct++;
+				}
+			});
+
+			const result = Object.entries(topicStats).map(([name, stats]) => ({
+				name,
+				correct: stats.correct,
+				total: stats.total,
+				percentage: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,
+			}));
+
+			console.log("🔍 주제별 분석 결과:", result);
+			return result;
+		} catch (error) {
+			console.error("❌ 주제별 분석 계산 오류:", error);
+			return [];
+		}
+	}
+
+	/**
+	 * 시험 시작 시 시도 레코드 생성 또는 업데이트 (tested_at 기록)
+	 */
+	async startExamAttempt(examId: string): Promise<string> {
+		try {
+			// 현재 사용자 ID 가져오기
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+			if (!user) {
+				throw new Error("User not authenticated");
+			}
+
+			// 기존 미완료 시도가 있는지 확인
+			const { data: existingAttempt, error: checkError } = await supabase
+				.from("user_ap_result")
+				.select("id")
+				.eq("user_id", user.id)
+				.eq("ap_exam_id", examId)
+				.is("completed_at", null)
+				.single();
+
+			if (existingAttempt) {
+				// 기존 미완료 시도가 있으면 tested_at 업데이트
+				const { error: updateError } = await supabase
+					.from("user_ap_result")
+					.update({
+						tested_at: new Date().toISOString(),
+						// completed_at은 null로 유지
+					})
+					.eq("id", existingAttempt.id);
+
+				if (updateError) {
+					console.error("❌ 기존 시도 레코드 업데이트 오류:", updateError);
+					throw new Error(`기존 시도 레코드 업데이트에 실패했습니다: ${updateError.message}`);
+				}
+
+				return existingAttempt.id;
+			}
+
+			// 새로운 시도 레코드 생성
+			const { data: attemptData, error: insertError } = await supabase
+				.from("user_ap_result")
+				.insert({
+					user_id: user.id,
+					ap_exam_id: examId,
+					tested_at: new Date().toISOString(),
+					// completed_at은 null로 유지 (시험 완료 시에만 설정)
+				})
+				.select("id")
+				.single();
+
+			if (insertError) {
+				console.error("❌ 시험 시도 레코드 생성 오류:", insertError);
+				throw new Error(`시험 시도 레코드 생성에 실패했습니다: ${insertError.message}`);
+			}
+
+			return attemptData.id;
+		} catch (error) {
+			console.error("❌ 시험 시도 시작 오류:", error);
 			throw error;
 		}
 	}
@@ -521,16 +897,25 @@ export class ApServiceImpl implements ApService {
 				.from("user_ap_result")
 				.select(
 					`
-					*,
+					id,
+					user_id,
+					ap_exam_id,
+					tested_at,
+					completed_at,
+					duration,
+					correct_amount,
+					score,
+					created_at,
+					updated_at,
 					exam:ap_exam_id!inner (
 						id,
 						title,
-						difficulty
+						difficulty,
+						quantity
 					)
 				`
 				)
 				.eq("user_id", currentUserId)
-				.eq("is_completed", true)
 				.order("tested_at", { ascending: false });
 
 			if (error) {
@@ -544,54 +929,41 @@ export class ApServiceImpl implements ApService {
 			}
 
 			// 데이터 변환
-			const results: UserApResult[] = data.map((item: any) => ({
-				id: item.id,
-				exam: {
-					id: item.exam.id,
-					title: item.exam.title,
-					difficulty: item.exam.difficulty,
-				},
-				startedAt: new Date(item.tested_at),
-				completedAt: item.completed_at ? new Date(item.completed_at) : undefined,
-				duration: item.duration ? parseInt(item.duration) : undefined,
-				correctCount: item.correct_amount || 0,
-				totalCount: item.total_amount,
-				score: item.score || 0,
-				isCompleted: item.is_completed,
-				accuracy: item.total_amount > 0 ? Math.round((item.correct_amount / item.total_amount) * 100) : 0,
-				wrongCount: item.total_amount - (item.correct_amount || 0),
-			}));
+			const results: UserApResult[] = await Promise.all(
+				data.map(async (item: any) => {
+					const totalQuestions = item.exam?.quantity || 0;
+					const correctAnswers = item.correct_amount || 0;
+
+					// 틀린 답안 데이터 조회
+					const wrongAnswers = await this.getWrongAnswersForResult(item.id);
+
+					return {
+						id: item.id,
+						examId: item.ap_exam_id,
+						userId: item.user_id,
+						totalQuestions,
+						correctAnswers,
+						score: item.score || 0,
+						timeSpent:
+							item.tested_at && item.completed_at
+								? Math.floor((new Date(item.completed_at).getTime() - new Date(item.tested_at).getTime()) / 1000)
+								: 0,
+						completedAt: item.completed_at ? new Date(item.completed_at) : new Date(),
+						wrongAnswers,
+						questionTypeAnalysis: await this.calculateQuestionTypeAnalysisForResult(
+							item.id,
+							item.ap_exam_id,
+							correctAnswers,
+							totalQuestions
+						),
+					};
+				})
+			);
 
 			console.log("📊 사용자 시험 결과 조회 성공:", results.length, "개");
 			return results;
 		} catch (error) {
 			console.error("❌ ApService.getUserResults 예외 발생:", error);
-			throw error;
-		}
-	}
-
-	/**
-	 * 시험 답안 제출
-	 */
-	async submitExamAnswers(request: SubmitExamAnswersRequest): Promise<string> {
-		try {
-			console.log("📤 시험 답안 제출 시작:", request);
-
-			const { data, error } = await supabase.rpc("submit_ap_exam_result", {
-				p_ap_exam_id: request.examId,
-				p_answers: request.answers,
-				p_duration: request.duration ? `${request.duration} minutes` : null,
-			});
-
-			if (error) {
-				console.error("❌ 시험 답안 제출 오류:", error);
-				throw new Error(`시험 답안 제출에 실패했습니다: ${error.message}`);
-			}
-
-			console.log("📤 시험 답안 제출 성공:", data);
-			return data;
-		} catch (error) {
-			console.error("❌ ApService.submitExamAnswers 예외 발생:", error);
 			throw error;
 		}
 	}
@@ -648,6 +1020,90 @@ export class ApServiceImpl implements ApService {
 		} catch (error) {
 			console.error("❌ ApService.getWrongAnswers 예외 발생:", error);
 			throw error;
+		}
+	}
+
+	/**
+	 * 결과 ID로 틀린 답안 조회 (간소화된 버전)
+	 */
+	private async getWrongAnswersForResult(resultId: string): Promise<WrongAnswer[]> {
+		try {
+			console.log("❌ 결과별 틀린 답안 조회 시작:", resultId);
+
+			// 틀린 답안 ID 조회 (사용자 답안 포함)
+			const { data: wrongAnswerIds, error: wrongAnswerError } = await supabase
+				.from("user_ap_wrong_answer")
+				.select("ap_question_id, user_answer")
+				.eq("ap_result_id", resultId);
+
+			if (wrongAnswerError) {
+				console.error("❌ 틀린 답안 ID 조회 오류:", wrongAnswerError);
+				return [];
+			}
+
+			if (!wrongAnswerIds || wrongAnswerIds.length === 0) {
+				console.log("❌ 틀린 문제가 없습니다.");
+				return [];
+			}
+
+			// 틀린 문제들의 상세 정보 조회
+			const questionIds = wrongAnswerIds.map((wa: any) => wa.ap_question_id);
+			const { data: questions, error: questionsError } = await supabase
+				.from("ap_exam_question")
+				.select("id, question_order, question, topic, difficulty")
+				.in("id", questionIds)
+				.is("deleted_at", null);
+
+			// 각 문제의 정답 조회
+			const correctAnswers: { [questionId: string]: string } = {};
+			for (const questionId of questionIds) {
+				const { data: choices, error: choicesError } = await supabase
+					.from("ap_exam_choice")
+					.select("choice_text")
+					.eq("question_id", questionId)
+					.eq("is_answer", true)
+					.single();
+
+				if (!choicesError && choices) {
+					correctAnswers[questionId] = choices.choice_text;
+					console.log(`✅ 정답 조회 성공 - 문제 ${questionId}: ${choices.choice_text}`);
+				} else {
+					console.log(`❌ 정답 조회 실패 - 문제 ${questionId}:`, choicesError);
+				}
+			}
+
+			if (questionsError) {
+				console.error("❌ 틀린 문제 상세 조회 오류:", questionsError);
+				return [];
+			}
+
+			// 틀린 답안 데이터 생성
+			const wrongAnswers: WrongAnswer[] = wrongAnswerIds.map((wa: any, index: number) => {
+				const question = questions?.find((q) => q.id === wa.ap_question_id);
+				return {
+					questionId: wa.ap_question_id,
+					questionNumber: question?.question_order || 0,
+					question: question?.question || "",
+					userAnswer: wa.user_answer || "Not answered",
+					correctAnswer: correctAnswers[wa.ap_question_id] || "N/A",
+					topic: question?.topic || "General",
+					questionType: "MCQ" as const,
+					reasoning: "이 문제를 다시 검토해보세요.",
+					difficulty: (question?.difficulty === "easy"
+						? "Easy"
+						: question?.difficulty === "normal"
+						? "Medium"
+						: question?.difficulty === "hard"
+						? "Hard"
+						: "Medium") as "Easy" | "Medium" | "Hard",
+				};
+			});
+
+			console.log("❌ 결과별 틀린 답안 조회 성공:", wrongAnswers.length, "개");
+			return wrongAnswers;
+		} catch (error) {
+			console.error("❌ getWrongAnswersForResult 예외 발생:", error);
+			return [];
 		}
 	}
 }

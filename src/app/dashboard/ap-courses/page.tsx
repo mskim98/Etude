@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { APCourses } from "@/components/dashboard/ap-courses/APCourses";
+import { supabase } from "@/lib/supabase";
 import type { Subject } from "@/types";
 
 export default function APCoursesPage() {
@@ -34,29 +35,69 @@ export default function APCoursesPage() {
 		}
 	}, [searchParams, router]);
 
-	// Convert ApSubject to Subject for compatibility
-	const handleApStartExam = (apSubject: any) => {
-		const subject: Subject = {
-			id: apSubject.id,
-			name: apSubject.title,
-			type: "AP",
-			progress: apSubject.progress,
-			totalChapters: apSubject.totalChapters,
-			completedChapters: apSubject.completedChapters,
-			icon: "📚",
-			examDate: apSubject.examDate,
-		};
+	// Handle AP exam start - navigate to instruction page
+	const handleApStartExam = (apSubject: unknown, examId?: string) => {
+		console.log("Starting exam for subject:", apSubject);
 
-		console.log("Starting exam for subject:", subject);
-		// Navigate to exam page with subject info
-		router.push(`/exam?subject=${subject.id}`);
+		// Type guard to ensure apSubject has id property
+		if (typeof apSubject === "object" && apSubject !== null && "id" in apSubject) {
+			const subject = apSubject as { id: string };
+
+			// If examId is provided, navigate to instruction page for specific exam
+			if (examId) {
+				router.push(`/dashboard/ap-courses/ap-exam-instruction?examId=${examId}&subjectId=${subject.id}`);
+			} else {
+				// For subjects without specific examId, redirect to AP Courses page
+				// The user should select a specific exam from the Practice Exams grid
+				router.push(`/dashboard/ap-courses?subject=${subject.id}`);
+			}
+		}
+	};
+
+	// Handle viewing exam results
+	const handleViewResults = async (examId: string) => {
+		try {
+			// Get current user
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+			if (!user) {
+				router.push("/auth/login");
+				return;
+			}
+
+			// Get the most recent result for this exam
+			const { data: results, error } = await supabase
+				.from("user_ap_result")
+				.select("id")
+				.eq("user_id", user.id)
+				.eq("ap_exam_id", examId)
+				.order("completed_at", { ascending: false })
+				.limit(1);
+
+			if (error) {
+				console.error("Error fetching exam results:", error);
+				return;
+			}
+
+			if (results && results.length > 0) {
+				// Navigate to results page with the most recent result
+				router.push(`/ap-results?resultId=${results[0].id}&examId=${examId}`);
+			} else {
+				console.log("No results found for this exam");
+				// You might want to show a message to the user
+			}
+		} catch (error) {
+			console.error("Error in handleViewResults:", error);
+		}
 	};
 
 	return (
 		<div>
 			<APCourses
 				onStartExam={handleApStartExam}
-				selectedSubject={selectedSubject as any}
+				onViewResults={handleViewResults}
+				selectedSubject={selectedSubject as Subject | null}
 				onTabChange={() => setSelectedSubject(null)}
 			/>
 		</div>

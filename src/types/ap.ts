@@ -164,50 +164,53 @@ export interface ApExamChoice {
 export interface UserApResult {
 	/** 결과 ID */
 	id: string;
-	/** 시험 정보 */
-	exam: {
-		id: string;
-		title: string;
-		difficulty: DifficultyLevel;
-	};
-	/** 시험 시작 시간 */
-	startedAt: Date;
-	/** 시험 완료 시간 */
-	completedAt?: Date;
-	/** 실제 소요 시간 (분) */
-	duration?: number;
-	/** 맞힌 문제 수 */
-	correctCount: number;
+	/** 시험 ID */
+	examId: string;
+	/** 사용자 ID */
+	userId: string;
 	/** 전체 문제 수 */
-	totalCount: number;
-	/** 점수 (백분율) */
+	totalQuestions: number;
+	/** 맞힌 문제 수 */
+	correctAnswers: number;
+	/** AP 점수 (1-5) */
 	score: number;
-	/** 완료 여부 */
-	isCompleted: boolean;
-	/** 정답률 */
-	accuracy: number;
-	/** 틀린 문제 수 */
-	wrongCount: number;
+	/** 실제 소요 시간 (초) */
+	timeSpent: number;
+	/** 시험 완료 시간 */
+	completedAt: Date;
+	/** 틀린 답안 목록 */
+	wrongAnswers: WrongAnswer[];
+	/** 주제별 분석 */
+	questionTypeAnalysis: {
+		name: string;
+		correct: number;
+		total: number;
+		percentage: number;
+	}[];
 }
 
 /**
  * 틀린 문제 정보 (UI 표시용)
  */
 export interface WrongAnswer {
-	/** 문제 정보 */
-	question: {
-		id: string;
-		order: number;
-		content: string;
-		topic?: string;
-		difficulty: DifficultyLevel;
-	};
+	/** 문제 ID */
+	questionId: string;
+	/** 문제 번호 */
+	questionNumber: number;
+	/** 문제 내용 */
+	question?: string;
 	/** 사용자가 선택한 답 */
 	userAnswer: string;
 	/** 정답 */
 	correctAnswer: string;
+	/** 주제 */
+	topic?: string;
+	/** 문제 타입 */
+	questionType?: "MCQ" | "FRQ";
 	/** 해설 */
-	explanation?: string;
+	reasoning?: string;
+	/** 난이도 */
+	difficulty?: "Easy" | "Medium" | "Hard";
 }
 
 // AP 과목 생성/수정 요청 타입들
@@ -264,10 +267,12 @@ export interface CreateApExamRequest {
 export interface SubmitExamAnswersRequest {
 	/** 시험 ID */
 	examId: string;
-	/** 답안 (문제 ID: 선택지 ID) */
-	answers: Record<string, string>;
-	/** 실제 소요 시간 (분) */
-	duration?: number;
+	/** 사용자 ID */
+	userId: string;
+	/** 답안 배열 (문제 순서대로 선택지 ID) */
+	answers: string[];
+	/** 실제 소요 시간 (초) */
+	timeSpent: number;
 }
 
 // 필터링 및 정렬 타입들
@@ -335,6 +340,6 @@ export interface ApService {
 
 	// 결과 관련
 	getUserResults(userId?: string): Promise<UserApResult[]>;
-	submitExamAnswers(request: SubmitExamAnswersRequest): Promise<string>;
+	submitExamAnswers(request: SubmitExamAnswersRequest): Promise<UserApResult>;
 	getWrongAnswers(resultId: string): Promise<WrongAnswer[]>;
 }

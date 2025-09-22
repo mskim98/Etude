@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { MockExamPage } from "@/components/features/exams/MockExamPage";
+import { MockExamPage } from "@/components/features/sat/exams/MockExamPage";
 import type { Subject } from "@/types";
 
 export default function ExamPage() {
@@ -37,7 +37,7 @@ export default function ExamPage() {
 		},
 	};
 
-	const handleExamComplete = (result: any) => {
+	const handleExamComplete = (result: unknown) => {
 		// 시험 완료 시 결과 페이지로 이동
 		console.log("Exam completed:", result);
 		if (subject.type === "SAT") {
@@ -55,6 +55,7 @@ export default function ExamPage() {
 				// Next.js 라우팅으로 페이지 이동
 				router.push(`/${page}`);
 			}}
+			startImmediately={false} // 기존 동작 유지 - instruction 화면 먼저 보여줌
 		/>
 	);
 }
