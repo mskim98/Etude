@@ -162,7 +162,28 @@ export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
 			}
 
 			const result = evaluate(expression, config);
-			const resultStr = result.toString();
+			
+			// Convert BigNumber to regular number for easier handling
+			const numResult = typeof result.toNumber === 'function' ? result.toNumber() : result;
+			
+			// Round very small numbers to 0 to handle floating point precision issues
+			const roundedResult = Math.abs(numResult) < 1e-10 ? 0 : numResult;
+			
+			// Format the result to avoid excessive decimal places
+			let resultStr;
+			if (typeof roundedResult === 'number') {
+				// Round to 12 significant digits to avoid floating point precision issues
+				// but preserve enough precision for scientific calculations
+				if (Math.abs(roundedResult) >= 1e-4 && Math.abs(roundedResult) < 1e10) {
+					// For normal range numbers, limit decimal places
+					resultStr = parseFloat(roundedResult.toPrecision(12)).toString();
+				} else {
+					// For very large or very small numbers, use scientific notation
+					resultStr = roundedResult.toString();
+				}
+			} else {
+				resultStr = roundedResult.toString();
+			}
 
 			// Add to history
 			const historyEntry = `${calcValue} = ${resultStr}`;
