@@ -145,10 +145,10 @@ export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
 		if (!calcValue.trim()) return;
 
 		try {
-			// Configure mathjs for the current mode
+			// Configure mathjs for faster calculation with lower precision
 			const config = {
-				number: "BigNumber",
-				precision: 14,
+				number: "number", // Use regular numbers instead of BigNumber for faster calculation
+				precision: 6,     // Reduced precision for faster computation
 			};
 
 			// Convert degrees to radians if needed for trig functions
@@ -162,24 +162,23 @@ export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
 			}
 
 			const result = evaluate(expression, config);
-			
-			// Convert BigNumber to regular number for easier handling
-			const numResult = typeof result.toNumber === 'function' ? result.toNumber() : result;
-			
+
+			// Since we're using regular numbers now, no need for BigNumber conversion
+			const numResult = result;
+
 			// Round very small numbers to 0 to handle floating point precision issues
 			const roundedResult = Math.abs(numResult) < 1e-10 ? 0 : numResult;
-			
-			// Format the result to avoid excessive decimal places
+
+			// Format the result to 3 decimal places for simpler display
 			let resultStr;
-			if (typeof roundedResult === 'number') {
-				// Round to 12 significant digits to avoid floating point precision issues
-				// but preserve enough precision for scientific calculations
-				if (Math.abs(roundedResult) >= 1e-4 && Math.abs(roundedResult) < 1e10) {
-					// For normal range numbers, limit decimal places
-					resultStr = parseFloat(roundedResult.toPrecision(12)).toString();
-				} else {
-					// For very large or very small numbers, use scientific notation
+			if (typeof roundedResult === "number") {
+				// Round to 3 decimal places
+				if (Number.isInteger(roundedResult)) {
+					// If it's a whole number, display without decimal places
 					resultStr = roundedResult.toString();
+				} else {
+					// Round to 3 decimal places and remove trailing zeros
+					resultStr = parseFloat(roundedResult.toFixed(3)).toString();
 				}
 			} else {
 				resultStr = roundedResult.toString();
