@@ -254,19 +254,23 @@ export function APGraphCalculator({ examId, onDataChange }: APGraphCalculatorPro
 										}}
 										onFocus={() => setSelectedFunctionId(func.id)}
 									/>
-									{functions.length > 1 && (
-										<Button
-											onClick={(e) => {
-												e.stopPropagation();
+									<Button
+										onClick={(e) => {
+											e.stopPropagation();
+											if (functions.length > 1) {
 												removeFunction(func.id);
-											}}
-											variant="ghost"
-											size="sm"
-											className="text-red-500 hover:text-red-700 p-1"
-										>
-											<X className="w-4 h-4" />
-										</Button>
-									)}
+											} else {
+												// If it's the last function, clear it instead of removing
+												updateFunction(func.id, "");
+											}
+										}}
+										variant="ghost"
+										size="sm"
+										className="text-red-500 hover:text-red-700 p-1"
+										title={functions.length > 1 ? "Remove function" : "Clear function"}
+									>
+										<X className="w-4 h-4" />
+									</Button>
 								</div>
 							))}
 						</div>
