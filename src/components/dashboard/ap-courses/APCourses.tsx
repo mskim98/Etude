@@ -27,12 +27,13 @@ import {
 
 interface APCoursesProps {
 	onStartExam: (subject: ApSubject, examId?: string) => void;
+	onViewResults?: (examId: string) => void;
 	selectedSubject?: ApSubject | null;
 	onTabChange?: () => void;
 	className?: string;
 }
 
-export function APCourses({ onStartExam, selectedSubject, onTabChange, className }: APCoursesProps) {
+export function APCourses({ onStartExam, onViewResults, selectedSubject, onTabChange, className }: APCoursesProps) {
 	const { subjects, isLoading, error, refresh } = useDashboardApSubjects();
 	const [selectedCard, setSelectedCard] = useState<string | null>(null);
 	// const hasServiceAccess = useAuthStore((s) => s.hasServiceAccess);
@@ -274,6 +275,7 @@ export function APCourses({ onStartExam, selectedSubject, onTabChange, className
 								onStartExam={(examId: string) =>
 									handleWithApAccess(() => selectedSubjectData && onStartExam(selectedSubjectData, examId))
 								}
+								onViewResults={onViewResults}
 							/>
 						</div>
 					)}

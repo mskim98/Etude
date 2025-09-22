@@ -16,6 +16,26 @@ interface SATMockExamsProps {
 }
 
 export function SATMockExams({ onStartExam, selectedSubject, onTabChange, className }: SATMockExamsProps) {
+	// Mock SAT subjects data for exam date functionality
+	const subjects = [
+		{
+			id: "sat-subject-1",
+			name: "SAT",
+			type: "SAT" as const,
+			progress: 0,
+			totalChapters: 0,
+			examDate: new Date("2024-08-24"), // Next SAT exam date (August 2024)
+		},
+		{
+			id: "sat-subject-2",
+			name: "SAT",
+			type: "SAT" as const,
+			progress: 0,
+			totalChapters: 0,
+			examDate: new Date("2024-10-05"), // Fall SAT exam date
+		},
+	];
+
 	// Mock SAT practice tests with diverse scenarios and realistic data
 	const satPracticeTests = [
 		// High Performers - Excellent scores

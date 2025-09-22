@@ -26,10 +26,18 @@ export function ScoreSummaryCard({
 	completedAt,
 	percentile,
 }: ScoreSummaryCardProps) {
-	const formatTime = (minutes: number) => {
-		const hours = Math.floor(minutes / 60);
-		const mins = minutes % 60;
-		return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+	const formatTime = (seconds: number) => {
+		const hours = Math.floor(seconds / 3600);
+		const minutes = Math.floor((seconds % 3600) / 60);
+		const remainingSeconds = Math.floor(seconds % 60);
+
+		if (hours > 0) {
+			return `${hours}h ${minutes}m ${remainingSeconds}s`;
+		} else if (minutes > 0) {
+			return `${minutes}m ${remainingSeconds}s`;
+		} else {
+			return `${remainingSeconds}s`;
+		}
 	};
 
 	const getScoreColor = () => {

@@ -18,6 +18,7 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 	const [answers, setAnswers] = useState<(string | null)[]>(new Array(questions.length).fill(null));
 	const [flaggedQuestions, setFlaggedQuestions] = useState<Set<number>>(new Set());
 	const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+	const [examStartTime] = useState<Date>(new Date()); // 시험 시작 시간 기록
 	const [showQuestionNavigator, setShowQuestionNavigator] = useState(false);
 	const [notes, setNotes] = useState("");
 	const [highlights, setHighlights] = useState<Map<number, Array<{ text: string; start: number; end: number }>>>(
@@ -60,16 +61,20 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 
 	// Define handleSubmitExam before useEffect
 	const handleSubmitExam = useCallback(() => {
+		// 실제 시험 경과 시간 계산 (초 단위)
+		const currentTime = new Date();
+		const actualTimeSpent = Math.floor((currentTime.getTime() - examStartTime.getTime()) / 1000);
+
 		const result = {
 			examId: examData.id,
 			answers,
-			timeSpent: examData.duration * 60 - timeLeft,
+			timeSpent: actualTimeSpent, // 실제 경과 시간 사용
 			flaggedQuestions: Array.from(flaggedQuestions),
 			highlights: Array.from(highlights.entries()),
 			notes,
 		};
 		onExamComplete(result);
-	}, [examData.id, answers, timeLeft, flaggedQuestions, highlights, notes, onExamComplete, examData.duration]);
+	}, [examData.id, answers, flaggedQuestions, highlights, notes, onExamComplete, examStartTime]);
 
 	// Timer effect
 	useEffect(() => {
@@ -379,7 +384,6 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 
 	const currentQuestionData = questions[currentQuestion];
 	const questionParts = currentQuestionData.question.split("\n\n");
-	const questionText = questionParts[0];
 	const passageText = currentQuestionData.passage || questionParts.slice(1).join("\n\n");
 
 	const handleQuestionJump = (index: number) => {
@@ -674,21 +678,6 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 										/>
 										Mark for Review
 									</Button>
-								</div>
-							</div>
-						</div>
-
-						{/* Question Text */}
-						<div
-							className="p-6 border-b"
-							style={{ borderColor: "var(--color-primary)", backgroundColor: "var(--color-primary-light)" }}
-						>
-							<div className="prose max-w-none">
-								<div
-									className="whitespace-pre-wrap text-lg leading-relaxed"
-									style={{ color: "var(--color-text-primary)" }}
-								>
-									{questionText}
 								</div>
 							</div>
 						</div>

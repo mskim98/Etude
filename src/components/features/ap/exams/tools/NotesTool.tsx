@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { StickyNote, X, Save } from "lucide-react";
+import { StickyNote, X } from "lucide-react";
 
 interface NotesToolProps {
 	onClose: () => void;
@@ -76,13 +76,7 @@ export function NotesTool({
 		onNotesChange(newNotes);
 	};
 
-	const handleSave = () => {
-		setIsSaving(true);
-		// Simulate save operation
-		setTimeout(() => {
-			setIsSaving(false);
-		}, 500);
-	};
+	// Save button removed; notes are auto-saved on change
 
 	const handleModalClick = () => {
 		onBringToFront?.();
@@ -112,16 +106,6 @@ export function NotesTool({
 						Exam Notes
 					</h3>
 					<div className="flex items-center space-x-2">
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={handleSave}
-							disabled={isSaving}
-							className="hover:bg-blue-100"
-							title="Save notes"
-						>
-							<Save className="h-4 w-4" />
-						</Button>
 						<Button variant="ghost" size="sm" onClick={onClose} className="hover:bg-blue-100">
 							<X className="h-4 w-4" />
 						</Button>

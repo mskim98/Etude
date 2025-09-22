@@ -3,7 +3,9 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { APExamPage } from "@/components/features/ap/exams/APExamPage";
-import type { ApExam, ApExamQuestion } from "@/types/ap";
+import { ApServiceImpl } from "@/lib/services/ap";
+import { supabase } from "@/lib/supabase";
+import type { ApExam, ApExamQuestion, SubmitExamAnswersRequest } from "@/types/ap";
 
 export default function APExamPageRoute() {
 	const router = useRouter();
@@ -25,65 +27,30 @@ export default function APExamPageRoute() {
 			}
 
 			try {
-				// TODO: 실제 AP exam 데이터를 API에서 가져오는 로직으로 교체
-				// 현재는 mock 데이터 사용
-				const mockExamData: ApExam = {
-					id: examId,
-					title: "AP Chemistry Practice Exam 1",
-					description: "Comprehensive practice exam covering all major topics in AP Chemistry",
-					difficulty: "normal",
-					duration: 195, // 3시간 15분
-					questionCount: 60,
-					isActive: true,
-					canTake: true,
-					completed: false,
-					attemptCount: 0,
-				};
+				// 실제 AP exam 데이터를 API에서 가져오기
+				const apService = new ApServiceImpl();
 
-				// Mock questions data
-				const mockQuestions: ApExamQuestion[] = Array.from({ length: 60 }, (_, index) => ({
-					id: `q${index + 1}`,
-					order: index + 1,
-					question: `This is AP Chemistry question ${
-						index + 1
-					}. Which of the following best describes the concept being tested?`,
-					passage:
-						index % 5 === 0
-							? `Passage for questions ${index + 1}-${
-									index + 3
-							  }: This passage provides context for the following chemistry problems...`
-							: undefined,
-					choiceType: "text",
-					difficulty: "normal",
-					topic: "General Chemistry",
-					choices: [
-						{ id: "a", order: 1, text: "Option A - This represents one possible answer", isCorrect: index % 4 === 0 },
-						{
-							id: "b",
-							order: 2,
-							text: "Option B - This represents another possible answer",
-							isCorrect: index % 4 === 1,
-						},
-						{
-							id: "c",
-							order: 3,
-							text: "Option C - This represents a third possible answer",
-							isCorrect: index % 4 === 2,
-						},
-						{
-							id: "d",
-							order: 4,
-							text: "Option D - This represents the final possible answer",
-							isCorrect: index % 4 === 3,
-						},
-					],
-					explanation: `This is the explanation for question ${
-						index + 1
-					}. The correct answer demonstrates the key chemistry principle being tested.`,
-				}));
+				// 시험 정보 가져오기
+				const exams = await apService.getExams({ subjectId });
+				const exam = exams.find((e) => e.id === examId);
 
-				setExamData(mockExamData);
-				setQuestions(mockQuestions);
+				if (!exam) {
+					console.error("Exam not found:", examId);
+					router.push("/dashboard/ap-courses");
+					return;
+				}
+
+				// 시험 문제 가져오기
+				const questionsData = await apService.getExamQuestions(examId);
+
+				if (!questionsData || questionsData.length === 0) {
+					console.error("No questions found for exam:", examId);
+					router.push("/dashboard/ap-courses");
+					return;
+				}
+
+				setExamData(exam);
+				setQuestions(questionsData);
 			} catch (error) {
 				console.error("Failed to load exam data:", error);
 				router.push("/dashboard/ap-courses");
@@ -95,10 +62,45 @@ export default function APExamPageRoute() {
 		loadExamData();
 	}, [examId, subjectId, router]);
 
-	const handleExamComplete = (result: unknown) => {
-		// AP 시험 완료 시 AP 결과 페이지로 이동
-		console.log("AP Exam completed:", result);
-		router.push("/ap-results");
+	const handleExamComplete = async (result: any) => {
+		try {
+			console.log("AP Exam completed:", result);
+
+			// 현재 사용자 ID 가져오기
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+			if (!user) {
+				console.error("User not authenticated");
+				router.push("/auth/login");
+				return;
+			}
+
+			// 채점 요청 데이터 준비
+			const submitRequest: SubmitExamAnswersRequest = {
+				examId: examData?.id || "",
+				userId: user.id,
+				answers: result.answers || [],
+				timeSpent: result.timeSpent || 0,
+			};
+
+			// AP 서비스를 통한 채점
+			const apService = new ApServiceImpl();
+			const examResult = await apService.submitExamAnswers(submitRequest);
+
+			// 결과를 쿼리 파라미터로 전달하여 결과 페이지로 이동 (subjectId 포함)
+			const resultParams = new URLSearchParams({
+				examId: examData?.id || "",
+				resultId: examResult.id,
+				subjectId: subjectId || "",
+			});
+
+			router.push(`/ap-results?${resultParams.toString()}`);
+		} catch (error) {
+			console.error("Failed to submit exam:", error);
+			// 에러가 발생해도 결과 페이지로 이동 (에러 처리)
+			router.push("/ap-results");
+		}
 	};
 
 	const handleGoBack = () => {
