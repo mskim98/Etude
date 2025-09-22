@@ -1,243 +1,9 @@
 "use client";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { APCalculator } from "./APCalculator";
-import { APGraphCalculator } from "./APGraphCalculator";
-import {
-	Clock,
-	Flag,
-	AlertTriangle,
-	Calculator,
-	X,
-	ChevronLeft,
-	ChevronRight,
-	Grid3X3,
-	FileText,
-	Sigma,
-	StickyNote,
-	TrendingUp,
-} from "lucide-react";
+import { Clock, Flag, X, ChevronLeft, ChevronRight, Grid3X3, FileText } from "lucide-react";
 import type { ApExam, ApExamQuestion } from "@/types/ap";
-
-// Draggable tool modal for header buttons
-function ToolModal({
-	isOpen,
-	onClose,
-	type,
-	notes,
-	setNotes,
-}: {
-	isOpen: boolean;
-	onClose: () => void;
-	type: "calculator" | "graph" | "formulas" | "notes";
-	notes: string;
-	setNotes: (notes: string) => void;
-}) {
-	const [position, setPosition] = useState({ x: 50, y: 50 });
-	// Resizable size for graph modal
-	const [size, setSize] = useState({ width: 1000, height: 740 });
-	const [isDragging, setIsDragging] = useState(false);
-	const [isResizing, setIsResizing] = useState(false);
-	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-	const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
-	const modalRef = useRef<HTMLDivElement>(null);
-
-	// Global mouse event handlers for better stability
-	React.useEffect(() => {
-		const handleGlobalMouseMove = (e: MouseEvent) => {
-			if (isDragging) {
-				const newX = e.clientX - dragStart.x;
-				const newY = e.clientY - dragStart.y;
-				setPosition({
-					x: Math.max(0, Math.min(window.innerWidth - 300, newX)),
-					y: Math.max(0, Math.min(window.innerHeight - 200, newY)),
-				});
-			} else if (isResizing) {
-				const deltaX = e.clientX - resizeStart.x;
-				const deltaY = e.clientY - resizeStart.y;
-				const newWidth = Math.max(800, Math.min(window.innerWidth - position.x - 50, resizeStart.width + deltaX));
-				const newHeight = Math.max(600, Math.min(window.innerHeight - position.y - 50, resizeStart.height + deltaY));
-				setSize({ width: newWidth, height: newHeight });
-
-				// Dispatch custom event to notify graph calculator of resize
-				if (modalRef.current) {
-					const event = new CustomEvent("modal-resize", {
-						detail: { width: newWidth, height: newHeight },
-					});
-					modalRef.current.dispatchEvent(event);
-				}
-			}
-		};
-
-		const handleGlobalMouseUp = () => {
-			setIsDragging(false);
-			setIsResizing(false);
-		};
-
-		if (isDragging || isResizing) {
-			document.addEventListener("mousemove", handleGlobalMouseMove);
-			document.addEventListener("mouseup", handleGlobalMouseUp);
-			document.body.style.userSelect = "none"; // Prevent text selection during drag/resize
-		}
-
-		return () => {
-			document.removeEventListener("mousemove", handleGlobalMouseMove);
-			document.removeEventListener("mouseup", handleGlobalMouseUp);
-			document.body.style.userSelect = "";
-		};
-	}, [isDragging, isResizing, dragStart, resizeStart, position]);
-
-	const handleMouseDown = (e: React.MouseEvent) => {
-		if (modalRef.current && !isResizing) {
-			e.preventDefault();
-			setIsDragging(true);
-			setDragStart({
-				x: e.clientX - position.x,
-				y: e.clientY - position.y,
-			});
-		}
-	};
-
-	const handleMouseMove = (e: React.MouseEvent) => {
-		// This is now handled by global event listeners
-	};
-
-	const handleMouseUp = () => {
-		// This is now handled by global event listeners
-	};
-
-	const handleResizeStart = (e: React.MouseEvent) => {
-		e.preventDefault();
-		e.stopPropagation();
-		if (!isDragging) {
-			setIsResizing(true);
-			setResizeStart({
-				x: e.clientX,
-				y: e.clientY,
-				width: size.width,
-				height: size.height,
-			});
-		}
-	};
-
-	if (!isOpen) return null;
-
-	return (
-		<div className="fixed inset-0 z-50 pointer-events-none" onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
-			<div
-				ref={modalRef}
-				className="absolute bg-white rounded-lg shadow-2xl border-2 border-blue-200 pointer-events-auto overflow-hidden"
-				style={{
-					left: position.x,
-					top: position.y,
-					width: type === "calculator" ? 600 : type === "graph" ? size.width : 500,
-					height: type === "calculator" ? 700 : type === "graph" ? size.height : "auto",
-					cursor: isDragging ? "grabbing" : "grab",
-				}}
-			>
-				<div
-					className="flex items-center justify-between p-3 border-b bg-blue-50 cursor-grab active:cursor-grabbing"
-					onMouseDown={handleMouseDown}
-				>
-					<h3 className="font-semibold text-blue-800">
-						{type === "calculator" && "Calculator"}
-						{type === "graph" && "Graph"}
-						{type === "formulas" && "공식 참조"}
-						{type === "notes" && "메모장"}
-					</h3>
-					<Button variant="ghost" size="sm" onClick={onClose} className="hover:bg-blue-100">
-						<X className="h-4 w-4" />
-					</Button>
-				</div>
-
-				<div
-					className="p-4 overflow-y-auto"
-					style={{
-						height:
-							type === "calculator"
-								? "calc(700px - 60px)"
-								: type === "graph"
-								? `calc(${size.height}px - 60px)`
-								: "auto",
-						maxHeight:
-							type === "calculator"
-								? "calc(700px - 60px)"
-								: type === "graph"
-								? `calc(${size.height}px - 60px)`
-								: "calc(80vh - 60px)",
-					}}
-				>
-					{type === "calculator" && (
-						<div>
-							<APCalculator />
-						</div>
-					)}
-
-					{type === "graph" && (
-						<div className="relative h-full">
-							<APGraphCalculator />
-							{/* Resize handle for graph modal */}
-							<div
-								className="absolute bottom-0 right-0 w-4 h-4 bg-blue-500 cursor-se-resize opacity-50 hover:opacity-100"
-								onMouseDown={handleResizeStart}
-								style={{
-									background: "linear-gradient(-45deg, transparent 30%, #3b82f6 30%, #3b82f6 70%, transparent 70%)",
-								}}
-							/>
-						</div>
-					)}
-
-					{type === "formulas" && (
-						<div className="space-y-4 text-sm">
-							<div className="bg-gray-50 p-3 rounded">
-								<div className="font-medium mb-1">Ideal Gas Law</div>
-								<div className="font-mono text-gray-600">PV = nRT</div>
-							</div>
-							<div className="bg-gray-50 p-3 rounded">
-								<div className="font-medium mb-1">Molarity</div>
-								<div className="font-mono text-gray-600">M = mol/L</div>
-							</div>
-							<div className="bg-gray-50 p-3 rounded">
-								<div className="font-medium mb-1">pH</div>
-								<div className="font-mono text-gray-600">pH = -log[H⁺]</div>
-							</div>
-							<div className="bg-gray-50 p-3 rounded">
-								<div className="font-medium mb-1">Kinetic Energy</div>
-								<div className="font-mono text-gray-600">KE = ½mv²</div>
-							</div>
-							<div className="bg-gray-50 p-3 rounded">
-								<div className="font-medium mb-1">Enthalpy</div>
-								<div className="font-mono text-gray-600">ΔH = H(products) - H(reactants)</div>
-							</div>
-							<div className="bg-gray-50 p-3 rounded">
-								<div className="font-medium mb-1">Molality</div>
-								<div className="font-mono text-gray-600">m = mol solute / kg solvent</div>
-							</div>
-							<div className="bg-gray-50 p-3 rounded">
-								<div className="font-medium mb-1">Beer&apos;s Law</div>
-								<div className="font-mono text-gray-600">A = εbc</div>
-							</div>
-						</div>
-					)}
-
-					{type === "notes" && (
-						<div>
-							<Textarea
-								value={notes}
-								onChange={(e) => setNotes(e.target.value)}
-								placeholder="시험 중 메모를 작성하세요..."
-								className="w-full h-64 resize-none"
-							/>
-							<p className="text-xs text-gray-500 mt-2">메모는 자동으로 저장됩니다.</p>
-						</div>
-					)}
-				</div>
-			</div>
-		</div>
-	);
-}
+import { CalculatorTool, GraphTool, FormulasTool, NotesTool, SubmitTool, ExamHeaderTools } from "./tools";
 
 interface APExamPageProps {
 	examData: ApExam;
@@ -253,9 +19,20 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 	const [flaggedQuestions, setFlaggedQuestions] = useState<Set<number>>(new Set());
 	const [showSubmitDialog, setShowSubmitDialog] = useState(false);
 	const [showQuestionNavigator, setShowQuestionNavigator] = useState(false);
-	const [activeToolModal, setActiveToolModal] = useState<"calculator" | "graph" | "notes" | "formulas" | null>(null);
 	const [notes, setNotes] = useState("");
-	const [highlights, setHighlights] = useState<Map<number, string[]>>(new Map()); // questionIndex -> highlighted text array
+	const [highlights, setHighlights] = useState<Map<number, Array<{ text: string; start: number; end: number }>>>(
+		new Map()
+	); // questionIndex -> highlighted text with positions
+
+	// Tool modal states
+	const [showCalculator, setShowCalculator] = useState(false);
+	const [showGraph, setShowGraph] = useState(false);
+	const [showFormulas, setShowFormulas] = useState(false);
+	const [showNotes, setShowNotes] = useState(false);
+
+	// Tool data states for persistence
+	const [calculatorData, setCalculatorData] = useState<any>(null);
+	const [graphData, setGraphData] = useState<any>(null);
 
 	// Define handleSubmitExam before useEffect
 	const handleSubmitExam = useCallback(() => {
@@ -299,6 +76,25 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 		return () => clearTimeout(debounceTimer);
 	}, [answers, flaggedQuestions, highlights, notes, examData.id]);
 
+	// Register global highlight removal function
+	useEffect(() => {
+		(window as any).removeHighlight = (questionIndex: number, highlightIndex: number) => {
+			try {
+				const currentHighlights = highlights.get(questionIndex) || [];
+				if (highlightIndex >= 0 && highlightIndex < currentHighlights.length) {
+					const highlightToRemove = currentHighlights[highlightIndex];
+					removeHighlight(questionIndex, highlightToRemove);
+				}
+			} catch (error) {
+				console.error("Failed to remove highlight:", error);
+			}
+		};
+
+		return () => {
+			delete (window as any).removeHighlight;
+		};
+	}, [highlights]);
+
 	const formatTime = (seconds: number) => {
 		const hours = Math.floor(seconds / 3600);
 		const minutes = Math.floor((seconds % 3600) / 60);
@@ -308,7 +104,12 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 
 	const handleAnswerSelect = (answerIndex: string) => {
 		const newAnswers = [...answers];
-		newAnswers[currentQuestion] = answerIndex;
+		// If the same answer is clicked again, deselect it
+		if (newAnswers[currentQuestion] === answerIndex) {
+			newAnswers[currentQuestion] = null;
+		} else {
+			newAnswers[currentQuestion] = answerIndex;
+		}
 		setAnswers(newAnswers);
 	};
 
@@ -326,31 +127,175 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 		return answers.filter((answer) => answer !== null).length;
 	};
 
-	// Highlight functionality
+	// Highlight functionality with position-based system
 	const handleTextSelection = () => {
 		const selection = window.getSelection();
-		if (selection && selection.toString().trim()) {
-			const selectedText = selection.toString().trim();
-			const currentHighlights = highlights.get(currentQuestion) || [];
+		if (!selection || !selection.toString().trim()) return;
 
-			if (!currentHighlights.includes(selectedText)) {
-				const newHighlights = new Map(highlights);
-				newHighlights.set(currentQuestion, [...currentHighlights, selectedText]);
-				setHighlights(newHighlights);
+		// Get the passage text element to calculate positions
+		const passageElement = document.querySelector("[data-passage-text]");
+		if (!passageElement) return;
+
+		const range = selection.getRangeAt(0);
+		let selectedText = selection.toString().trim();
+
+		// Check if selection is reasonable (not too large)
+		const maxSelectionLength = 500; // Maximum characters for a single highlight
+		if (selectedText.length > maxSelectionLength) {
+			selection.removeAllRanges();
+			return;
+		}
+
+		// Check if selection spans too many lines (prevent accidental full-text selection)
+		const lineCount = selectedText.split("\n").length;
+		if (lineCount > 10) {
+			selection.removeAllRanges();
+			return;
+		}
+
+		// Check if the selection is contained within the passage element
+		const rangeRect = range.getBoundingClientRect();
+		const passageRect = passageElement.getBoundingClientRect();
+
+		// If selection extends far beyond the passage element, it's likely accidental
+		if (rangeRect.height > passageRect.height * 0.8) {
+			selection.removeAllRanges();
+			return;
+		}
+
+		// Clean up selected text
+		try {
+			const tempDiv = document.createElement("div");
+			tempDiv.innerHTML = selectedText;
+			selectedText = tempDiv.textContent || tempDiv.innerText || "";
+		} catch (error) {
+			selectedText = selectedText
+				.replace(/<[^>]*>/g, "")
+				.replace(/\s+/g, " ")
+				.trim();
+		}
+
+		// Skip if the cleaned text is empty or too short
+		if (!selectedText || selectedText.length < 2) {
+			selection.removeAllRanges();
+			return;
+		}
+
+		// Get the original passage text without HTML
+		const currentQuestionData = questions[currentQuestion];
+		const questionParts = currentQuestionData.question.split("\n\n");
+		const passageText = currentQuestionData.passage || questionParts.slice(1).join("\n\n");
+
+		// Calculate the actual position based on the DOM selection
+		let startOffset = 0;
+		try {
+			// Create a range from the start of the passage element to the start of selection
+			const tempRange = document.createRange();
+			tempRange.setStart(passageElement, 0);
+			tempRange.setEnd(range.startContainer, range.startOffset);
+
+			// Get the text content up to the selection start
+			const textBeforeSelection = tempRange.toString();
+
+			// Clean the text before selection to match our passage text format
+			const cleanTextBefore = textBeforeSelection.replace(/<[^>]*>/g, "").replace(/\s+/g, " ");
+
+			// Find the position in the original passage text
+			startOffset = cleanTextBefore.length;
+
+			// Adjust for any whitespace differences
+			while (
+				startOffset > 0 &&
+				passageText.substring(startOffset, startOffset + selectedText.length) !== selectedText
+			) {
+				startOffset--;
 			}
 
-			// Clear selection
-			selection.removeAllRanges();
+			// If still not found, try moving forward
+			if (passageText.substring(startOffset, startOffset + selectedText.length) !== selectedText) {
+				const maxSearch = Math.min(startOffset + 50, passageText.length - selectedText.length);
+				for (let i = startOffset; i <= maxSearch; i++) {
+					if (passageText.substring(i, i + selectedText.length) === selectedText) {
+						startOffset = i;
+						break;
+					}
+				}
+			}
+		} catch (error) {
+			// Fallback to indexOf if DOM calculation fails
+			startOffset = passageText.indexOf(selectedText);
 		}
+
+		// Verify we found the correct position
+		if (startOffset === -1 || passageText.substring(startOffset, startOffset + selectedText.length) !== selectedText) {
+			selection.removeAllRanges();
+			return;
+		}
+
+		const endOffset = startOffset + selectedText.length;
+		const currentHighlights = highlights.get(currentQuestion) || [];
+
+		// Check for overlapping or adjacent highlights
+		const overlappingHighlights: typeof currentHighlights = [];
+		const nonOverlappingHighlights: typeof currentHighlights = [];
+
+		currentHighlights.forEach((existing) => {
+			// Check if highlights overlap or are adjacent (including 1 character gap for merging)
+			if (!(endOffset < existing.start - 1 || startOffset > existing.end + 1)) {
+				overlappingHighlights.push(existing);
+			} else {
+				nonOverlappingHighlights.push(existing);
+			}
+		});
+
+		// Create merged highlight
+		let mergedStart = startOffset;
+		let mergedEnd = endOffset;
+
+		// Extend the range to include all overlapping highlights
+		overlappingHighlights.forEach((highlight) => {
+			mergedStart = Math.min(mergedStart, highlight.start);
+			mergedEnd = Math.max(mergedEnd, highlight.end);
+		});
+
+		// Extract the merged text from the passage
+		const mergedText = passageText.substring(mergedStart, mergedEnd);
+
+		const mergedHighlight = {
+			text: mergedText,
+			start: mergedStart,
+			end: mergedEnd,
+		};
+
+		// Update highlights with the merged result
+		const newHighlights = new Map(highlights);
+		newHighlights.set(currentQuestion, [...nonOverlappingHighlights, mergedHighlight]);
+		setHighlights(newHighlights);
+
+		// Clear selection
+		selection.removeAllRanges();
 	};
 
-	const removeHighlight = (questionIndex: number, textToRemove: string) => {
+	const removeHighlight = (questionIndex: number, highlightToRemove: { text: string; start: number; end: number }) => {
 		const currentHighlights = highlights.get(questionIndex) || [];
 		const newHighlights = new Map(highlights);
 		newHighlights.set(
 			questionIndex,
-			currentHighlights.filter((text) => text !== textToRemove)
+			currentHighlights.filter(
+				(highlight) =>
+					!(
+						highlight.text === highlightToRemove.text &&
+						highlight.start === highlightToRemove.start &&
+						highlight.end === highlightToRemove.end
+					)
+			)
 		);
+		setHighlights(newHighlights);
+	};
+
+	const clearHighlights = (questionIndex: number) => {
+		const newHighlights = new Map(highlights);
+		newHighlights.delete(questionIndex);
 		setHighlights(newHighlights);
 	};
 
@@ -358,16 +303,47 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 		const questionHighlights = highlights.get(questionIndex) || [];
 		if (questionHighlights.length === 0) return text;
 
-		let highlightedText = text;
-		questionHighlights.forEach((highlight) => {
-			const regex = new RegExp(`(${highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
-			highlightedText = highlightedText.replace(
-				regex,
-				`<mark style="background-color: #fef08a; padding: 2px 4px; border-radius: 3px;" title="하이라이트된 텍스트">$1</mark>`
+		// Sort highlights by start position (descending) to apply from end to start
+		const sortedHighlights = [...questionHighlights].sort((a, b) => b.start - a.start);
+
+		// Apply highlights from end to start to avoid position shifts
+		let result = text;
+		sortedHighlights.forEach((highlight, index) => {
+			const highlightId = `highlight-${questionIndex}-${index}`;
+			const before = result.substring(0, highlight.start);
+			const highlighted = result.substring(highlight.start, highlight.end);
+			const after = result.substring(highlight.end);
+
+			// Find the original index of this highlight in the unsorted array
+			const originalHighlights = highlights.get(questionIndex) || [];
+			const originalIndex = originalHighlights.findIndex(
+				(h) => h.text === highlight.text && h.start === highlight.start && h.end === highlight.end
 			);
+
+			result =
+				before +
+				`<mark 
+					id="${highlightId}"
+					class="highlight-item"
+					style="
+						background-color: #fef08a; 
+						padding: 2px 4px; 
+						border-radius: 4px; 
+						cursor: pointer; 
+						position: relative;
+						transition: all 0.2s ease;
+						border: 2px solid #f59e0b;
+						box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2);
+					" 
+					title="Click to remove"
+					onclick="window.removeHighlight(${questionIndex}, ${originalIndex})"
+					onmouseover="this.style.backgroundColor='#fde047'; this.style.borderColor='#d97706'; this.style.boxShadow='0 2px 6px rgba(245, 158, 11, 0.3)';"
+					onmouseout="this.style.backgroundColor='#fef08a'; this.style.borderColor='#f59e0b'; this.style.boxShadow='0 1px 3px rgba(245, 158, 11, 0.2)';"
+				>${highlighted}</mark>` +
+				after;
 		});
 
-		return highlightedText;
+		return result;
 	};
 
 	const currentQuestionData = questions[currentQuestion];
@@ -381,45 +357,13 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 	};
 
 	if (showSubmitDialog) {
-		const unansweredCount = questions.length - getAnsweredCount();
-
 		return (
-			<div className="min-h-screen flex items-center justify-center bg-background">
-				<Card className="w-full max-w-md" style={{ borderColor: "var(--color-primary)" }}>
-					<CardContent className="p-8 text-center">
-						<AlertTriangle className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--color-warning)" }} />
-						<h2 className="text-xl font-semibold mb-4" style={{ color: "var(--color-text-primary)" }}>
-							Submit Exam?
-						</h2>
-						<p className="mb-4" style={{ color: "var(--color-text-secondary)" }}>
-							You have answered {getAnsweredCount()} out of {questions.length} questions.
-						</p>
-						{unansweredCount > 0 && (
-							<p className="mb-6" style={{ color: "var(--color-warning)" }}>
-								{unansweredCount} question{unansweredCount > 1 ? "s" : ""} remain unanswered.
-							</p>
-						)}
-						<div className="flex space-x-3">
-							<Button variant="outline" onClick={() => setShowSubmitDialog(false)}>
-								Continue Exam
-							</Button>
-							<Button
-								onClick={handleSubmitExam}
-								className="text-white transition-all duration-200"
-								style={{ backgroundColor: "var(--color-primary)" }}
-								onMouseEnter={(e) => {
-									e.currentTarget.style.backgroundColor = "var(--color-primary-hover)";
-								}}
-								onMouseLeave={(e) => {
-									e.currentTarget.style.backgroundColor = "var(--color-primary)";
-								}}
-							>
-								Submit Exam
-							</Button>
-						</div>
-					</CardContent>
-				</Card>
-			</div>
+			<SubmitTool
+				onSubmit={handleSubmitExam}
+				onCancel={() => setShowSubmitDialog(false)}
+				answeredCount={getAnsweredCount()}
+				totalQuestions={questions.length}
+			/>
 		);
 	}
 
@@ -449,77 +393,14 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 						</span>
 					</div>
 
-					{/* Right section - Separated Tools: Calculator, Graph, Formulas, Notes */}
-					<div className="flex items-center space-x-2">
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => setActiveToolModal("calculator")}
-							style={{ color: "var(--color-text-secondary)" }}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.color = "var(--color-text-primary)";
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.color = "var(--color-text-secondary)";
-							}}
-							title="Calculator"
-						>
-							<Calculator className="w-4 h-4" />
-						</Button>
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => setActiveToolModal("graph")}
-							style={{ color: "var(--color-text-secondary)" }}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.color = "var(--color-text-primary)";
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.color = "var(--color-text-secondary)";
-							}}
-							title="Graph"
-						>
-							<TrendingUp className="w-4 h-4" />
-						</Button>
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => setActiveToolModal("formulas")}
-							style={{ color: "var(--color-text-secondary)" }}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.color = "var(--color-text-primary)";
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.color = "var(--color-text-secondary)";
-							}}
-							title="공식 참조"
-						>
-							<Sigma className="w-4 h-4" />
-						</Button>
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => setActiveToolModal("notes")}
-							style={{ color: "var(--color-text-secondary)" }}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.color = "var(--color-text-primary)";
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.color = "var(--color-text-secondary)";
-							}}
-							title="메모장"
-						>
-							<StickyNote className="w-4 h-4" />
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => setShowSubmitDialog(true)}
-							style={{ borderColor: "var(--color-primary)", color: "var(--color-text-primary)" }}
-						>
-							Submit
-						</Button>
-					</div>
+					{/* Right section - Header Tools */}
+					<ExamHeaderTools
+						onCalculatorClick={() => setShowCalculator(true)}
+						onGraphClick={() => setShowGraph(true)}
+						onFormulasClick={() => setShowFormulas(true)}
+						onNotesClick={() => setShowNotes(true)}
+						onSubmitClick={() => setShowSubmitDialog(true)}
+					/>
 				</div>
 			</header>
 
@@ -552,7 +433,9 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 											key={index}
 											variant={isCurrent ? "default" : "outline"}
 											size="sm"
-											className={`h-12 relative ${isCurrent ? "text-white" : ""}`}
+											className={`h-12 w-12 flex items-center justify-center relative transition-all duration-200 ${
+												isCurrent ? "text-white" : ""
+											}`}
 											style={{
 												backgroundColor: isCurrent
 													? "var(--color-primary)"
@@ -565,16 +448,18 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 											onMouseEnter={(e) => {
 												if (!isCurrent && !isAnswered) {
 													e.currentTarget.style.backgroundColor = "var(--primary-light)";
+													e.currentTarget.style.transform = "scale(1.05)";
 												}
 											}}
 											onMouseLeave={(e) => {
 												if (!isCurrent && !isAnswered) {
 													e.currentTarget.style.backgroundColor = "transparent";
+													e.currentTarget.style.transform = "scale(1)";
 												}
 											}}
 											onClick={() => handleQuestionJump(index)}
 										>
-											{index + 1}
+											<span className="text-sm font-medium">{index + 1}</span>
 											{isFlagged && <Flag className="w-3 h-3 absolute -top-1 -right-1 text-red-500 fill-current" />}
 										</Button>
 									);
@@ -642,48 +527,43 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 										>
 											<div className="mb-3 flex items-center justify-between">
 												<span className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
-													지문 (텍스트를 드래그하여 하이라이트)
+													Passage
 												</span>
-												{highlights.get(currentQuestion)?.length ? (
-													<span className="text-xs px-2 py-1 rounded bg-yellow-100 text-yellow-800">
-														{highlights.get(currentQuestion)?.length}개 하이라이트
-													</span>
-												) : null}
+												<div className="flex items-center space-x-2">
+													{(highlights.get(currentQuestion)?.length || 0) > 0 ? (
+														<span className="text-xs px-2 py-1 rounded bg-yellow-100 text-yellow-800">
+															{highlights.get(currentQuestion)?.length || 0} highlights
+														</span>
+													) : null}
+													{(highlights.get(currentQuestion)?.length || 0) > 0 ? (
+														<button
+															onClick={() => clearHighlights(currentQuestion)}
+															className="text-xs px-2 py-1 rounded bg-red-100 text-red-600 hover:bg-red-200 transition-colors cursor-pointer"
+															title="Clear all highlights"
+														>
+															Clear All
+														</button>
+													) : null}
+												</div>
 											</div>
 											<div
-												className="whitespace-pre-wrap text-base leading-relaxed select-text"
-												style={{ color: "var(--color-text-primary)" }}
+												className="whitespace-pre-wrap text-lg leading-relaxed select-text cursor-text"
+												style={{
+													color: "var(--color-text-primary)",
+													userSelect: "text",
+													WebkitUserSelect: "text",
+													MozUserSelect: "text",
+													msUserSelect: "text",
+													lineHeight: "1.8",
+													wordWrap: "break-word",
+													wordBreak: "normal",
+												}}
+												data-passage-text
 												dangerouslySetInnerHTML={{
 													__html: renderHighlightedText(passageText, currentQuestion),
 												}}
 											/>
 										</div>
-
-										{/* Highlight Management */}
-										{highlights.get(currentQuestion)?.length ? (
-											<div className="mt-4">
-												<h4 className="text-sm font-medium mb-2" style={{ color: "var(--color-text-primary)" }}>
-													하이라이트된 텍스트:
-												</h4>
-												<div className="space-y-2">
-													{highlights.get(currentQuestion)?.map((highlight, index) => (
-														<div
-															key={index}
-															className="flex items-center justify-between p-2 bg-yellow-50 rounded border border-yellow-200"
-														>
-															<span className="text-sm text-yellow-800 flex-1 truncate">{highlight}</span>
-															<button
-																onClick={() => removeHighlight(currentQuestion, highlight)}
-																className="ml-2 text-red-500 hover:text-red-700 text-sm"
-																title="하이라이트 제거"
-															>
-																<X className="w-3 h-3" />
-															</button>
-														</div>
-													))}
-												</div>
-											</div>
-										) : null}
 									</div>
 								) : (
 									<div className="text-center py-12" style={{ color: "var(--color-text-secondary)" }}>
@@ -741,7 +621,7 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 						>
 							<div className="prose max-w-none">
 								<div
-									className="whitespace-pre-wrap text-base leading-relaxed"
+									className="whitespace-pre-wrap text-lg leading-relaxed"
 									style={{ color: "var(--color-text-primary)" }}
 								>
 									{questionText}
@@ -766,7 +646,7 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 										onClick={() => handleAnswerSelect(choice.id)}
 									>
 										<div className="flex items-start space-x-3">
-											<div className="mt-0.5">
+											<div className="mt-0.5 cursor-pointer">
 												{answers[currentQuestion] === choice.id ? (
 													<div
 														className="w-5 h-5 rounded-full flex items-center justify-center"
@@ -781,11 +661,14 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 													></div>
 												)}
 											</div>
-											<div className="flex-1">
-												<span className="font-medium mr-3 text-lg" style={{ color: "var(--text-secondary)" }}>
+											<div className="flex-1 cursor-pointer">
+												<span
+													className="font-medium mr-3 text-lg cursor-pointer"
+													style={{ color: "var(--text-secondary)" }}
+												>
 													{String.fromCharCode(65 + index)}
 												</span>
-												<span className="text-base" style={{ color: "var(--text-primary)" }}>
+												<span className="text-lg cursor-pointer" style={{ color: "var(--text-primary)" }}>
 													{choice.text}
 												</span>
 											</div>
@@ -807,57 +690,86 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 					</div>
 
 					{/* Center - Navigation */}
-					<div className="flex items-center justify-center space-x-4">
+					<div className="flex items-center justify-center space-x-3">
+						{/* Previous Button */}
 						<Button
-							variant="outline"
 							onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))}
 							disabled={currentQuestion === 0}
-							className="flex items-center space-x-2 transition-all duration-200"
-							style={{
-								borderColor: "var(--color-primary)",
-								color: currentQuestion === 0 ? "var(--color-text-tertiary)" : "var(--color-primary)",
-							}}
+							className={`
+								flex items-center justify-center space-x-2 
+								px-4 py-2.5 rounded-xl font-medium text-sm
+								transition-all duration-300 ease-in-out
+								min-w-[110px] h-11
+								${
+									currentQuestion === 0
+										? "bg-gray-100 text-gray-400 cursor-not-allowed"
+										: "bg-white text-[#0091B3] border-2 border-[#0091B3] hover:bg-[#0091B3] hover:text-white hover:shadow-lg hover:shadow-[#0091B3]/25 hover:scale-105 cursor-pointer"
+								}
+							`}
 						>
-							<ChevronLeft className="w-4 h-4" />
-							<span>Previous</span>
+							<ChevronLeft className={`w-4 h-4 ${currentQuestion === 0 ? "cursor-not-allowed" : "cursor-pointer"}`} />
+							<span className={`text-center ${currentQuestion === 0 ? "cursor-not-allowed" : "cursor-pointer"}`}>
+								Previous
+							</span>
 						</Button>
 
+						{/* Question Navigator Button */}
 						<Button
-							variant="default"
-							size="sm"
-							className="px-6 py-3 rounded-lg text-white cursor-pointer transition-all duration-200 hover:scale-105"
-							style={{
-								backgroundColor: "var(--color-primary)",
-								boxShadow: "0 4px 12px rgba(0, 145, 179, 0.3)",
-							}}
-							onClick={() => setShowQuestionNavigator(true)}
+							onClick={() => setShowQuestionNavigator(!showQuestionNavigator)}
+							className={`
+								flex items-center justify-center space-x-2 
+								px-6 py-2.5 rounded-xl font-medium text-sm
+								border-2 transition-all duration-300 ease-in-out
+								min-w-[160px] h-11 relative overflow-hidden cursor-pointer
+								${
+									showQuestionNavigator
+										? "bg-white text-[#0091B3] border-[#0091B3] shadow-lg shadow-[#0091B3]/30 transform scale-105 hover:bg-gray-50 hover:text-[#007a9b] hover:border-[#007a9b]"
+										: "bg-gradient-to-r from-[#0091B3] to-[#007a9b] text-white border-transparent shadow-lg shadow-[#0091B3]/30 hover:shadow-xl hover:shadow-[#0091B3]/40 hover:scale-105 hover:from-[#007a9b] hover:to-[#006b8a]"
+								}
+							`}
 						>
-							<Grid3X3 className="w-4 h-4 mr-2" />
-							Question {currentQuestion + 1} / {questions.length}
+							{/* Active indicator dot */}
+							{showQuestionNavigator && (
+								<div className="absolute top-1 right-1 w-2 h-2 bg-[#0091B3] rounded-full animate-pulse cursor-pointer"></div>
+							)}
+							<Grid3X3
+								className={`w-4 h-4 transition-transform duration-300 cursor-pointer ${
+									showQuestionNavigator ? "rotate-90" : ""
+								}`}
+							/>
+							<span className="font-semibold cursor-pointer">
+								{showQuestionNavigator ? "Hide Questions" : `Question ${currentQuestion + 1} / ${questions.length}`}
+							</span>
 						</Button>
 
+						{/* Next Button */}
 						<Button
 							onClick={() => setCurrentQuestion(Math.min(questions.length - 1, currentQuestion + 1))}
 							disabled={currentQuestion === questions.length - 1}
-							className="flex items-center space-x-2 text-white transition-all duration-200"
-							style={{
-								backgroundColor:
-									currentQuestion === questions.length - 1 ? "var(--color-text-tertiary)" : "var(--color-primary)",
-								cursor: currentQuestion === questions.length - 1 ? "not-allowed" : "pointer",
-							}}
-							onMouseEnter={(e) => {
-								if (currentQuestion !== questions.length - 1) {
-									e.currentTarget.style.backgroundColor = "var(--color-primary-hover)";
+							className={`
+								flex items-center justify-center space-x-2 
+								px-4 py-2.5 rounded-xl font-medium text-sm
+								transition-all duration-300 ease-in-out
+								min-w-[110px] h-11
+								${
+									currentQuestion === questions.length - 1
+										? "bg-gray-100 text-gray-400 cursor-not-allowed"
+										: "bg-white text-[#0091B3] border-2 border-[#0091B3] hover:bg-[#0091B3] hover:text-white hover:shadow-lg hover:shadow-[#0091B3]/25 hover:scale-105 cursor-pointer"
 								}
-							}}
-							onMouseLeave={(e) => {
-								if (currentQuestion !== questions.length - 1) {
-									e.currentTarget.style.backgroundColor = "var(--color-primary)";
-								}
-							}}
+							`}
 						>
-							<span>Next</span>
-							<ChevronRight className="w-4 h-4" />
+							<span
+								className={`text-center ${
+									currentQuestion === questions.length - 1 ? "cursor-not-allowed" : "cursor-pointer"
+								}`}
+							>
+								Next
+							</span>
+							<ChevronRight
+								className={`w-4 h-4 ${
+									currentQuestion === questions.length - 1 ? "cursor-not-allowed" : "cursor-pointer"
+								}`}
+							/>
 						</Button>
 					</div>
 
@@ -881,14 +793,19 @@ export function APExamPage({ examData, questions, onExamComplete }: APExamPagePr
 				</div>
 			</div>
 
-			{/* Tool Modals */}
-			<ToolModal
-				isOpen={activeToolModal !== null}
-				onClose={() => setActiveToolModal(null)}
-				type={activeToolModal || "calculator"}
-				notes={notes}
-				setNotes={setNotes}
-			/>
+			{/* Tool Modals - Always rendered for data persistence */}
+			<div style={{ display: showCalculator ? "block" : "none" }}>
+				<CalculatorTool
+					onClose={() => setShowCalculator(false)}
+					examId={examData.id}
+					onDataChange={setCalculatorData}
+				/>
+			</div>
+			<div style={{ display: showGraph ? "block" : "none" }}>
+				<GraphTool onClose={() => setShowGraph(false)} examId={examData.id} onDataChange={setGraphData} />
+			</div>
+			{showFormulas && <FormulasTool onClose={() => setShowFormulas(false)} />}
+			{showNotes && <NotesTool onClose={() => setShowNotes(false)} notes={notes} onNotesChange={setNotes} />}
 		</div>
 	);
 }

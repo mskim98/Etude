@@ -4,14 +4,49 @@ import React, { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { evaluate } from "mathjs";
 
-interface APCalculatorProps {}
+interface APCalculatorProps {
+	examId?: string;
+	onDataChange?: (data: any) => void;
+}
 
-export function APCalculator({}: APCalculatorProps) {
-	// Calculator state
+export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
+	// Calculator state with persistence
 	const [calcDisplay, setCalcDisplay] = useState("0");
 	const [calcValue, setCalcValue] = useState("");
 	const [calcHistory, setCalcHistory] = useState<string[]>([]);
 	const [isRadianMode, setIsRadianMode] = useState(true);
+
+	// Load saved calculator data on mount
+	React.useEffect(() => {
+		if (examId) {
+			const savedData = localStorage.getItem(`calculator-${examId}`);
+			if (savedData) {
+				try {
+					const data = JSON.parse(savedData);
+					setCalcDisplay(data.display || "0");
+					setCalcValue(data.value || "");
+					setCalcHistory(data.history || []);
+					setIsRadianMode(data.isRadianMode !== false);
+				} catch (error) {
+					console.error("Failed to load calculator data:", error);
+				}
+			}
+		}
+	}, [examId]);
+
+	// Save calculator data whenever it changes
+	React.useEffect(() => {
+		if (examId) {
+			const data = {
+				display: calcDisplay,
+				value: calcValue,
+				history: calcHistory,
+				isRadianMode,
+			};
+			localStorage.setItem(`calculator-${examId}`, JSON.stringify(data));
+			onDataChange?.(data);
+		}
+	}, [calcDisplay, calcValue, calcHistory, isRadianMode, examId, onDataChange]);
 
 	const appendToCalc = (value: string) => {
 		if (calcDisplay === "0" && value !== "." && !isNaN(Number(value))) {

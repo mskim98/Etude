@@ -52,65 +52,16 @@ function ToolsPanel({
 
 	useEffect(() => {
 		if (activeTab === "calculator") {
-			// Load Desmos API if not already loaded
-			if (!(window as any).Desmos) {
-				const script = document.createElement("script");
-				script.src = "https://www.desmos.com/api/v1.9/calculator.js";
-				script.async = true;
-				script.onload = initializeCalculator;
-				script.onerror = () => {
-					console.error("Failed to load Desmos calculator");
-					if (calculatorRef.current) {
-						calculatorRef.current.innerHTML = `
-              <div class="flex items-center justify-center h-full text-center p-4">
-                <div>
-                  <div class="text-lg mb-2" style="color: var(--color-text-primary)">Calculator Loading Failed</div>
-                  <div class="text-sm" style="color: var(--color-text-secondary)">Please use an external calculator</div>
-                </div>
-              </div>
-            `;
-					}
-				};
-				document.head.appendChild(script);
-			} else {
-				initializeCalculator();
-			}
-		}
-
-		function initializeCalculator() {
-			if (calculatorRef.current && (window as any).Desmos) {
-				// Clear any existing content
-				calculatorRef.current.innerHTML = "";
-
-				try {
-					const calculator = (window as any).Desmos.GraphingCalculator(calculatorRef.current, {
-						keypad: true,
-						settingsMenu: false,
-						expressionsTopbar: true,
-						pointsOfInterest: true,
-						trace: true,
-						border: false,
-						lockViewport: false,
-						expressionsCollapsed: false,
-					});
-
-					// Set a simple welcome expression
-					calculator.setExpressions([
-						{ id: "help", latex: "\\\\text{Calculator and Graphing Tool}", color: "#2563eb" },
-					]);
-				} catch (error) {
-					console.error("Error initializing Desmos calculator:", error);
-					if (calculatorRef.current) {
-						calculatorRef.current.innerHTML = `
-              <div class="flex items-center justify-center h-full text-center p-4">
-                <div>
-                  <div class="text-lg mb-2" style="color: var(--color-text-primary)">Calculator Error</div>
-                  <div class="text-sm" style="color: var(--color-text-secondary)">Please refresh and try again</div>
-                </div>
-              </div>
-            `;
-					}
-				}
+			// Simple calculator placeholder
+			if (calculatorRef.current) {
+				calculatorRef.current.innerHTML = `
+					<div class="flex items-center justify-center h-full text-center p-4">
+						<div>
+							<div class="text-lg mb-2" style="color: var(--color-text-primary)">Calculator</div>
+							<div class="text-sm" style="color: var(--color-text-secondary)">Basic calculator functionality</div>
+						</div>
+					</div>
+				`;
 			}
 		}
 	}, [activeTab]);

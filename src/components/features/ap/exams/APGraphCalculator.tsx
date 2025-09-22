@@ -14,13 +14,47 @@ interface GraphFunction {
 
 interface APGraphCalculatorProps {
 	className?: string;
+	examId?: string;
+	onDataChange?: (data: any) => void;
 }
 
-export function APGraphCalculator({}: APGraphCalculatorProps) {
+export function APGraphCalculator({ examId, onDataChange }: APGraphCalculatorProps) {
 	const [functions, setFunctions] = useState<GraphFunction[]>([{ id: "1", expression: "x^2", color: "#2563eb" }]);
 	const [graphError, setGraphError] = useState<string | null>(null);
 	const [selectedFunctionId, setSelectedFunctionId] = useState<string>("1");
 	const plotRef = useRef<HTMLDivElement>(null);
+
+	// Load saved graph data on mount
+	React.useEffect(() => {
+		if (examId) {
+			const savedData = localStorage.getItem(`graph-${examId}`);
+			if (savedData) {
+				try {
+					const data = JSON.parse(savedData);
+					if (data.functions && Array.isArray(data.functions)) {
+						setFunctions(data.functions);
+					}
+					if (data.selectedFunctionId) {
+						setSelectedFunctionId(data.selectedFunctionId);
+					}
+				} catch (error) {
+					console.error("Failed to load graph data:", error);
+				}
+			}
+		}
+	}, [examId]);
+
+	// Save graph data whenever it changes
+	React.useEffect(() => {
+		if (examId) {
+			const data = {
+				functions,
+				selectedFunctionId,
+			};
+			localStorage.setItem(`graph-${examId}`, JSON.stringify(data));
+			onDataChange?.(data);
+		}
+	}, [functions, selectedFunctionId, examId, onDataChange]);
 
 	// Available colors for functions
 	const availableColors = [
