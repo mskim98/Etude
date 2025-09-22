@@ -55,7 +55,7 @@ export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
 				isRadianMode,
 				savedResults,
 			};
-			
+
 			try {
 				localStorage.setItem(`calculator-${examId}`, JSON.stringify(data));
 				onDataChange?.(data);
@@ -113,25 +113,27 @@ export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
 		};
 	}, []); // Empty dependency array - only register once
 
-	const appendToCalc = useCallback((value: string) => {
-		if (calcDisplay === "0" && value !== "." && !isNaN(Number(value))) {
-			setCalcValue(value);
-			setCalcDisplay(value);
-		} else if (calcDisplay === "Error") {
-			setCalcValue(value);
-			setCalcDisplay(value);
-		} else {
-			const newValue = calcValue + value;
-			setCalcValue(newValue);
-			setCalcDisplay(newValue);
-		}
-	}, [calcDisplay, calcValue]);
+	const appendToCalc = useCallback(
+		(value: string) => {
+			if (calcDisplay === "0" && value !== "." && !isNaN(Number(value))) {
+				setCalcValue(value);
+				setCalcDisplay(value);
+			} else if (calcDisplay === "Error") {
+				setCalcValue(value);
+				setCalcDisplay(value);
+			} else {
+				const newValue = calcValue + value;
+				setCalcValue(newValue);
+				setCalcDisplay(newValue);
+			}
+		},
+		[calcDisplay, calcValue]
+	);
 
 	const clearCalc = useCallback(() => {
 		setCalcValue("");
 		setCalcDisplay("0");
 	}, []);
-
 
 	const deleteLast = useCallback(() => {
 		const newValue = calcValue.slice(0, -1);
@@ -152,17 +154,9 @@ export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
 			// Convert degrees to radians if needed for trig functions
 			let expression = calcValue;
 			if (!isRadianMode) {
-				// Manually convert degrees to radians: deg * (π/180)
-				expression = expression.replace(/sin\(/g, "sin((").replace(/cos\(/g, "cos((").replace(/tan\(/g, "tan((");
-
-				// Add degree to radian conversion for each trig function
-				expression = expression
-					.replace(/sin\(\(/g, "sin(")
-					.replace(/cos\(\(/g, "cos(")
-					.replace(/tan\(\(/g, "tan(");
-
 				// Convert each trig function argument from degrees to radians
-				expression = expression.replace(/(sin|cos|tan)\(([^)]+)\)/g, (match, func, arg) => {
+				// This handles sin(30), cos(45), tan(60), etc.
+				expression = expression.replace(/(sin|cos|tan|asin|acos|atan)\(([^)]+)\)/g, (match, func, arg) => {
 					return `${func}((${arg}) * pi / 180)`;
 				});
 			}
@@ -185,19 +179,23 @@ export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
 		}
 	}, [calcValue, isRadianMode]);
 
-	const insertFunction = useCallback((func: string) => {
-		appendToCalc(func);
-	}, [appendToCalc]);
+	const insertFunction = useCallback(
+		(func: string) => {
+			appendToCalc(func);
+		},
+		[appendToCalc]
+	);
 
-	const insertConstant = useCallback((constant: string) => {
-		appendToCalc(constant);
-	}, [appendToCalc]);
-
+	const insertConstant = useCallback(
+		(constant: string) => {
+			appendToCalc(constant);
+		},
+		[appendToCalc]
+	);
 
 	const clearSavedResults = useCallback(() => {
 		setSavedResults([]);
 	}, []);
-
 
 	const deleteSavedResult = useCallback((index: number) => {
 		setSavedResults((prev) => prev.filter((_, i) => i !== index));
@@ -404,14 +402,14 @@ export function APCalculator({ examId, onDataChange }: APCalculatorProps) {
 									className="h-10 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 border-2 border-gray-400
 									font-semibold text-sm transition-all duration-200 hover:shadow-md hover:scale-105 cursor-pointer"
 								>
-									ln
+									log
 								</button>
 								<button
 									onClick={() => insertFunction("log10(")}
 									className="h-10 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 border-2 border-gray-400
 									font-semibold text-sm transition-all duration-200 hover:shadow-md hover:scale-105 cursor-pointer"
 								>
-									log
+									log₁₀
 								</button>
 								<button
 									onClick={() => insertFunction("sin(")}
