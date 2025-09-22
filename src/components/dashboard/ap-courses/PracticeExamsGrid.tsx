@@ -25,9 +25,10 @@ interface PracticeExamsGridProps {
 	exams: ExamData[];
 	subjectTitle: string;
 	onStartExam: (examId: string) => void;
+	onViewResults?: (examId: string) => void;
 }
 
-export function PracticeExamsGrid({ exams, subjectTitle, onStartExam }: PracticeExamsGridProps) {
+export function PracticeExamsGrid({ exams, subjectTitle, onStartExam, onViewResults }: PracticeExamsGridProps) {
 	const sortedExamsWithStats = useMemo(() => {
 		if (!exams || exams.length === 0) return [];
 		const copy = [...exams];
@@ -97,7 +98,7 @@ export function PracticeExamsGrid({ exams, subjectTitle, onStartExam }: Practice
 							examDate={new Date("2025-05-15")}
 							subject={subjectTitle}
 							onStartExam={() => onStartExam(exam.id)}
-							onWatchVideo={() => {}}
+							onWatchVideo={() => onViewResults?.(exam.id)}
 							isActive={Boolean(exam.isActive ?? exam.is_active ?? true)}
 							correctAnswers={stats.correctAnswers}
 							totalQuestions={stats.totalQuestions}

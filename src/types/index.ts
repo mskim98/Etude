@@ -193,8 +193,18 @@ export interface ExamResult {
 	completedAt: Date;
 	mistakes: {
 		questionId: string;
-		userAnswer: number;
-		correctAnswer: number;
+		userAnswer: string;
+		correctAnswer: string;
+		topic?: string;
+		questionType?: "MCQ" | "FRQ";
+		reasoning?: string;
+		difficulty?: "Easy" | "Medium" | "Hard";
+	}[];
+	questionTypeAnalysis?: {
+		name: string;
+		correct: number;
+		total: number;
+		percentage: number;
 	}[];
 }
 

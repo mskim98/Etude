@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { APExamInstructionPage } from "@/components/features/ap/exams/APExamInstructionPage";
+import { ApServiceImpl } from "@/lib/services/ap";
 import type { ApExam } from "@/types/ap";
 
 export default function APExamInstructionPageRoute() {
@@ -24,23 +25,18 @@ export default function APExamInstructionPageRoute() {
 			}
 
 			try {
-				// TODO: AP exam 데이터를 실제 API에서 가져오는 로직으로 교체
-				// 현재는 mock 데이터 사용
-				const mockExamData: ApExam = {
-					id: examId,
-					title: "AP Chemistry Practice Exam 1",
-					description:
-						"Comprehensive practice exam covering all major topics in AP Chemistry including atomic structure, chemical bonding, and thermodynamics.",
-					difficulty: "Medium",
-					duration: 195, // 3시간 15분 (AP Chemistry 실제 시험 시간)
-					questionCount: 60, // Multiple Choice: 60문항
-					isActive: true,
-					canTake: true,
-					completed: false,
-					attemptCount: 0,
-				};
+				// 실제 AP exam 데이터를 API에서 가져오기
+				const apService = new ApServiceImpl();
+				const exams = await apService.getExams({ subjectId });
+				const exam = exams.find((e) => e.id === examId);
 
-				setExamData(mockExamData);
+				if (!exam) {
+					console.error("Exam not found:", examId);
+					router.push("/dashboard/ap-courses");
+					return;
+				}
+
+				setExamData(exam);
 			} catch (error) {
 				console.error("Failed to load exam data:", error);
 				router.push("/dashboard/ap-courses");
@@ -52,11 +48,21 @@ export default function APExamInstructionPageRoute() {
 		loadExamData();
 	}, [examId, subjectId, router]);
 
-	const handleStartExam = () => {
+	const handleStartExam = async () => {
 		if (!examData || !subjectId) return;
 
-		// 실제 시험 페이지로 이동 (ap-exam 페이지)
-		router.push(`/ap-exam?examId=${examData.id}&subjectId=${subjectId}`);
+		try {
+			// 시험 시작 시 user_ap_result 레코드 생성 (tested_at 기록)
+			const apService = new ApServiceImpl();
+			await apService.startExamAttempt(examData.id);
+			
+			// 실제 시험 페이지로 이동 (ap-exam 페이지)
+			router.push(`/ap-exam?examId=${examData.id}&subjectId=${subjectId}`);
+		} catch (error) {
+			console.error("Failed to start exam attempt:", error);
+			// 에러가 발생해도 시험 페이지로 이동 (사용자 경험 우선)
+			router.push(`/ap-exam?examId=${examData.id}&subjectId=${subjectId}`);
+		}
 	};
 
 	const handleGoBack = () => {

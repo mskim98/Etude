@@ -100,10 +100,6 @@ export function APExamInstructionPage({ examData, onStartExam, onGoBack }: APExa
 								<Play className="w-5 h-5 mr-2" />
 								{examData.completed ? "Retake Exam" : "Begin Exam"}
 							</Button>
-
-							{examData.completed && examData.bestScore && (
-								<div className="text-sm text-muted-foreground">Previous Best Score: {examData.bestScore}/5</div>
-							)}
 						</div>
 
 						<div className="mt-8 pt-6 border-t border-border">
