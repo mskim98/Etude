@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface APCoursesProps {
-	onStartExam: (subject: ApSubject) => void;
+	onStartExam: (subject: ApSubject, examId?: string) => void;
 	selectedSubject?: ApSubject | null;
 	onTabChange?: () => void;
 	className?: string;
@@ -271,7 +271,9 @@ export function APCourses({ onStartExam, selectedSubject, onTabChange, className
 							<PracticeExamsGrid
 								exams={selectedExams || []}
 								subjectTitle={selectedSubjectData?.title || ""}
-								onStartExam={() => handleWithApAccess(() => selectedSubjectData && onStartExam(selectedSubjectData))}
+								onStartExam={(examId: string) =>
+									handleWithApAccess(() => selectedSubjectData && onStartExam(selectedSubjectData, examId))
+								}
 							/>
 						</div>
 					)}

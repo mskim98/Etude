@@ -3,29 +3,61 @@ import React, { useMemo } from "react";
 import { FileText } from "lucide-react";
 import { APExamCard } from "./APExamCard";
 import { Card } from "../../ui/card";
-import { useExamStats } from "@/hooks/ap-courses/useExamStats";
 
 /**
  * 선택된 과목의 모의고사 목록을 카드 그리드로 표시합니다.
  */
+interface ExamData {
+	id: string;
+	title: string;
+	description: string;
+	duration: number;
+	questionCount: number;
+	difficulty: string;
+	isActive?: boolean;
+	is_active?: boolean;
+	bestScore?: number;
+	completed?: boolean;
+	attemptCount?: number;
+}
+
 interface PracticeExamsGridProps {
-	exams: any[];
+	exams: ExamData[];
 	subjectTitle: string;
-	onStartExam: () => void;
+	onStartExam: (examId: string) => void;
 }
 
 export function PracticeExamsGrid({ exams, subjectTitle, onStartExam }: PracticeExamsGridProps) {
-	if (!exams || exams.length === 0) return null;
-	const sortedExams = useMemo(() => {
+	const sortedExamsWithStats = useMemo(() => {
+		if (!exams || exams.length === 0) return [];
 		const copy = [...exams];
-		copy.sort((a: any, b: any) => {
+		copy.sort((a, b) => {
 			const na = parseInt(String(a.title).match(/(\d+)/)?.[1] || "0", 10);
 			const nb = parseInt(String(b.title).match(/(\d+)/)?.[1] || "0", 10);
 			if (na !== nb) return na - nb;
 			return String(a.title).localeCompare(String(b.title));
 		});
-		return copy;
+
+		// Calculate stats for each exam
+		return copy.map((exam) => {
+			const correctAnswers = exam.bestScore || 0;
+			const totalQuestions = exam.questionCount || 0;
+			const accuracyRate = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : undefined;
+
+			return {
+				...exam,
+				stats: {
+					correctAnswers,
+					totalQuestions,
+					accuracyRate,
+					isCompleted: exam.completed || false,
+					attempts: exam.attemptCount || 0,
+				},
+			};
+		});
 	}, [exams]);
+
+	if (!exams || exams.length === 0) return null;
 
 	return (
 		<div>
@@ -42,8 +74,8 @@ export function PracticeExamsGrid({ exams, subjectTitle, onStartExam }: Practice
 				className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto scrollbar-custom px-4 pb-6"
 				style={{ height: "430px", scrollbarGutter: "stable" }}
 			>
-				{sortedExams.map((exam: any) => {
-					const stats = useExamStats(exam);
+				{sortedExamsWithStats.map((examWithStats) => {
+					const { stats, ...exam } = examWithStats;
 
 					return (
 						<APExamCard
@@ -64,7 +96,7 @@ export function PracticeExamsGrid({ exams, subjectTitle, onStartExam }: Practice
 							lastAttempt={null}
 							examDate={new Date("2025-05-15")}
 							subject={subjectTitle}
-							onStartExam={onStartExam}
+							onStartExam={() => onStartExam(exam.id)}
 							onWatchVideo={() => {}}
 							isActive={Boolean(exam.isActive ?? exam.is_active ?? true)}
 							correctAnswers={stats.correctAnswers}

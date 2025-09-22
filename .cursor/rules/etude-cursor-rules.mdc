@@ -30,10 +30,41 @@ alwaysApply: true
 
 ## Page Flow
 
-1. `exams` → load exam list, check permission
-2. `section_result` → create/load exam result entry
-3. `exam` → load questions, attempt, save results, track wrong answers
-4. `result` → display score and wrong answers
+### Authentication Flow
+
+1. **Landing Page** (`/`) → Login/Signup selection
+2. **Auth Pages** (`/auth/login`, `/auth/signup`) → Authentication processing
+3. **Auth Callback** (`/auth/callback`) → Supabase authentication callback
+4. **Pending Approval** (`/auth/pending-approval`) → Pending approval status
+5. **Service Expired** (`/auth/service-expired`) → Service expiration status
+
+### Dashboard Flow
+
+1. **Dashboard Root** (`/dashboard`) → Auto-redirect to `/dashboard/overview`
+2. **Overview** (`/dashboard/overview`) → Personal info, schedule, announcements, subject progress
+3. **AP Courses** (`/dashboard/ap-courses`) → AP subject-specific chapters and exams
+4. **SAT Exams** (`/dashboard/sat-exams`) → SAT mock exam list
+
+### AP Exam Flow
+
+1. **AP Courses** (`/dashboard/ap-courses`) → AP subject selection
+2. **AP Exam Instruction** (`/dashboard/ap-courses/ap-exam-instruction`) → Exam instructions and preparation
+3. **AP Exam** (`/ap-exam`) → Actual AP exam (MCQ & FRQ)
+4. **AP Results** (`/ap-results`) → AP exam results and wrong answer analysis
+
+### SAT Exam Flow
+
+1. **SAT Exams** (`/dashboard/sat-exams`) → SAT mock exam selection
+2. **SAT Section Select** (`/sat-section-select`) → Section progress check and selection
+3. **SAT Exam** (`/exam`) → Actual SAT exam (Reading/Writing/Math)
+4. **SAT Results** (`/sat-results`) → SAT exam results and wrong answer analysis
+5. **SAT Detailed Results** (`/sat-detailed-results`) → Detailed score analysis
+
+### Navigation Patterns
+
+- **URL Parameters**: `?subject=`, `?examId=`, `?subjectId=` for state passing
+- **Auto-redirect**: Automatic page navigation based on authentication status
+- **Back Navigation**: Return to previous page functionality in exam pages
 
 ## Design System
 
