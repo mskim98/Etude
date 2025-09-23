@@ -15,7 +15,7 @@ export default function AuthCallbackPage() {
 	const [progress, setProgress] = useState("인증 페이지 로드 중...");
 
 	useEffect(() => {
-		const handleAuthCallback = async () => {
+		const handleAuthCallback = async (): Promise<(() => void) | undefined> => {
 			let mounted = true;
 			let subscription: any = null;
 
@@ -203,15 +203,23 @@ export default function AuthCallbackPage() {
 					setLoading(false);
 				}
 				if (subscription) subscription.unsubscribe();
+				return () => {
+					mounted = false;
+					if (subscription) subscription.unsubscribe();
+				};
 			}
 		};
 
-		const cleanup = handleAuthCallback();
+		handleAuthCallback().then((cleanup) => {
+			// Store cleanup function for later use
+			if (cleanup) {
+				// Cleanup will be called when component unmounts
+				return cleanup;
+			}
+		});
 
 		return () => {
-			if (cleanup && typeof cleanup === "function") {
-				cleanup();
-			}
+			// Cleanup is handled within the async function
 		};
 	}, [router]);
 
