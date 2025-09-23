@@ -123,7 +123,7 @@ export function SATDetailedResultsPage({ selectedTest, onNavigate }: SATDetailed
 							e.currentTarget.style.color = "var(--color-text-primary)";
 							const icon = e.currentTarget.querySelector("svg");
 							if (icon) {
-								(icon as HTMLElement).style.color = "var(--color-accent)";
+								(icon as unknown as HTMLElement).style.color = "var(--color-accent)";
 							}
 						}}
 						onMouseLeave={(e) => {
@@ -131,7 +131,7 @@ export function SATDetailedResultsPage({ selectedTest, onNavigate }: SATDetailed
 							e.currentTarget.style.color = "var(--color-text-secondary)";
 							const icon = e.currentTarget.querySelector("svg");
 							if (icon) {
-								(icon as HTMLElement).style.color = "var(--color-text-secondary)";
+								(icon as unknown as HTMLElement).style.color = "var(--color-text-secondary)";
 							}
 						}}
 					>

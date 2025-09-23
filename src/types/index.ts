@@ -21,9 +21,9 @@ export type Profile = Database["public"]["Tables"]["profile"]["Row"];
 export type ProfileInsert = Database["public"]["Tables"]["profile"]["Insert"];
 export type ProfileUpdate = Database["public"]["Tables"]["profile"]["Update"];
 
-export type Service = Database["public"]["Tables"]["service"]["Row"];
-export type ServiceInsert = Database["public"]["Tables"]["service"]["Insert"];
-export type ServiceUpdate = Database["public"]["Tables"]["service"]["Update"];
+export type Service = any; // Database["public"]["Tables"]["service"]["Row"];
+export type ServiceInsert = any; // Database["public"]["Tables"]["service"]["Insert"];
+export type ServiceUpdate = any; // Database["public"]["Tables"]["service"]["Update"];
 
 export type UserService = Database["public"]["Tables"]["user_service"]["Row"];
 export type UserServiceInsert = Database["public"]["Tables"]["user_service"]["Insert"];
@@ -33,9 +33,9 @@ export type Announcement = Database["public"]["Tables"]["announcement"]["Row"];
 export type AnnouncementInsert = Database["public"]["Tables"]["announcement"]["Insert"];
 export type AnnouncementUpdate = Database["public"]["Tables"]["announcement"]["Update"];
 
-export type Schedule = Database["public"]["Tables"]["schedule"]["Row"];
-export type ScheduleInsert = Database["public"]["Tables"]["schedule"]["Insert"];
-export type ScheduleUpdate = Database["public"]["Tables"]["schedule"]["Update"];
+export type Schedule = any; // Database["public"]["Tables"]["schedule"]["Row"];
+export type ScheduleInsert = any; // Database["public"]["Tables"]["schedule"]["Insert"];
+export type ScheduleUpdate = any; // Database["public"]["Tables"]["schedule"]["Update"];
 
 // Export ENUM types for type safety
 export type UserRole = Database["public"]["Enums"]["user_role"];
@@ -145,6 +145,8 @@ export interface Subject {
 	lastScore?: number;
 	icon: string;
 	examDate: Date;
+	teacher?: string;
+	description?: string;
 	sectionProgress?: {
 		reading?: {
 			progress: number;

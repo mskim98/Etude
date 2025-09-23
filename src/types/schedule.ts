@@ -4,9 +4,9 @@ import type { Database } from "./supabase";
 export type ScheduleCategory = Database["public"]["Enums"]["exam_category"];
 
 // Supabase Schedule 테이블 타입
-export type ScheduleRow = Database["public"]["Tables"]["schedule"]["Row"];
-export type ScheduleInsert = Database["public"]["Tables"]["schedule"]["Insert"];
-export type ScheduleUpdate = Database["public"]["Tables"]["schedule"]["Update"];
+export type ScheduleRow = any; // Database["public"]["Tables"]["schedule"]["Row"];
+export type ScheduleInsert = any; // Database["public"]["Tables"]["schedule"]["Insert"];
+export type ScheduleUpdate = any; // Database["public"]["Tables"]["schedule"]["Update"];
 
 // 프론트엔드에서 사용할 Schedule 인터페이스
 export interface Schedule {

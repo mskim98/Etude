@@ -77,7 +77,7 @@ export function APSubjectCard({ onStartExam, onNavigateToSubject }: APSubjectCar
 		id: apSubject.id,
 		name: apSubject.title,
 		type: "AP" as const,
-		progress: Math.round(parseFloat(apSubject.chapterCompletionRate || "0")),
+		progress: apSubject.progress,
 		totalChapters: apSubject.totalChapters,
 		completedChapters: apSubject.completedChapters,
 		lastScore: 0, // AP는 1-5 점수 시스템이므로 기본값

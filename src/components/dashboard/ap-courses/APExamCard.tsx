@@ -5,6 +5,7 @@ import { Card, CardContent } from "../../ui/card";
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 import { Play, CheckCircle } from "lucide-react";
+import type { DifficultyLevel } from "@/types/ap";
 
 export interface APExamCardProps {
 	examId: string;
@@ -12,7 +13,7 @@ export interface APExamCardProps {
 	description: string;
 	duration: number; // in minutes
 	questionCount: number;
-	difficulty: "Easy" | "Medium" | "Hard";
+	difficulty: DifficultyLevel;
 	hasExplanatoryVideo: boolean;
 	videoLength?: number; // in minutes
 	completed: boolean;
@@ -22,7 +23,7 @@ export interface APExamCardProps {
 	completionRate: number;
 	lastAttempt?: Date;
 	examDate?: Date; // AP exam date countdown
-	subject: "Chemistry" | "Biology" | "Psychology"; // AP subject types
+	subject: string; // AP subject types
 	onStartExam: () => void;
 	onWatchVideo?: () => void;
 	className?: string;
@@ -53,17 +54,30 @@ export function APExamCard({
 	totalQuestions,
 	accuracyRate,
 }: APExamCardProps) {
-	const getDifficultyStyles = (diff: string) => {
+	const getDifficultyStyles = (diff: DifficultyLevel) => {
 		const baseClasses = "text-xs flex-shrink-0 border font-medium";
 		switch (diff) {
-			case "Easy":
+			case "easy":
 				return `${baseClasses} bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800`;
-			case "Medium":
+			case "normal":
 				return `${baseClasses} bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800`;
-			case "Hard":
+			case "hard":
 				return `${baseClasses} bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800`;
 			default:
 				return `${baseClasses} bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700`;
+		}
+	};
+
+	const getDifficultyDisplayText = (diff: DifficultyLevel) => {
+		switch (diff) {
+			case "easy":
+				return "Easy";
+			case "normal":
+				return "Medium";
+			case "hard":
+				return "Hard";
+			default:
+				return diff;
 		}
 	};
 
@@ -148,7 +162,7 @@ export function APExamCard({
 										AP {subjectLabel}
 									</Badge>
 									<Badge variant="outline" className={`text-xs px-2 py-1 ${getDifficultyStyles(difficulty)}`}>
-										{difficulty}
+										{getDifficultyDisplayText(difficulty)}
 									</Badge>
 								</div>
 							</div>

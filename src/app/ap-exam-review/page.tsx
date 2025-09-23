@@ -66,7 +66,7 @@ export default function ApExamReviewPage() {
 			// Fetch full questions with choices by IDs
 			(async () => {
 				const { data, error } = await (supabase as any)
-					.from("ap_exam_question")
+					.from("ap_exam_question" as any)
 					.select(
 						`id, question_order, question, passage, topic, explanation,
              choices:ap_exam_choice(id, choice_text, image_url, is_answer, choice_order)`

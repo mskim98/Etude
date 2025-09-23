@@ -5,33 +5,33 @@ export type DifficultyLevel = Database["public"]["Enums"]["difficulty_level"];
 export type ChoiceType = Database["public"]["Enums"]["choice_type"];
 
 // Supabase 테이블 타입들
-export type ApRow = Database["public"]["Tables"]["ap"]["Row"];
-export type ApInsert = Database["public"]["Tables"]["ap"]["Insert"];
-export type ApUpdate = Database["public"]["Tables"]["ap"]["Update"];
+export type ApRow = any; // Database["public"]["Tables"]["ap"]["Row"];
+export type ApInsert = any; // Database["public"]["Tables"]["ap"]["Insert"];
+export type ApUpdate = any; // Database["public"]["Tables"]["ap"]["Update"];
 
-export type ChapterRow = Database["public"]["Tables"]["chapter"]["Row"];
-export type ChapterInsert = Database["public"]["Tables"]["chapter"]["Insert"];
-export type ChapterUpdate = Database["public"]["Tables"]["chapter"]["Update"];
+export type ChapterRow = any; // Database["public"]["Tables"]["chapter"]["Row"];
+export type ChapterInsert = any; // Database["public"]["Tables"]["chapter"]["Insert"];
+export type ChapterUpdate = any; // Database["public"]["Tables"]["chapter"]["Update"];
 
-export type ApExamRow = Database["public"]["Tables"]["ap_exam"]["Row"];
-export type ApExamInsert = Database["public"]["Tables"]["ap_exam"]["Insert"];
-export type ApExamUpdate = Database["public"]["Tables"]["ap_exam"]["Update"];
+export type ApExamRow = any; // Database["public"]["Tables"]["ap_exam"]["Row"];
+export type ApExamInsert = any; // Database["public"]["Tables"]["ap_exam"]["Insert"];
+export type ApExamUpdate = any; // Database["public"]["Tables"]["ap_exam"]["Update"];
 
-export type ApExamQuestionRow = Database["public"]["Tables"]["ap_exam_question"]["Row"];
-export type ApExamQuestionInsert = Database["public"]["Tables"]["ap_exam_question"]["Insert"];
-export type ApExamQuestionUpdate = Database["public"]["Tables"]["ap_exam_question"]["Update"];
+export type ApExamQuestionRow = any; // Database["public"]["Tables"]["ap_exam_question"]["Row"];
+export type ApExamQuestionInsert = any; // Database["public"]["Tables"]["ap_exam_question"]["Insert"];
+export type ApExamQuestionUpdate = any; // Database["public"]["Tables"]["ap_exam_question"]["Update"];
 
-export type ApExamChoiceRow = Database["public"]["Tables"]["ap_exam_choice"]["Row"];
-export type ApExamChoiceInsert = Database["public"]["Tables"]["ap_exam_choice"]["Insert"];
-export type ApExamChoiceUpdate = Database["public"]["Tables"]["ap_exam_choice"]["Update"];
+export type ApExamChoiceRow = any; // Database["public"]["Tables"]["ap_exam_choice"]["Row"];
+export type ApExamChoiceInsert = any; // Database["public"]["Tables"]["ap_exam_choice"]["Insert"];
+export type ApExamChoiceUpdate = any; // Database["public"]["Tables"]["ap_exam_choice"]["Update"];
 
-export type UserApResultRow = Database["public"]["Tables"]["user_ap_result"]["Row"];
-export type UserApResultInsert = Database["public"]["Tables"]["user_ap_result"]["Insert"];
-export type UserApResultUpdate = Database["public"]["Tables"]["user_ap_result"]["Update"];
+export type UserApResultRow = any; // Database["public"]["Tables"]["user_ap_result"]["Row"];
+export type UserApResultInsert = any; // Database["public"]["Tables"]["user_ap_result"]["Insert"];
+export type UserApResultUpdate = any; // Database["public"]["Tables"]["user_ap_result"]["Update"];
 
-export type UserApWrongAnswerRow = Database["public"]["Tables"]["user_ap_wrong_answer"]["Row"];
-export type UserApWrongAnswerInsert = Database["public"]["Tables"]["user_ap_wrong_answer"]["Insert"];
-export type UserApWrongAnswerUpdate = Database["public"]["Tables"]["user_ap_wrong_answer"]["Update"];
+export type UserApWrongAnswerRow = any; // Database["public"]["Tables"]["user_ap_wrong_answer"]["Row"];
+export type UserApWrongAnswerInsert = any; // Database["public"]["Tables"]["user_ap_wrong_answer"]["Insert"];
+export type UserApWrongAnswerUpdate = any; // Database["public"]["Tables"]["user_ap_wrong_answer"]["Update"];
 
 // UI용 확장 타입들
 

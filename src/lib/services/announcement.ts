@@ -228,12 +228,12 @@ export class AnnouncementServiceImpl implements AnnouncementService {
 			console.log("📢 공지사항 생성 시작:", data);
 
 			// Supabase RPC 함수 호출
-			const { data: result, error } = await supabase.rpc("create_announcement", {
+			const { data: result, error } = await supabase.rpc("create_announcement" as any, {
 				p_title: data.title,
 				p_notification: data.notification,
 				p_urgency: data.urgency || "medium",
 				p_category: data.category || "ap",
-			});
+			} as any);
 
 			if (error) {
 				console.error("❌ 공지사항 생성 오류:", error);
@@ -262,13 +262,13 @@ export class AnnouncementServiceImpl implements AnnouncementService {
 			console.log("📢 공지사항 수정 시작:", data);
 
 			// Supabase RPC 함수 호출
-			const { data: result, error } = await supabase.rpc("update_announcement", {
+			const { data: result, error } = await supabase.rpc("update_announcement" as any, {
 				p_announcement_id: data.announcementId,
 				p_title: data.title || null,
 				p_notification: data.notification || null,
 				p_urgency: data.urgency || null,
 				p_category: data.category || null,
-			});
+			} as any);
 
 			if (error) {
 				console.error("❌ 공지사항 수정 오류:", error);
@@ -293,9 +293,9 @@ export class AnnouncementServiceImpl implements AnnouncementService {
 			console.log("📢 공지사항 삭제 시작:", announcementId);
 
 			// Supabase RPC 함수 호출
-			const { data: result, error } = await supabase.rpc("delete_announcement", {
+			const { data: result, error } = await supabase.rpc("delete_announcement" as any, {
 				p_announcement_id: announcementId,
-			});
+			} as any);
 
 			if (error) {
 				console.error("❌ 공지사항 삭제 오류:", error);

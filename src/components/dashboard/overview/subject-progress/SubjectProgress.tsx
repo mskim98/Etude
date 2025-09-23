@@ -26,6 +26,8 @@ export function SubjectProgress({ onStartExam, onNavigateToSubject, className }:
 			type: "SAT",
 			icon: "📝",
 			progress: 67,
+			totalChapters: 3,
+			completedChapters: 2,
 			examDate: new Date("2025-03-15"),
 			teacher: "SAT Prep Team",
 			description: "Full-length SAT practice test with detailed explanations",

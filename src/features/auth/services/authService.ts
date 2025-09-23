@@ -168,13 +168,13 @@ export class AuthService {
 				return null;
 			}
 
-			if (!data) {
+			if (!data || Object.keys(data).length === 0) {
 				console.log("AuthService: No profile data found");
 				return null;
 			}
 
 			console.log("AuthService: Profile loaded:", data);
-			return data;
+			return data as Profile;
 		} catch (error) {
 			console.error("AuthService: Get user profile error:", error);
 			return null;
@@ -245,6 +245,6 @@ export class AuthService {
 			throw new Error(error.message);
 		}
 
-		return data;
+		return data as Profile;
 	}
 }

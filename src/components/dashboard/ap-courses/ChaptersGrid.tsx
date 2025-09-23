@@ -2,19 +2,11 @@
 import React from "react";
 import { BookOpen } from "lucide-react";
 import { APChapterCard } from "./APChapterCard";
+import type { Chapter } from "@/types/ap";
 
 /**
  * 선택된 과목의 챕터 목록을 카드 그리드로 표시합니다.
  */
-interface Chapter {
-	id: string;
-	chapterNumber: number;
-	title: string;
-	isCompleted: boolean;
-	progress: number;
-	difficulty: "Easy" | "Medium" | "Hard";
-	isActive: boolean;
-}
 
 interface ChaptersGridProps {
 	chapters: Chapter[];

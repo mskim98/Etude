@@ -6,7 +6,7 @@ import { Badge } from "../../ui/badge";
 import { Progress } from "../../ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table";
 import { Target, BookOpen, Edit3, Calculator, Play, CheckCircle2, TrendingUp, Clock, BarChart3 } from "lucide-react";
-import type { Subject } from "../../App";
+import type { Subject } from "@/types";
 
 interface SATMockExamsProps {
 	onStartExam: (examId: string) => void;

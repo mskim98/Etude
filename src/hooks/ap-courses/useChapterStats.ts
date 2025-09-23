@@ -1,10 +1,10 @@
 import { useMemo } from "react";
-import type { ApChapter } from "@/types/ap";
+import type { Chapter } from "@/types/ap";
 
 /**
  * 챕터 통계 및 계산된 데이터를 제공하는 훅
  */
-export function useChapterStats(chapter: ApChapter) {
+export function useChapterStats(chapter: Chapter) {
 	return useMemo(() => {
 		// 완료 상태에 따른 스타일 정보
 		const completionStyle = {
@@ -32,7 +32,7 @@ export function useChapterStats(chapter: ApChapter) {
 /**
  * 여러 챕터의 통계를 제공하는 훅
  */
-export function useChaptersStats(chapters: ApChapter[]) {
+export function useChaptersStats(chapters: Chapter[]) {
 	return useMemo(() => {
 		const completedCount = chapters.filter((ch) => ch.isCompleted).length;
 		const totalCount = chapters.length;

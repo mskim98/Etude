@@ -143,9 +143,7 @@ function ToolsPanel({
 					size="sm"
 					onClick={onToggleExpanded}
 					className="h-7 w-7 p-0"
-					style={{
-						":hover": { backgroundColor: "var(--color-primary-light)" },
-					}}
+					style={{}}
 					onMouseEnter={(e) => {
 						e.currentTarget.style.backgroundColor = "var(--color-primary-light)";
 					}}
@@ -170,7 +168,6 @@ function ToolsPanel({
 							style={{
 								borderColor: "var(--color-border)",
 								backgroundColor: "var(--color-primary-light)",
-								":focus": { borderColor: "var(--color-primary)" },
 							}}
 							onFocus={(e) => {
 								e.currentTarget.style.borderColor = "var(--color-primary)";
@@ -345,8 +342,8 @@ export function MockExamPage({
 			} else {
 				mistakes.push({
 					questionId: question.id,
-					userAnswer: answers[index] ?? -1,
-					correctAnswer: question.correctAnswer,
+					userAnswer: (answers[index] ?? -1).toString(),
+					correctAnswer: question.correctAnswer.toString(),
 				});
 			}
 		});
@@ -413,8 +410,8 @@ export function MockExamPage({
 							<h1 className="text-2xl font-semibold text-foreground mb-4">{subject?.name} Mock Exam</h1>
 							<p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
 								This is a full-length practice exam designed to simulate the real {subject?.type} exam experience.
-								You&apos;ll have 3 hours to complete {questions.length} questions in a BlueBook-style interface with access
-								to tools and formulas.
+								You&apos;ll have 3 hours to complete {questions.length} questions in a BlueBook-style interface with
+								access to tools and formulas.
 							</p>
 
 							<div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -437,8 +434,8 @@ export function MockExamPage({
 							<Alert className="mb-8 bg-primary/5 border-primary/20 shadow-sm">
 								<Calculator className="h-4 w-4 text-primary" />
 								<AlertDescription className="text-foreground">
-									<strong className="text-primary">Tools Available:</strong> You&apos;ll have access to a calculator, notepad
-									for scratch work, common formulas, and can flag questions for review. Navigate freely between
+									<strong className="text-primary">Tools Available:</strong> You&apos;ll have access to a calculator,
+									notepad for scratch work, common formulas, and can flag questions for review. Navigate freely between
 									questions during the exam.
 								</AlertDescription>
 							</Alert>

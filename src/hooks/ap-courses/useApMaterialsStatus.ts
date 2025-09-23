@@ -10,7 +10,7 @@ export function useApMaterialsStatus(chapters?: { id: string }[]) {
 			if (chapterIds.length === 0) return {};
 			
 			const { data: mcqs } = await supabase
-				.from("ap_mcq")
+				.from("ap_mcq" as any)
 				.select("chapter_id, is_active")
 				.in("chapter_id", chapterIds);
 				
@@ -34,7 +34,7 @@ export function useApMaterialsStatus(chapters?: { id: string }[]) {
 			if (chapterIds.length === 0) return {};
 			
 			const { data: frqs } = await supabase
-				.from("ap_frq")
+				.from("ap_frq" as any)
 				.select("chapter_id, is_active")
 				.in("chapter_id", chapterIds);
 				

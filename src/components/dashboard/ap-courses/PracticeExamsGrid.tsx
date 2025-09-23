@@ -3,6 +3,7 @@ import React, { useMemo } from "react";
 import { FileText } from "lucide-react";
 import { APExamCard } from "./APExamCard";
 import { Card } from "../../ui/card";
+import type { DifficultyLevel } from "@/types/ap";
 
 /**
  * 선택된 과목의 모의고사 목록을 카드 그리드로 표시합니다.
@@ -13,7 +14,7 @@ interface ExamData {
 	description: string;
 	duration: number;
 	questionCount: number;
-	difficulty: string;
+	difficulty: DifficultyLevel;
 	isActive?: boolean;
 	is_active?: boolean;
 	bestScore?: number;
@@ -94,7 +95,7 @@ export function PracticeExamsGrid({ exams, subjectTitle, onStartExam, onViewResu
 							attempts={stats.attempts}
 							averageScore={0}
 							completionRate={0}
-							lastAttempt={null}
+							lastAttempt={undefined}
 							examDate={new Date("2025-05-15")}
 							subject={subjectTitle}
 							onStartExam={() => onStartExam(exam.id)}

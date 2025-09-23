@@ -58,7 +58,7 @@ export class ScheduleServiceImpl implements ScheduleService {
 			console.log("ScheduleService.getSchedules 시작");
 
 			const { data, error } = await supabase
-				.from("schedule")
+				.from("schedule" as any)
 				.select("*")
 				.is("deleted_at", null) // 삭제되지 않은 일정만
 				.order("d_day", { ascending: true }); // 날짜순 정렬
@@ -86,7 +86,7 @@ export class ScheduleServiceImpl implements ScheduleService {
 			console.log(`ScheduleService.getSchedulesByCategory 시작: ${category}`);
 
 			const { data, error } = await supabase
-				.from("schedule")
+				.from("schedule" as any)
 				.select("*")
 				.eq("category", category)
 				.is("deleted_at", null)
@@ -114,7 +114,7 @@ export class ScheduleServiceImpl implements ScheduleService {
 		try {
 			console.log(`ScheduleService.getScheduleById 시작: ${id}`);
 
-			const { data, error } = await supabase.from("schedule").select("*").eq("id", id).is("deleted_at", null).single();
+			const { data, error } = await supabase.from("schedule" as any).select("*").eq("id", id).is("deleted_at", null).single();
 
 			if (error) {
 				if (error.code === "PGRST116") {
@@ -144,11 +144,11 @@ export class ScheduleServiceImpl implements ScheduleService {
 			console.log("ScheduleService.createSchedule 시작:", data);
 
 			// Supabase RPC 함수 호출 (권한 체크 포함)
-			const { data: scheduleId, error } = await supabase.rpc("create_schedule", {
+			const { data: scheduleId, error } = await supabase.rpc("create_schedule" as any, {
 				p_title: data.title,
 				p_d_day: data.dDay.toISOString().split("T")[0], // YYYY-MM-DD 형식
 				p_category: data.category,
-			});
+			} as any);
 
 			if (error) {
 				console.error("일정 생성 에러:", error);
@@ -171,12 +171,12 @@ export class ScheduleServiceImpl implements ScheduleService {
 			console.log("ScheduleService.updateSchedule 시작:", data);
 
 			// Supabase RPC 함수 호출 (권한 체크 포함)
-			const { data: success, error } = await supabase.rpc("update_schedule", {
+			const { data: success, error } = await supabase.rpc("update_schedule" as any, {
 				p_schedule_id: data.id,
 				p_title: data.title || null,
 				p_d_day: data.dDay ? data.dDay.toISOString().split("T")[0] : null,
 				p_category: data.category || null,
-			});
+			} as any);
 
 			if (error) {
 				console.error("일정 업데이트 에러:", error);
@@ -199,9 +199,9 @@ export class ScheduleServiceImpl implements ScheduleService {
 			console.log(`ScheduleService.deleteSchedule 시작: ${id}`);
 
 			// Supabase RPC 함수 호출 (권한 체크 포함)
-			const { data: success, error } = await supabase.rpc("delete_schedule", {
+			const { data: success, error } = await supabase.rpc("delete_schedule" as any, {
 				p_schedule_id: id,
-			});
+			} as any);
 
 			if (error) {
 				console.error("일정 삭제 에러:", error);

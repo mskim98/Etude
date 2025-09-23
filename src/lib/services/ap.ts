@@ -39,7 +39,7 @@ export class ApServiceImpl implements ApService {
 			console.log("📚 AP 과목 목록 조회 시작:", filter);
 
 			// 성능 최적화된 VIEW 사용
-			let query = supabase.from("ap_subject_detail_view").select("*").eq("is_active", true);
+			let query = supabase.from("ap_subject_detail_view" as any).select("*").eq("is_active", true);
 
 			// 필터 적용
 			if (filter?.teacherId) {
@@ -100,7 +100,7 @@ export class ApServiceImpl implements ApService {
 			console.log("📚 AP 과목 상세 조회:", id);
 
 			const { data, error } = await supabase
-				.from("ap")
+				.from("ap" as any)
 				.select(
 					`
 					*,
@@ -131,24 +131,27 @@ export class ApServiceImpl implements ApService {
 				throw error;
 			}
 
-			const totalChapters = data.chapters?.length || 0;
-			const activeChapters = data.chapters?.filter((ch: any) => ch.is_active)?.length || 0;
+			const dataAny = data as any;
+			const totalChapters = dataAny.chapters?.length || 0;
+			const activeChapters = dataAny.chapters?.filter((ch: any) => ch.is_active)?.length || 0;
 			const progress = totalChapters > 0 ? Math.round((activeChapters / totalChapters) * 100) : 0;
 
 			const subject: ApSubject = {
-				id: data.id,
-				title: data.title,
-				description: data.description,
+				id: dataAny.id,
+				title: dataAny.title,
+				description: dataAny.description,
 				teacher: {
-					id: data.teacher.id,
-					name: data.teacher.name,
+					id: dataAny.teacher.id,
+					name: dataAny.teacher.name,
 				},
-				isActive: data.is_active,
+				isActive: dataAny.is_active,
 				totalChapters,
 				completedChapters: 0, // TODO: 실제 사용자 진행도 계산
+				totalExams: 0, // TODO: 실제 시험 수 계산
+				completedExams: 0, // TODO: 실제 완료된 시험 수 계산
 				progress,
-				examDate: data.exam_date ? new Date(data.exam_date) : new Date("2024-05-15"),
-				createdAt: new Date(data.created_at),
+				examDate: dataAny.exam_date ? new Date(dataAny.exam_date) : new Date("2024-05-15"),
+				createdAt: new Date(dataAny.created_at),
 			};
 
 			console.log("📚 AP 과목 상세 조회 성공:", subject.title);
@@ -166,11 +169,11 @@ export class ApServiceImpl implements ApService {
 		try {
 			console.log("📚 AP 과목 생성 시작:", request);
 
-			const { data, error } = await supabase.rpc("create_ap_subject", {
+			const { data, error } = await supabase.rpc("create_ap_subject" as any, {
 				p_service_id: request.serviceId,
 				p_title: request.title,
 				p_description: request.description,
-			});
+			} as any);
 
 			if (error) {
 				console.error("❌ AP 과목 생성 오류:", error);
@@ -193,7 +196,7 @@ export class ApServiceImpl implements ApService {
 			console.log("📖 챕터 목록 조회 시작:", subjectId);
 
 			const { data, error } = await supabase
-				.from("ap_chapter")
+				.from("ap_chapter" as any)
 				.select(
 					`
 					*,
@@ -260,13 +263,13 @@ export class ApServiceImpl implements ApService {
 		try {
 			console.log("📖 챕터 생성 시작:", request);
 
-			const { data, error } = await supabase.rpc("create_chapter", {
+			const { data, error } = await supabase.rpc("create_chapter" as any, {
 				p_subject_id: request.subjectId,
 				p_chapter_number: request.chapterNumber,
 				p_title: request.title,
 				p_description: request.description,
 				p_difficulty: request.difficulty || "normal",
-			});
+			} as any);
 
 			if (error) {
 				console.error("❌ 챕터 생성 오류:", error);
@@ -290,7 +293,7 @@ export class ApServiceImpl implements ApService {
 
 			// 직접 테이블 조인으로 quantity 필드 포함
 			let query = supabase
-				.from("ap_exam")
+				.from("ap_exam" as any)
 				.select(
 					`
 					*,
@@ -366,7 +369,7 @@ export class ApServiceImpl implements ApService {
 			console.log("🎯 AP 시험 상세 조회:", id);
 
 			const { data, error } = await supabase
-				.from("ap_exam")
+				.from("ap_exam" as any)
 				.select(
 					`
 					*,
@@ -389,14 +392,15 @@ export class ApServiceImpl implements ApService {
 				throw error;
 			}
 
+			const dataAny = data as any;
 			const exam: ApExamDetailed = {
-				id: data.id,
-				title: data.title,
-				description: data.description,
-				difficulty: data.difficulty,
-				duration: data.duration,
-				questionCount: data.quantity,
-				isActive: data.is_active,
+				id: dataAny.id,
+				title: dataAny.title,
+				description: dataAny.description,
+				difficulty: dataAny.difficulty,
+				duration: dataAny.duration,
+				questionCount: dataAny.quantity,
+				isActive: dataAny.is_active,
 				canTake: true,
 				bestScore: undefined,
 				attemptCount: 0,
@@ -417,14 +421,14 @@ export class ApServiceImpl implements ApService {
 		try {
 			console.log("🎯 AP 시험 생성 시작:", request);
 
-			const { data, error } = await supabase.rpc("create_ap_exam", {
+			const { data, error } = await supabase.rpc("create_ap_exam" as any, {
 				p_subject_id: request.subjectId,
 				p_title: request.title,
 				p_description: request.description,
 				p_duration: request.duration,
 				p_quantity: request.questionCount,
 				p_difficulty: request.difficulty || "normal",
-			});
+			} as any);
 
 			if (error) {
 				console.error("❌ AP 시험 생성 오류:", error);
@@ -447,7 +451,7 @@ export class ApServiceImpl implements ApService {
 			console.log("❓ 시험 문제 조회 시작:", examId);
 
 			const { data, error } = await supabase
-				.from("ap_exam_question")
+				.from("ap_exam_question" as any)
 				.select(
 					`
 					*,
@@ -514,7 +518,7 @@ export class ApServiceImpl implements ApService {
 
 			// 1. 시험 문제와 정답 조회
 			const { data: questions, error: questionsError } = await supabase
-				.from("ap_exam_question")
+				.from("ap_exam_question" as any)
 				.select(
 					`
 					id,
@@ -584,7 +588,7 @@ export class ApServiceImpl implements ApService {
 
 			// 4. 기존 시도 레코드 찾기 및 업데이트
 			const { data: existingResult, error: findError } = await supabase
-				.from("user_ap_result")
+				.from("user_ap_result" as any)
 				.select("id")
 				.eq("user_id", request.userId)
 				.eq("ap_exam_id", request.examId)
@@ -595,7 +599,7 @@ export class ApServiceImpl implements ApService {
 			if (existingResult) {
 				// 기존 미완료 레코드 업데이트
 				const { data: updateData, error: updateError } = await supabase
-					.from("user_ap_result")
+					.from("user_ap_result" as any)
 					.update({
 						completed_at: new Date().toISOString(), // 시험 완료 시간
 						duration: `${Math.floor(request.timeSpent / 60)
@@ -604,7 +608,7 @@ export class ApServiceImpl implements ApService {
 						correct_amount: correctAnswers,
 						score: apScore,
 					})
-					.eq("id", existingResult.id)
+					.eq("id", (existingResult as any).id)
 					.select()
 					.single();
 
@@ -616,7 +620,7 @@ export class ApServiceImpl implements ApService {
 			} else {
 				// 새로운 레코드 생성 (fallback)
 				const { data: insertData, error: insertError } = await supabase
-					.from("user_ap_result")
+					.from("user_ap_result" as any)
 					.insert({
 						user_id: request.userId,
 						ap_exam_id: request.examId,
@@ -641,7 +645,7 @@ export class ApServiceImpl implements ApService {
 			// 5. 기존 틀린 답안 삭제 후 새로 저장
 			// 기존 틀린 답안 삭제
 			const { error: deleteError } = await supabase
-				.from("user_ap_wrong_answer")
+				.from("user_ap_wrong_answer" as any)
 				.delete()
 				.eq("ap_result_id", resultData.id);
 
@@ -658,7 +662,7 @@ export class ApServiceImpl implements ApService {
 					user_answer: wrongAnswer.userAnswer,
 				}));
 
-				const { error: wrongAnswersError } = await supabase.from("user_ap_wrong_answer").insert(wrongAnswerInserts);
+				const { error: wrongAnswersError } = await supabase.from("user_ap_wrong_answer" as any).insert(wrongAnswerInserts);
 
 				if (wrongAnswersError) {
 					console.error("❌ 틀린 답안 저장 오류:", wrongAnswersError);
@@ -766,13 +770,13 @@ export class ApServiceImpl implements ApService {
 
 			// 틀린 답안 조회
 			const { data: wrongAnswers } = await supabase
-				.from("user_ap_wrong_answer")
+				.from("user_ap_wrong_answer" as any)
 				.select("ap_question_id")
 				.eq("ap_result_id", resultId);
 
 			// 문제와 주제 정보 조회
 			const { data: questions } = await supabase
-				.from("ap_exam_question")
+				.from("ap_exam_question" as any)
 				.select("id, question_order, topic")
 				.eq("ap_exam_id", examId)
 				.is("deleted_at", null)
@@ -780,12 +784,12 @@ export class ApServiceImpl implements ApService {
 
 			if (!questions) return [];
 
-			const wrongQuestionIds = wrongAnswers?.map((wa) => wa.ap_question_id) || [];
+			const wrongQuestionIds = wrongAnswers?.map((wa: any) => wa.ap_question_id) || [];
 			console.log("🔍 틀린 문제 ID들:", wrongQuestionIds);
 
 			const topicStats: Record<string, { correct: number; total: number }> = {};
 
-			questions.forEach((question) => {
+			questions.forEach((question: any) => {
 				const topic = question.topic || "General";
 				console.log(
 					`📝 문제 ${question.question_order} (${topic}): ${wrongQuestionIds.includes(question.id) ? "틀림" : "맞음"}`
@@ -832,7 +836,7 @@ export class ApServiceImpl implements ApService {
 
 			// 기존 미완료 시도가 있는지 확인
 			const { data: existingAttempt, error: checkError } = await supabase
-				.from("user_ap_result")
+				.from("user_ap_result" as any)
 				.select("id")
 				.eq("user_id", user.id)
 				.eq("ap_exam_id", examId)
@@ -842,24 +846,24 @@ export class ApServiceImpl implements ApService {
 			if (existingAttempt) {
 				// 기존 미완료 시도가 있으면 tested_at 업데이트
 				const { error: updateError } = await supabase
-					.from("user_ap_result")
+					.from("user_ap_result" as any)
 					.update({
 						tested_at: new Date().toISOString(),
 						// completed_at은 null로 유지
 					})
-					.eq("id", existingAttempt.id);
+					.eq("id", (existingAttempt as any).id);
 
 				if (updateError) {
 					console.error("❌ 기존 시도 레코드 업데이트 오류:", updateError);
 					throw new Error(`기존 시도 레코드 업데이트에 실패했습니다: ${updateError.message}`);
 				}
 
-				return existingAttempt.id;
+				return (existingAttempt as any).id;
 			}
 
 			// 새로운 시도 레코드 생성
 			const { data: attemptData, error: insertError } = await supabase
-				.from("user_ap_result")
+				.from("user_ap_result" as any)
 				.insert({
 					user_id: user.id,
 					ap_exam_id: examId,
@@ -874,7 +878,7 @@ export class ApServiceImpl implements ApService {
 				throw new Error(`시험 시도 레코드 생성에 실패했습니다: ${insertError.message}`);
 			}
 
-			return attemptData.id;
+			return (attemptData as any).id;
 		} catch (error) {
 			console.error("❌ 시험 시도 시작 오류:", error);
 			throw error;
@@ -894,7 +898,7 @@ export class ApServiceImpl implements ApService {
 			console.log("📊 사용자 시험 결과 조회 시작:", currentUserId);
 
 			const { data, error } = await supabase
-				.from("user_ap_result")
+				.from("user_ap_result" as any)
 				.select(
 					`
 					id,
@@ -976,7 +980,7 @@ export class ApServiceImpl implements ApService {
 			console.log("❌ 틀린 문제 조회 시작:", resultId);
 
 			const { data, error } = await supabase
-				.from("user_ap_wrong_answer")
+				.from("user_ap_wrong_answer" as any)
 				.select(
 					`
 					*,
@@ -1003,13 +1007,9 @@ export class ApServiceImpl implements ApService {
 
 			// 데이터 변환
 			const wrongAnswers: WrongAnswer[] = data.map((item: any) => ({
-				question: {
-					id: item.question.id,
-					order: item.question.order_field,
-					content: item.question.question,
-					topic: item.question.topic,
-					difficulty: item.question.difficulty,
-				},
+				questionId: item.question.id,
+				questionNumber: item.question.order_field,
+				question: item.question.question,
 				userAnswer: item.user_answer || "답 안함",
 				correctAnswer: item.correct_answer || "",
 				explanation: item.explanation,
@@ -1032,7 +1032,7 @@ export class ApServiceImpl implements ApService {
 
 			// 틀린 답안 ID 조회 (사용자 답안 포함)
 			const { data: wrongAnswerIds, error: wrongAnswerError } = await supabase
-				.from("user_ap_wrong_answer")
+				.from("user_ap_wrong_answer" as any)
 				.select("ap_question_id, user_answer")
 				.eq("ap_result_id", resultId);
 
@@ -1049,7 +1049,7 @@ export class ApServiceImpl implements ApService {
 			// 틀린 문제들의 상세 정보 조회
 			const questionIds = wrongAnswerIds.map((wa: any) => wa.ap_question_id);
 			const { data: questions, error: questionsError } = await supabase
-				.from("ap_exam_question")
+				.from("ap_exam_question" as any)
 				.select("id, question_order, question, topic, difficulty")
 				.in("id", questionIds)
 				.is("deleted_at", null);
@@ -1058,15 +1058,15 @@ export class ApServiceImpl implements ApService {
 			const correctAnswers: { [questionId: string]: string } = {};
 			for (const questionId of questionIds) {
 				const { data: choices, error: choicesError } = await supabase
-					.from("ap_exam_choice")
+					.from("ap_exam_choice" as any)
 					.select("choice_text")
 					.eq("question_id", questionId)
 					.eq("is_answer", true)
 					.single();
 
 				if (!choicesError && choices) {
-					correctAnswers[questionId] = choices.choice_text;
-					console.log(`✅ 정답 조회 성공 - 문제 ${questionId}: ${choices.choice_text}`);
+					correctAnswers[questionId] = (choices as any).choice_text;
+					console.log(`✅ 정답 조회 성공 - 문제 ${questionId}: ${(choices as any).choice_text}`);
 				} else {
 					console.log(`❌ 정답 조회 실패 - 문제 ${questionId}:`, choicesError);
 				}
@@ -1079,21 +1079,21 @@ export class ApServiceImpl implements ApService {
 
 			// 틀린 답안 데이터 생성
 			const wrongAnswers: WrongAnswer[] = wrongAnswerIds.map((wa: any, index: number) => {
-				const question = questions?.find((q) => q.id === wa.ap_question_id);
+				const question = questions?.find((q: any) => q.id === wa.ap_question_id);
 				return {
 					questionId: wa.ap_question_id,
-					questionNumber: question?.question_order || 0,
-					question: question?.question || "",
+					questionNumber: (question as any)?.question_order || 0,
+					question: (question as any)?.question || "",
 					userAnswer: wa.user_answer || "Not answered",
 					correctAnswer: correctAnswers[wa.ap_question_id] || "N/A",
-					topic: question?.topic || "General",
+					topic: (question as any)?.topic || "General",
 					questionType: "MCQ" as const,
 					reasoning: "이 문제를 다시 검토해보세요.",
-					difficulty: (question?.difficulty === "easy"
+					difficulty: ((question as any)?.difficulty === "easy"
 						? "Easy"
-						: question?.difficulty === "normal"
+						: (question as any)?.difficulty === "normal"
 						? "Medium"
-						: question?.difficulty === "hard"
+						: (question as any)?.difficulty === "hard"
 						? "Hard"
 						: "Medium") as "Easy" | "Medium" | "Hard",
 				};

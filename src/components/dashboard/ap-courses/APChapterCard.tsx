@@ -4,6 +4,7 @@ import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 import { HelpCircle, FileText, Play, CheckCircle } from "lucide-react";
 import { ChapterMask } from "./ChapterMask";
+import type { DifficultyLevel } from "@/types/ap";
 
 export interface APChapterCardProps {
 	chapterNumber: number;
@@ -14,7 +15,7 @@ export interface APChapterCardProps {
 	completed: boolean;
 	score?: number;
 	timeSpent?: number; // in minutes
-	difficulty: "Easy" | "Medium" | "Hard";
+	difficulty: DifficultyLevel;
 	reviewCompleted?: boolean;
 	className?: string;
 	// Individual action handlers (removed - will be connected to other pages later)
@@ -43,16 +44,29 @@ export function APChapterCard({
 	mcqActive = true,
 	frqActive = true,
 }: APChapterCardProps) {
-	const getDifficultyColor = (diff: string) => {
+	const getDifficultyColor = (diff: DifficultyLevel) => {
 		switch (diff) {
-			case "Easy":
+			case "easy":
 				return "bg-green-100 text-green-800 border-green-200";
-			case "Medium":
+			case "normal":
 				return "bg-yellow-100 text-yellow-800 border-yellow-200";
-			case "Hard":
+			case "hard":
 				return "bg-red-100 text-red-800 border-red-200";
 			default:
 				return "bg-gray-100 text-gray-800 border-gray-200";
+		}
+	};
+
+	const getDifficultyDisplayText = (diff: DifficultyLevel) => {
+		switch (diff) {
+			case "easy":
+				return "Easy";
+			case "normal":
+				return "Medium";
+			case "hard":
+				return "Hard";
+			default:
+				return diff;
 		}
 	};
 
@@ -99,7 +113,7 @@ export function APChapterCard({
 						{/* Badges moved to top-right corner */}
 						<div className="flex flex-col items-end space-y-1 ml-2">
 							<Badge variant="outline" className={`text-xs ${getDifficultyColor(difficulty)}`}>
-								{difficulty}
+								{getDifficultyDisplayText(difficulty)}
 							</Badge>
 							{completed && (
 								<div className="flex items-center space-x-1 text-green-600 text-xs">

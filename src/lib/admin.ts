@@ -11,7 +11,7 @@ export class AdminService {
 			.order("created_at", { ascending: false });
 
 		if (error) throw error;
-		return data || [];
+		return (data as any) || [];
 	}
 
 	// Approve a user
@@ -26,7 +26,7 @@ export class AdminService {
 		const { data, error } = await supabase.from("profile").select("*").order("created_at", { ascending: false });
 
 		if (error) throw error;
-		return data || [];
+		return (data as any) || [];
 	}
 
 	// Update user role

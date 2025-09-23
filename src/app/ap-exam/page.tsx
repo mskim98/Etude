@@ -1,13 +1,13 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { APExamPage } from "@/components/features/ap/exams/APExamPage";
 import { ApServiceImpl } from "@/lib/services/ap";
 import { supabase } from "@/lib/supabase";
 import type { ApExam, ApExamQuestion, SubmitExamAnswersRequest } from "@/types/ap";
 
-export default function APExamPageRoute() {
+function APExamPageContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [examData, setExamData] = useState<ApExam | null>(null);
@@ -133,5 +133,20 @@ export default function APExamPageRoute() {
 
 	return (
 		<APExamPage examData={examData} questions={questions} onExamComplete={handleExamComplete} onGoBack={handleGoBack} />
+	);
+}
+
+export default function APExamPageRoute() {
+	return (
+		<Suspense fallback={
+			<div className="min-h-screen flex items-center justify-center">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+					<p className="mt-4 text-gray-600">시험을 준비하는 중...</p>
+				</div>
+			</div>
+		}>
+			<APExamPageContent />
+		</Suspense>
 	);
 }

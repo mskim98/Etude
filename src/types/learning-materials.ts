@@ -3,19 +3,19 @@ import { Database } from "./supabase";
 // Learning Materials 관련 타입 정의
 
 // AP MCQ 관련 타입
-export type ApMcqRow = Database["public"]["Tables"]["ap_mcq"]["Row"];
-export type ApMcqInsert = Database["public"]["Tables"]["ap_mcq"]["Insert"];
-export type ApMcqUpdate = Database["public"]["Tables"]["ap_mcq"]["Update"];
+export type ApMcqRow = any; // Database["public"]["Tables"]["ap_mcq"]["Row"];
+export type ApMcqInsert = any; // Database["public"]["Tables"]["ap_mcq"]["Insert"];
+export type ApMcqUpdate = any; // Database["public"]["Tables"]["ap_mcq"]["Update"];
 
 // AP FRQ 관련 타입
-export type ApFrqRow = Database["public"]["Tables"]["ap_frq"]["Row"];
-export type ApFrqInsert = Database["public"]["Tables"]["ap_frq"]["Insert"];
-export type ApFrqUpdate = Database["public"]["Tables"]["ap_frq"]["Update"];
+export type ApFrqRow = any; // Database["public"]["Tables"]["ap_frq"]["Row"];
+export type ApFrqInsert = any; // Database["public"]["Tables"]["ap_frq"]["Insert"];
+export type ApFrqUpdate = any; // Database["public"]["Tables"]["ap_frq"]["Update"];
 
 // AP Chapter Video 관련 타입
-export type ApChapterVideoRow = Database["public"]["Tables"]["ap_chapter_video"]["Row"];
-export type ApChapterVideoInsert = Database["public"]["Tables"]["ap_chapter_video"]["Insert"];
-export type ApChapterVideoUpdate = Database["public"]["Tables"]["ap_chapter_video"]["Update"];
+export type ApChapterVideoRow = any; // Database["public"]["Tables"]["ap_chapter_video"]["Row"];
+export type ApChapterVideoInsert = any; // Database["public"]["Tables"]["ap_chapter_video"]["Insert"];
+export type ApChapterVideoUpdate = any; // Database["public"]["Tables"]["ap_chapter_video"]["Update"];
 
 // UI용 확장 타입
 export type ApMcqQuestion = ApMcqRow;

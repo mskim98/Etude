@@ -20,7 +20,7 @@ export const useApSubjectAccess = (subjectId?: string) => {
 
 			// 새로운 VIEW를 사용하여 성능 최적화
 			const { data, error } = await supabase
-				.from("user_ap_access_view")
+				.from("user_ap_access_view" as any)
 				.select("*")
 				.eq("subject_id", subjectId)
 				.eq("user_id", user.id)
@@ -34,18 +34,19 @@ export const useApSubjectAccess = (subjectId?: string) => {
 			if (!data) return null;
 
 			// VIEW에서 미리 계산된 필드들을 사용
-			const startAt = data.access_start_date ? new Date(data.access_start_date) : null;
-			const endAt = data.access_end_date ? new Date(data.access_end_date) : null;
+			const dataAny = data as any;
+			const startAt = dataAny.access_start_date ? new Date(dataAny.access_start_date) : null;
+			const endAt = dataAny.access_end_date ? new Date(dataAny.access_end_date) : null;
 
 			return {
-				hasAccess: data.has_full_access,
-				hasUserServiceAccess: data.service_access_active,
-				hasSubjectAccess: data.subject_access_active,
-				isWithinPeriod: data.access_period_started && data.access_period_valid,
-				isServiceActive: data.service_active,
+				hasAccess: dataAny.has_full_access,
+				hasUserServiceAccess: dataAny.service_access_active,
+				hasSubjectAccess: dataAny.subject_access_active,
+				isWithinPeriod: dataAny.access_period_started && dataAny.access_period_valid,
+				isServiceActive: dataAny.service_active,
 				startAt,
 				endAt,
-				subjectData: data,
+				subjectData: dataAny,
 			};
 		},
 		enabled: !!user?.id && !!subjectId,
@@ -70,18 +71,19 @@ export const useServiceStatus = (subjectId?: string) => {
 			if (!subjectId) return null;
 
 			// 새로운 VIEW를 사용하여 성능 최적화
-			const { data, error } = await supabase.from("ap_subject_detail_view").select("*").eq("id", subjectId).single();
+			const { data, error } = await supabase.from("ap_subject_detail_view" as any).select("*").eq("id", subjectId).single();
 
 			if (error) {
 				console.error("Error checking service status:", error);
 				return null;
 			}
 
+			const dataAny = data as any;
 			return {
-				isServiceActive: data.service_active,
-				isSubjectActive: data.is_active,
-				isSystemAvailable: data.service_active && data.is_active,
-				serviceData: data,
+				isServiceActive: dataAny.service_active,
+				isSubjectActive: dataAny.is_active,
+				isSystemAvailable: dataAny.service_active && dataAny.is_active,
+				serviceData: dataAny,
 			};
 		},
 		enabled: !!subjectId,

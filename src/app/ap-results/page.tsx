@@ -1,13 +1,13 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { APResultsPage } from "@/components/features/ap/results/APResultsPage";
 import { ApServiceImpl } from "@/lib/services/ap";
 import { supabase } from "@/lib/supabase";
 import type { UserApResult } from "@/types/ap";
 
-export default function APResults() {
+function APResultsContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [examResult, setExamResult] = useState<UserApResult | null>(null);
@@ -152,5 +152,20 @@ export default function APResults() {
 			}}
 			onRetryExam={handleRetryExam}
 		/>
+	);
+}
+
+export default function APResults() {
+	return (
+		<Suspense fallback={
+			<div className="min-h-screen flex items-center justify-center">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+					<p className="mt-4 text-gray-600">시험 결과를 불러오는 중...</p>
+				</div>
+			</div>
+		}>
+			<APResultsContent />
+		</Suspense>
 	);
 }
