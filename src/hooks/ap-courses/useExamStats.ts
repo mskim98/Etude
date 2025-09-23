@@ -25,9 +25,19 @@ export function useExamStats(exam: ApExam) {
  */
 export function useExamsStats(exams: ApExam[]) {
 	return useMemo(() => {
-		return exams.map((exam) => ({
-			...exam,
-			...useExamStats(exam),
-		}));
+		return exams.map((exam) => {
+			const correctAnswers = exam.bestScore || 0;
+			const totalQuestions = exam.questionCount || 0;
+			const accuracyRate = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : undefined;
+
+			return {
+				...exam,
+				correctAnswers,
+				totalQuestions,
+				accuracyRate,
+				isCompleted: exam.completed || false,
+				attempts: exam.attemptCount || 0,
+			};
+		});
 	}, [exams]);
 }

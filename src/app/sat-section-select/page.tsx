@@ -20,6 +20,7 @@ export default function SATSectionSelect() {
 		examDate: new Date("2025-05-15"),
 		sectionProgress: {
 			reading: {
+				progress: 100,
 				completed: true,
 				score: 380,
 				correctAnswers: 45,
@@ -27,6 +28,7 @@ export default function SATSectionSelect() {
 				timeSpent: 60,
 			},
 			writing: {
+				progress: 100,
 				completed: true,
 				score: 390,
 				correctAnswers: 40,
@@ -34,6 +36,7 @@ export default function SATSectionSelect() {
 				timeSpent: 35,
 			},
 			math: {
+				progress: 100,
 				completed: true,
 				score: 780,
 				correctAnswers: 52,

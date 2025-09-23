@@ -150,16 +150,25 @@ export interface Subject {
 			progress: number;
 			completed: boolean;
 			score?: number;
+			correctAnswers?: number;
+			totalQuestions?: number;
+			timeSpent?: number;
 		};
 		writing?: {
 			progress: number;
 			completed: boolean;
 			score?: number;
+			correctAnswers?: number;
+			totalQuestions?: number;
+			timeSpent?: number;
 		};
 		math?: {
 			progress: number;
 			completed: boolean;
 			score?: number;
+			correctAnswers?: number;
+			totalQuestions?: number;
+			timeSpent?: number;
 		};
 	};
 }

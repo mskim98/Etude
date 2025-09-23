@@ -47,7 +47,7 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
 							</div>
 							<h2 className="text-xl font-semibold text-gray-900">Check Your Email</h2>
 							<p className="text-gray-600">
-								We've sent a password reset link to your email address. Please check your inbox and follow the
+								We&apos;ve sent a password reset link to your email address. Please check your inbox and follow the
 								instructions to reset your password.
 							</p>
 							<Button asChild className="w-full">
@@ -66,7 +66,7 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
 				<CardHeader className="text-center">
 					<CardTitle className="text-2xl font-bold text-gray-900">Reset Password</CardTitle>
 					<CardDescription className="text-gray-600">
-						Enter your email address and we'll send you a link to reset your password
+						Enter your email address and we&apos;ll send you a link to reset your password
 					</CardDescription>
 				</CardHeader>
 

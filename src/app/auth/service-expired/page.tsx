@@ -21,7 +21,7 @@ export default function ServiceExpired() {
 	return (
 		<ServiceExpiredPage
 			userName={user?.profile?.name}
-			endDate={user?.profile?.end_at}
+			endDate={user?.profile?.end_at || undefined}
 			onContactSupport={handleContactSupport}
 			onLogout={handleLogout}
 		/>

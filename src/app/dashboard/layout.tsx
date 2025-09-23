@@ -94,8 +94,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 			router.push("/");
 		} catch (error) {
 			console.error("대시보드 로그아웃 실패:", error);
-			// 강제 로그아웃 시도
-			forceLogout();
+			// 강제 로그아웃 시도 - 로컬 스토리지 클리어
+			localStorage.clear();
+			sessionStorage.clear();
 			router.push("/");
 		}
 	};

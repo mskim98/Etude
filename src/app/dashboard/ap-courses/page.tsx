@@ -67,7 +67,7 @@ export default function APCoursesPage() {
 			}
 
 			// Get the most recent result for this exam
-			const { data: results, error } = await supabase
+			const { data: results, error } = await (supabase as any)
 				.from("user_ap_result")
 				.select("id")
 				.eq("user_id", user.id)
@@ -97,7 +97,7 @@ export default function APCoursesPage() {
 			<APCourses
 				onStartExam={handleApStartExam}
 				onViewResults={handleViewResults}
-				selectedSubject={selectedSubject as Subject | null}
+				selectedSubject={selectedSubject as any}
 				onTabChange={() => setSelectedSubject(null)}
 			/>
 		</div>
